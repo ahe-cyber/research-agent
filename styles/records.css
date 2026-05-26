@@ -69,28 +69,32 @@
 .json-geo-action::before {
   content: "";
   position: absolute;
-  top: 9px;
-  left: 6px;
-  width: 16px;
-  height: 10px;
-  border: 2px solid #526070;
-  border-radius: 50%;
+  top: 5px;
+  left: 5px;
+  width: 18px;
+  height: 18px;
+  background: center / contain no-repeat url("../resources/polygon.svg");
+  z-index: 1;
 }
 
 .json-geo-action::after {
   content: "";
   position: absolute;
-  top: 6px;
-  left: 14px;
-  width: 2px;
-  height: 20px;
-  border-radius: 1px;
-  background: #526070;
-  transform: rotate(45deg);
+  top: 5px;
+  left: 5px;
+  width: 18px;
+  height: 18px;
+  background: #000000;
+  clip-path: polygon(30% 25%, 46% 57.5%, 30% 75%, 67.5% 75%, 75% 42.5%);
+  opacity: 0;
 }
 
 .json-geo-action.is-visible::after {
-  display: none;
+  opacity: 1;
+}
+
+.json-geo-action.is-partially-visible::after {
+  opacity: 0.5;
 }
 
 .json-geo-action:hover {
@@ -99,12 +103,17 @@
 
 .json-tree {
   margin: 0;
+  padding-bottom: 12px;
   font-family: Consolas, "Courier New", monospace;
   font-size: 12px;
   line-height: 1.45;
   max-width: 100%;
   overflow-x: auto;
   overflow-y: hidden;
+}
+
+.record-list.is-json-text-wrapped .json-tree {
+  overflow-x: hidden;
 }
 
 .json-node,
@@ -114,6 +123,11 @@
   width: max-content;
   min-width: 100%;
   box-sizing: border-box;
+}
+
+.record-list.is-json-text-wrapped .json-node,
+.record-list.is-json-text-wrapped .json-leaf {
+  width: auto;
 }
 
 .json-tree > .json-node,
@@ -151,6 +165,10 @@
 
 .json-label {
   min-width: 0;
+}
+
+.record-list.is-json-text-wrapped .json-label {
+  overflow-wrap: anywhere;
 }
 
 .json-copy-target {
@@ -198,15 +216,16 @@
 }
 
 .json-geo-action::before {
-  top: 7px;
-  left: 5px;
-  width: 13px;
-  height: 8px;
+  top: 3px;
+  left: 3px;
+  width: 18px;
+  height: 18px;
 }
 
 .json-geo-action::after {
-  top: 4px;
-  left: 12px;
+  top: 3px;
+  left: 3px;
+  width: 18px;
   height: 18px;
 }
 
@@ -242,6 +261,7 @@
   font-family: Arial, Helvetica, sans-serif;
   font-size: 11px;
   font-weight: 700;
+  margin-left: 8px;
   max-width: 220px;
   overflow: hidden;
   text-overflow: ellipsis;

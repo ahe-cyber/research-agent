@@ -57,19 +57,24 @@
 }
 
 .panel-header {
-  display: grid;
-  gap: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
   border-bottom: 1px solid #d6d9de;
   padding: 12px 14px;
 }
 
 .panel-kicker {
+  display: block;
+  margin-bottom: 4px;
   color: #526070;
   font-size: 11px;
   text-transform: uppercase;
 }
 
 .panel-title {
+  display: block;
   color: #1f2933;
   font-size: 14px;
 }

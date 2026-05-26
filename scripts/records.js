@@ -35,8 +35,21 @@ function createRecordStore() {
 
 function createRecordController(recordStore, assetController, map) {
   const recordList = document.getElementById("recordList");
+  const wrapJsonTextButton = document.getElementById("wrapJsonTextButton");
   const expandedRecordIds = new Set();
   const expandedJsonPaths = new Set();
+  let isJsonTextWrapped = false;
+
+  function updateWrapJsonText() {
+    recordList.classList.toggle("is-json-text-wrapped", isJsonTextWrapped);
+    wrapJsonTextButton.setAttribute("aria-pressed", String(isJsonTextWrapped));
+    wrapJsonTextButton.classList.toggle("is-active", isJsonTextWrapped);
+  }
+
+  wrapJsonTextButton.addEventListener("click", () => {
+    isJsonTextWrapped = !isJsonTextWrapped;
+    updateWrapJsonText();
+  });
 
   function render() {
     recordList.replaceChildren();
@@ -98,11 +111,13 @@ function createRecordController(recordStore, assetController, map) {
   }
 
   function toggleRecordGeoJson(record) {
-    record.isVisibleOnMap = !record.isVisibleOnMap;
+    record.isVisibleOnMap = !record.isVisibleOnMap || record.geojsonPath !== record.visibleGeoJsonPath;
 
     if (record.isVisibleOnMap) {
+      record.visibleGeoJsonPath = record.geojsonPath;
       showGeoJsonRecord(map, record.id, record.geojson);
     } else {
+      record.visibleGeoJsonPath = "";
       hideGeoJsonRecord(map, record.id);
     }
 
@@ -120,14 +135,19 @@ function createRecordController(recordStore, assetController, map) {
   }
 
   render();
+  updateWrapJsonText();
 
   return { add, render };
 }
 
 function updateGeoJsonButtons(record) {
   document.querySelectorAll(`[data-record-id="${record.id}"].json-geo-action`).forEach((button) => {
-    button.classList.toggle("is-visible", record.isVisibleOnMap);
-    button.setAttribute("aria-label", record.isVisibleOnMap ? "Hide polygon from map" : "Show polygon on map");
+    const isVisible = record.isVisibleOnMap && button.dataset.geoJsonPath === record.visibleGeoJsonPath;
+    const isPartiallyVisible = record.isVisibleOnMap && record.visibleGeoJsonPath.startsWith(`${button.dataset.geoJsonPath}.`);
+
+    button.classList.toggle("is-visible", isVisible);
+    button.classList.toggle("is-partially-visible", isPartiallyVisible);
+    button.setAttribute("aria-label", isVisible ? "Hide polygon from map" : "Show polygon on map");
   });
 }
 
@@ -153,7 +173,7 @@ function renderJsonNode(key, value, record, assetController, onToggleGeoJson, ex
 
     const summary = document.createElement("summary");
     summary.appendChild(renderJsonLabel(key, Array.isArray(value) ? "Array" : "Object", toDisplayPath(path), value));
-    appendGeoJsonAction(summary, value, record, onToggleGeoJson);
+    appendGeoJsonAction(summary, value, record, onToggleGeoJson, path);
     appendAssetAction(summary, value, record, assetController);
     details.appendChild(summary);
 
@@ -173,13 +193,12 @@ function renderJsonNode(key, value, record, assetController, onToggleGeoJson, ex
 
 function renderJsonLabel(key, value, path, rawValue) {
   const label = document.createElement("span");
-  const keyElement = document.createElement("button");
+  const keyElement = document.createElement("span");
   const separator = document.createTextNode(": ");
-  const valueElement = document.createElement("button");
+  const valueElement = document.createElement("span");
 
   label.className = "json-label";
   keyElement.className = "json-copy-target json-key";
-  keyElement.type = "button";
   keyElement.title = "Right-click to copy path";
   keyElement.textContent = key;
   keyElement.addEventListener("contextmenu", (event) => {
@@ -189,7 +208,6 @@ function renderJsonLabel(key, value, path, rawValue) {
   });
 
   valueElement.className = "json-copy-target json-value";
-  valueElement.type = "button";
   valueElement.title = "Right-click to copy JSON";
   valueElement.textContent = value;
   valueElement.addEventListener("contextmenu", (event) => {
@@ -220,7 +238,7 @@ function appendAssetAction(parent, value, record, assetController) {
   parent.appendChild(button);
 }
 
-function appendGeoJsonAction(parent, value, record, onToggleGeoJson) {
+function appendGeoJsonAction(parent, value, record, onToggleGeoJson, path) {
   const geojson = normalizeGeoJson(value);
 
   if (!geojson) {
@@ -228,15 +246,19 @@ function appendGeoJsonAction(parent, value, record, onToggleGeoJson) {
   }
 
   const button = document.createElement("button");
-  button.className = `json-geo-action ${record.isVisibleOnMap ? "is-visible" : ""}`;
+  const isVisible = record.isVisibleOnMap && path === record.visibleGeoJsonPath;
+  const isPartiallyVisible = record.isVisibleOnMap && record.visibleGeoJsonPath.startsWith(`${path}.`);
+  button.className = `json-geo-action ${isVisible ? "is-visible" : ""} ${isPartiallyVisible ? "is-partially-visible" : ""}`;
   button.type = "button";
   button.dataset.recordId = record.id;
-  button.setAttribute("aria-label", record.isVisibleOnMap ? "Hide polygon from map" : "Show polygon on map");
+  button.dataset.geoJsonPath = path;
+  button.setAttribute("aria-label", isVisible ? "Hide polygon from map" : "Show polygon on map");
   button.addEventListener("click", (event) => {
     event.preventDefault();
     event.stopPropagation();
 
     record.geojson = geojson;
+    record.geojsonPath = path;
     onToggleGeoJson(record);
   });
 
@@ -253,7 +275,7 @@ async function copyJsonNodeText(element, text, path, value, copyKind) {
   try {
     await copyTextToClipboard(text);
     console.info(`[Map App] Copied JSON ${copyKind}`, { path, text });
-    showCopyStatus(element.parentElement, copyKind === "path" ? `Copied ${path || "root"}` : "Copied JSON", true);
+    showCopyStatus(element.parentElement, copyKind === "path" ? "Copied Path" : "Copied Obj", true);
   } catch (error) {
     console.error(`[Map App] Failed to copy JSON ${copyKind}`, { path, value, text, error });
     console.info("[Map App] Copy failed object", value);
