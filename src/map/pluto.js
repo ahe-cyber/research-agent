@@ -2,7 +2,7 @@ const MAPPLUTO_QUERY_URL = "https://services5.arcgis.com/GfwWNkhOj9bNBqoJ/arcgis
 const MAPPLUTO_LAYER_OVERVIEW_URL = "https://services5.arcgis.com/GfwWNkhOj9bNBqoJ/arcgis/rest/services/MAPPLUTO/FeatureServer/0";
 const GEOJSON_LAYER_PREFIX = "record-geojson";
 
-function getSearchResultCoordinates(searchResult) {
+export function getSearchResultCoordinates(searchResult) {
   const feature = searchResult.features && searchResult.features[0];
   const geometryCoordinates = feature && feature.geometry && feature.geometry.coordinates;
   const propertyCoordinates = feature && feature.properties && feature.properties.coordinates;
@@ -55,7 +55,7 @@ async function queryMapPlutoByCoordinates(coordinates) {
   };
 }
 
-function buildUrlWithParams(baseUrl, params) {
+export function buildUrlWithParams(baseUrl, params) {
   const url = new URL(baseUrl);
 
   Object.entries(params).forEach(([key, value]) => {
@@ -67,7 +67,7 @@ function buildUrlWithParams(baseUrl, params) {
   return url.toString();
 }
 
-async function queryUrl(url) {
+export async function queryUrl(url) {
   const startedAt = performance.now();
   const response = await fetch(url);
   const durationMs = Math.round(performance.now() - startedAt);
@@ -130,12 +130,12 @@ function ensureGeoJsonLayers(map, recordId, geojson) {
   }
 }
 
-function showGeoJsonRecord(map, recordId, geojson) {
+export function showGeoJsonRecord(map, recordId, geojson) {
   ensureGeoJsonLayers(map, recordId, geojson);
   map.getSource(getGeoJsonLayerIds(recordId).sourceId).setData(geojson);
 }
 
-function hideGeoJsonRecord(map, recordId) {
+export function hideGeoJsonRecord(map, recordId) {
   const { sourceId, fillLayerId, lineLayerId } = getGeoJsonLayerIds(recordId);
 
   if (map.getLayer(fillLayerId)) {
@@ -163,7 +163,7 @@ function isGeoJsonValue(value) {
   return Boolean(normalizeGeoJson(value));
 }
 
-function normalizeGeoJson(value) {
+export function normalizeGeoJson(value) {
   if (!value) {
     return null;
   }

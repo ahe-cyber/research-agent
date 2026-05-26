@@ -73,7 +73,7 @@
   left: 5px;
   width: 18px;
   height: 18px;
-  background: center / contain no-repeat url("../resources/polygon.svg");
+  background: center / contain no-repeat url("/resources/polygon.svg");
   z-index: 1;
 }
 

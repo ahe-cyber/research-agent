@@ -1,4 +1,16 @@
-function createRecordStore() {
+import { hideGeoJsonRecord, normalizeGeoJson, showGeoJsonRecord } from "../map/pluto.js";
+import { hasAssetUrls } from "./AssetsTab.jsx";
+
+export function DetailsTab({ active }) {
+  return (
+    <section className={`workspace-tab${active ? " is-active" : ""}`} id="detailsTab" data-tab-panel hidden={!active}>
+      <h2 className="section-title">Details</h2>
+      <div className="record-list" id="recordList" />
+    </section>
+  );
+}
+
+export function createRecordStore() {
   let nextId = 1;
   const records = [];
 
@@ -33,7 +45,7 @@ function createRecordStore() {
   return { add, all, find };
 }
 
-function createRecordController(recordStore, assetController, map) {
+export function createRecordController(recordStore, assetController, map) {
   const recordList = document.getElementById("recordList");
   const wrapJsonTextButton = document.getElementById("wrapJsonTextButton");
   const expandedRecordIds = new Set();
@@ -111,6 +123,11 @@ function createRecordController(recordStore, assetController, map) {
   }
 
   function toggleRecordGeoJson(record) {
+    if (!map) {
+      console.warn("[Map App] Map is unavailable; cannot toggle GeoJSON record.");
+      return;
+    }
+
     record.isVisibleOnMap = !record.isVisibleOnMap || record.geojsonPath !== record.visibleGeoJsonPath;
 
     if (record.isVisibleOnMap) {

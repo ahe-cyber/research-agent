@@ -2,7 +2,16 @@
 
 ## File Structure
 
-- `map.html` contains the editor-style shell, panels, map surface, and script/style links.
+- `index.html` loads the React app and Mapbox libraries.
+- `src/App.jsx` renders the editor-style shell, activity bar, workspace tab selection, map surface, and agent panel.
+- `src/main.jsx` mounts the React app.
+- `src/mapApp.js` wires the map, search, workspace controllers, source editors, records, assets, and agent panel together.
+- `src/map/` contains shared env, Mapbox map/search setup, query helpers, and GeoJSON map rendering.
+- `src/workspace/AddressTab.jsx` renders the Address tab and contains its address-list controller.
+- `src/workspace/DetailsTab.jsx` renders the Details tab and contains the record store, JSON tree, and record controller.
+- `src/workspace/SourcesTab.jsx` renders the Sources tab and contains the source editor/manual query controller.
+- `src/workspace/AssetsTab.jsx` renders the Assets tab and contains PDF/image URL extraction and asset-list controller.
+- `src/agent/AgentPanel.jsx` renders the agent panel and contains its UI controller.
 - `styles.css` imports the smaller CSS files in `styles/`.
 - `styles/base.css` contains global defaults and shared focus treatment.
 - `styles/layout.css` contains the activity rail, left workspace, map editor area, and right agent panel layout.
@@ -11,17 +20,7 @@
 - `styles/workspace.css` contains the left sidebar tabs, address list, sources, and assets list.
 - `styles/records.css` contains expandable query record cards and JSON accordions.
 - `styles/agent.css` contains the right agent chat panel.
-- `scripts/config.js` contains shared constants.
-- `scripts/map.js` contains Mapbox map setup.
-- `scripts/search.js` contains Search Box setup and selected place state.
-- `scripts/pluto.js` contains generic query helpers, MAPPLUTO constants, and GeoJSON polygon map toggles.
-- `scripts/sources.js` contains the Sources tab endpoint editor and manual query runner.
-- `scripts/records.js` contains in-memory request/response records and JSON rendering.
-- `scripts/assets.js` contains PDF/image URL extraction into the Assets tab.
-- `scripts/agent.js` contains the right-side chat UI and attach-context toggle.
-- `scripts/workspace.js` contains left sidebar tab switching and selected address rendering.
-- `scripts/app.js` wires the modules together.
-- `resources/datasets.json` stores manually maintained dataset source definitions until there is a backend.
+- `public/resources/datasets.json` stores manually maintained dataset source definitions until there is a backend.
 
 ## UI Style Guidance
 
@@ -42,7 +41,7 @@
 
 The Address tab uses Mapbox Search JS Web's `MapboxSearchBox`, which supports addresses, place names, landmarks, and POIs.
 
-Create a local `.env` file from `.env.example` and set `MAPBOX_ACCESS_TOKEN` before using Mapbox-backed features. The `.env` file is ignored by git.
+Create a local `.env` file from `.env.example` and set `VITE_MAPBOX_ACCESS_TOKEN` before using Mapbox-backed features. The `.env` file is ignored by git.
 
 Current search options:
 
@@ -52,34 +51,30 @@ Current search options:
 - `limit`: `6`.
 - `proximity`: Staten Island center, biasing results nearby.
 
-The Search Box component also receives a Mapbox theme in `scripts/search.js` so its border, radius, colors, shadow, and font stay aligned with this app's UI guidance.
+The Search Box component also receives a Mapbox theme in `src/map/search.js` so its border, radius, colors, shadow, and font stay aligned with this app's UI guidance.
 
 ### Dev Mode
 
-Use dev mode to bypass Mapbox Search requests and select canned search results from `resources/seed.json` instead.
+Use dev mode to bypass Mapbox Search requests and select canned search results from `public/resources/seed.json`, served at `/resources/seed.json`, instead.
 
-- Start local server: run `powershell -ExecutionPolicy Bypass -File .\dev-server.ps1` from the `Map App` folder, then open `http://localhost:5173/map.html?devMode=1`.
+- Start local server: run `npm run dev`, then open `http://localhost:5173/?devMode=1`.
 - Turn on: add `?devMode=1` to the URL.
 - Turn off: add `?devMode=0` to the URL.
 - After either URL toggle, the setting is remembered in `localStorage`.
 
-`resources/seed.json` can be either an array of Mapbox-style search result objects, an object with a `searchResults` array, or a single FeatureCollection-like object with `features`.
+`public/resources/seed.json` can be either an array of Mapbox-style search result objects, an object with a `searchResults` array, or a single FeatureCollection-like object with `features`.
 
 ## Dataset Source Behavior
 
-When a search result is selected, the Mapbox Search source output mappings assign variables such as `selectedCoordinates` and `selectedAddress`. Dataset sources are not queried automatically. The Sources tab renders expandable dataset endpoint editors from `resources/datasets.json`, where parameters can reference variables by name, such as `selectedCoordinates`. Manual runs produce request/response records in Details, including duration in milliseconds. Polygon responses can be toggled on the map from those records.
+When a search result is selected, the Mapbox Search source output mappings assign variables such as `selectedCoordinates` and `selectedAddress`. Dataset sources are not queried automatically. The Sources tab renders expandable dataset endpoint editors from `public/resources/datasets.json`, where parameters can reference variables by name, such as `selectedCoordinates`. Manual runs produce request/response records in Details, including duration in milliseconds. Polygon responses can be toggled on the map from those records.
 
 Dataset source overview buttons open the configured ArcGIS REST layer overview in a new tab. Those pages include dataset descriptions, supported query formats, extents, and field lists.
 
-Dataset source settings are recorded in `resources/datasets.json` so future dataset additions have a place to live before a server-backed save flow exists.
+Dataset source settings are recorded in `public/resources/datasets.json` so future dataset additions have a place to live before a server-backed save flow exists.
 
 ## Future Work
 
 Each future-work item has its own TODO section so it can be picked up as an implementable Codex task from VS Code.
-
-## TODO - Refactor Static App To React
-
-Refactor the current static HTML/CSS/JS app into a React project before adding larger workbench-style UI features. Preserve the current Mapbox map, workspace views, Details JSON tree behavior, source editors, assets list, and agent panel behavior during the migration.
 
 ## TODO - VS Code-Style View Menu Toolbar
 

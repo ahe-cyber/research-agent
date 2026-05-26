@@ -1,3 +1,11 @@
+import { createAgentController } from "./agent/AgentPanel.jsx";
+import { createMap } from "./map/map.js";
+import { createPlaceSearchBox } from "./map/search.js";
+import { createAddressController } from "./workspace/AddressTab.jsx";
+import { createAssetController } from "./workspace/AssetsTab.jsx";
+import { createRecordController, createRecordStore } from "./workspace/DetailsTab.jsx";
+import { createSourceController } from "./workspace/SourcesTab.jsx";
+
 let sourceController;
 let recordController;
 let addressController;
@@ -18,22 +26,24 @@ async function handlePlaceRetrieved(searchResult) {
   });
 }
 
-async function initializeApp() {
-  await loadMapAppEnv();
-
-  const map = createMap();
+export async function initializeMapApp() {
   const searchBoxContainer = document.getElementById("placeSearchBox");
+  let map = null;
+
+  try {
+    map = createMap();
+  } catch (error) {
+    console.error("[Map App] Map initialization failed; continuing without map-backed features.", error);
+  }
+
   const recordStore = createRecordStore();
   const assetController = createAssetController();
   recordController = createRecordController(recordStore, assetController, map);
   addressController = createAddressController();
   sourceController = createSourceController(recordController);
   createAgentController(recordStore);
-  setupWorkspaceTabs();
 
   const searchBox = createPlaceSearchBox(map, handlePlaceRetrieved);
 
   searchBoxContainer.appendChild(searchBox);
 }
-
-initializeApp();

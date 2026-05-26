@@ -1,6 +1,15 @@
 const ASSET_URL_PATTERN = /https?:\/\/[^\s"'<>]+?\.(?:pdf|png|jpg|jpeg|gif|webp)(?:\?[^\s"'<>]*)?/gi;
 
-function createAssetController() {
+export function AssetsTab({ active }) {
+  return (
+    <section className={`workspace-tab${active ? " is-active" : ""}`} id="assetsTab" data-tab-panel hidden={!active}>
+      <h2 className="section-title">Assets</h2>
+      <div className="asset-list" id="assetList" />
+    </section>
+  );
+}
+
+export function createAssetController() {
   const assetList = document.getElementById("assetList");
   const assets = [];
 
@@ -74,6 +83,14 @@ function extractAssetUrls(value) {
   return serialized.match(ASSET_URL_PATTERN) || [];
 }
 
-function hasAssetUrls(value) {
+export function hasAssetUrls(value) {
   return extractAssetUrls(value).length > 0;
+}
+
+function escapeHtml(value) {
+  return String(value)
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;");
 }

@@ -1,8 +1,16 @@
+import { getMapboxAccessToken, isDevModeEnabled, STATEN_ISLAND_BBOX, STATEN_ISLAND_CENTER } from "./config.js";
+import { getSearchResultCoordinates } from "./pluto.js";
+
 let selectedPlace;
 
-function createPlaceSearchBox(map, onRetrieve) {
+export function createPlaceSearchBox(map, onRetrieve) {
+  console.log("DEBUG")
   if (isDevModeEnabled()) {
     return createSeedSearchBox(map, onRetrieve);
+  }
+
+  if (!map) {
+    return createSearchUnavailableMessage("Mapbox map could not be initialized. Check VITE_MAPBOX_ACCESS_TOKEN and restart dev server.");
   }
 
   const searchBox = new mapboxsearch.MapboxSearchBox();
@@ -47,6 +55,13 @@ function createPlaceSearchBox(map, onRetrieve) {
   return searchBox;
 }
 
+function createSearchUnavailableMessage(text) {
+  const message = document.createElement("p");
+  message.className = "seed-search-status";
+  message.textContent = text;
+  return message;
+}
+
 function createSeedSearchBox(map, onRetrieve) {
   const container = document.createElement("div");
   const select = document.createElement("select");
@@ -65,7 +80,7 @@ function createSeedSearchBox(map, onRetrieve) {
   select.appendChild(createSeedOption("", "Select seed result"));
   container.append(select, status, fileInput);
 
-  fetch("resources/seed.json")
+  fetch("/resources/seed.json")
     .then((response) => {
       if (!response.ok) {
         throw new Error(`Seed data failed with status ${response.status}`);
@@ -77,7 +92,7 @@ function createSeedSearchBox(map, onRetrieve) {
     .catch((error) => {
       console.error(error);
       fileInput.hidden = false;
-      status.textContent = `Dev mode is on, but resources/seed.json could not be loaded: ${error.message}. Select seed.json manually.`;
+      status.textContent = `Dev mode is on, but /resources/seed.json could not be loaded: ${error.message}. Select seed.json manually.`;
     });
 
   fileInput.addEventListener("change", () => {
@@ -114,7 +129,7 @@ function createSeedSearchBox(map, onRetrieve) {
     select.disabled = results.length === 0;
     select.replaceChildren(createSeedOption("", "Select seed result"));
     status.textContent = results.length === 0
-      ? "Dev mode is on. Add search results to resources/seed.json."
+      ? "Dev mode is on. Add search results to public/resources/seed.json."
       : "Dev mode is on. Mapbox Search is bypassed.";
 
     results.forEach((result, index) => {
@@ -174,6 +189,10 @@ function getSeedResultLabel(searchResult, index) {
 }
 
 function flyToSeedResult(map, searchResult) {
+  if (!map) {
+    return;
+  }
+
   const coordinates = getSearchResultCoordinates(searchResult);
 
   if (coordinates) {

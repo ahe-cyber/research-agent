@@ -1,22 +1,17 @@
-function setupWorkspaceTabs() {
-  const buttons = document.querySelectorAll("[data-tab-target]");
-  const panels = document.querySelectorAll("[data-tab-panel]");
-
-  buttons.forEach((button) => {
-    button.addEventListener("click", () => {
-      const targetId = button.dataset.tabTarget;
-
-      buttons.forEach((item) => item.classList.toggle("is-active", item === button));
-      panels.forEach((panel) => {
-        const isActive = panel.id === targetId;
-        panel.hidden = !isActive;
-        panel.classList.toggle("is-active", isActive);
-      });
-    });
-  });
+export function AddressTab({ active }) {
+  return (
+    <section className={`workspace-tab${active ? " is-active" : ""}`} id="addressTab" data-tab-panel hidden={!active}>
+      <h2 className="section-title">Address</h2>
+      <label className="field-label" htmlFor="placeSearchBox">
+        Search address or place
+      </label>
+      <div className="search-box-shell" id="placeSearchBox" />
+      <div className="address-list" id="addressList" />
+    </section>
+  );
 }
 
-function createAddressController() {
+export function createAddressController() {
   const addressList = document.getElementById("addressList");
   const addresses = [];
 

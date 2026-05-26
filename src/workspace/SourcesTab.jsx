@@ -1,3 +1,5 @@
+import { buildUrlWithParams, queryUrl } from "../map/pluto.js";
+
 const BUILT_IN_SOURCES = [
   {
     id: "mapbox-search",
@@ -18,7 +20,16 @@ const BUILT_IN_SOURCES = [
   }
 ];
 
-function createSourceController(recordController) {
+export function SourcesTab({ active }) {
+  return (
+    <section className={`workspace-tab${active ? " is-active" : ""}`} id="sourcesTab" data-tab-panel hidden={!active}>
+      <h2 className="section-title">Sources</h2>
+      <div id="sourceList" />
+    </section>
+  );
+}
+
+export function createSourceController(recordController) {
   const variables = {};
   const sourceElements = {};
   const sourceList = document.getElementById("sourceList");
@@ -36,7 +47,7 @@ function createSourceController(recordController) {
 
   async function loadDatasetSources() {
     try {
-      const response = await fetch("resources/datasets.json");
+      const response = await fetch("/resources/datasets.json");
 
       if (!response.ok) {
         throw new Error(`Dataset registry failed with status ${response.status}`);

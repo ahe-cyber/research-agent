@@ -40,8 +40,8 @@
   position: absolute;
   inset: 4px;
   background: #000000;
-  mask: center / contain no-repeat url("../resources/wrap.svg");
-  -webkit-mask: center / contain no-repeat url("../resources/wrap.svg");
+  mask: center / contain no-repeat url("/resources/wrap.svg");
+  -webkit-mask: center / contain no-repeat url("/resources/wrap.svg");
 }
 
 .section-tool-button:hover,
