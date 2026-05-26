@@ -1,0 +1,75 @@
+.app-shell {
+  display: grid;
+  grid-template-columns: 48px 360px minmax(360px, 1fr) 380px;
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
+}
+
+.activity-bar {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  border-right: 1px solid #d6d9de;
+  background: #f8f9fb;
+  padding: 10px 0;
+}
+
+.activity-button {
+  width: 40px;
+  height: 40px;
+  border: 0;
+  border-left: 2px solid transparent;
+  background: transparent;
+  color: #526070;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.activity-button:hover,
+.activity-button.is-active {
+  color: #1f2933;
+  background: #eef1f5;
+}
+
+.activity-button.is-active {
+  border-left-color: #2f6fed;
+}
+
+.workspace-sidebar,
+.agent-panel {
+  min-width: 0;
+  border-right: 1px solid #d6d9de;
+  background: #ffffff;
+}
+
+.agent-panel {
+  border-right: 0;
+  border-left: 1px solid #d6d9de;
+}
+
+.editor-area {
+  position: relative;
+  min-width: 0;
+  background: #d8dde5;
+}
+
+.panel-header {
+  display: grid;
+  gap: 4px;
+  border-bottom: 1px solid #d6d9de;
+  padding: 12px 14px;
+}
+
+.panel-kicker {
+  color: #526070;
+  font-size: 11px;
+  text-transform: uppercase;
+}
+
+.panel-title {
+  color: #1f2933;
+  font-size: 14px;
+}

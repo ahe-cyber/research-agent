@@ -1,0 +1,76 @@
+.agent-panel {
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+  height: 100vh;
+}
+
+.agent-thread {
+  display: grid;
+  align-content: start;
+  gap: 10px;
+  overflow-y: auto;
+  padding: 14px;
+}
+
+.agent-message {
+  border: 1px solid #d6d9de;
+  border-radius: 6px;
+  background: #ffffff;
+  padding: 10px;
+  color: #1f2933;
+  font-size: 13px;
+  line-height: 1.4;
+}
+
+.agent-message-user {
+  background: #f7faff;
+  border-color: #c6d8ff;
+}
+
+.agent-message-system {
+  color: #526070;
+}
+
+.agent-composer {
+  display: grid;
+  gap: 8px;
+  border-top: 1px solid #d6d9de;
+  padding: 12px;
+}
+
+.context-button {
+  justify-self: start;
+  min-height: 30px;
+  padding: 0 10px;
+  font-size: 12px;
+}
+
+.context-button.is-active {
+  border-color: #2f6fed;
+  background: #eef4ff;
+}
+
+.agent-input {
+  width: 100%;
+  min-height: 96px;
+  box-sizing: border-box;
+  resize: vertical;
+  border: 1px solid #c9ced6;
+  border-radius: 6px;
+  padding: 10px;
+  color: #1f2933;
+}
+
+.agent-send {
+  justify-self: end;
+  min-width: 78px;
+  min-height: 34px;
+  border-color: #1f2933;
+  background: #1f2933;
+  color: #ffffff;
+  font-weight: 700;
+}
+
+.agent-send:hover {
+  background: #344052;
+}

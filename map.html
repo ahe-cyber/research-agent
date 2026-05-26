@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>Staten Island Map</title>
+  <meta name="viewport" content="initial-scale=1,maximum-scale=1,user-scalable=no" />
+
+  <link href="https://api.mapbox.com/mapbox-gl-js/v3.24.0/mapbox-gl.css" rel="stylesheet" />
+  <link href="styles.css" rel="stylesheet" />
+  <script src="https://api.mapbox.com/mapbox-gl-js/v3.24.0/mapbox-gl.js"></script>
+  <script id="search-js" defer src="https://api.mapbox.com/search-js/v1.5.0/web.js"></script>
+  <script defer src="scripts/env.js"></script>
+  <script defer src="scripts/config.js"></script>
+  <script defer src="scripts/map.js"></script>
+  <script defer src="scripts/search.js"></script>
+  <script defer src="scripts/pluto.js"></script>
+  <script defer src="scripts/records.js"></script>
+  <script defer src="scripts/assets.js"></script>
+  <script defer src="scripts/agent.js"></script>
+  <script defer src="scripts/workspace.js"></script>
+  <script defer src="scripts/sources.js"></script>
+  <script defer src="scripts/app.js"></script>
+</head>
+
+<body>
+  <div class="app-shell">
+    <nav class="activity-bar" aria-label="Workspace sections">
+      <button class="activity-button is-active" type="button" data-tab-target="addressTab" aria-label="Address">A</button>
+      <button class="activity-button" type="button" data-tab-target="detailsTab" aria-label="Details">D</button>
+      <button class="activity-button" type="button" data-tab-target="sourcesTab" aria-label="Sources">?</button>
+      <button class="activity-button" type="button" data-tab-target="assetsTab" aria-label="Assets">I</button>
+    </nav>
+
+    <aside class="workspace-sidebar" aria-label="Workspace">
+      <header class="panel-header">
+        <span class="panel-kicker">Workspace</span>
+        <strong class="panel-title">Map App</strong>
+      </header>
+
+      <section class="workspace-tab is-active" id="addressTab" data-tab-panel>
+        <h2 class="section-title">Address</h2>
+        <label class="field-label" for="placeSearchBox">Search address or place</label>
+        <div class="search-box-shell" id="placeSearchBox"></div>
+        <div class="address-list" id="addressList"></div>
+      </section>
+
+      <section class="workspace-tab" id="detailsTab" data-tab-panel hidden>
+        <h2 class="section-title">Details</h2>
+        <div class="record-list" id="recordList"></div>
+      </section>
+
+      <section class="workspace-tab" id="sourcesTab" data-tab-panel hidden>
+        <h2 class="section-title">Sources</h2>
+        <div id="sourceList"></div>
+      </section>
+
+      <section class="workspace-tab" id="assetsTab" data-tab-panel hidden>
+        <h2 class="section-title">Assets</h2>
+        <div class="asset-list" id="assetList"></div>
+      </section>
+    </aside>
+
+    <main class="editor-area">
+      <div id="map"></div>
+    </main>
+
+    <aside class="agent-panel" aria-label="Agent chat">
+      <header class="panel-header">
+        <span class="panel-kicker">Agent</span>
+        <strong class="panel-title">Gemini</strong>
+      </header>
+      <div class="agent-thread" id="agentThread">
+        <div class="agent-message agent-message-system">Ask the agent to interpret selected places, records, and datasets.</div>
+      </div>
+      <form class="agent-composer" id="agentComposer">
+        <button class="context-button" type="button" id="attachContextButton" aria-pressed="false">Attach context</button>
+        <textarea class="agent-input" id="agentInput" rows="4" placeholder="Ask about this place or dataset trail"></textarea>
+        <button class="agent-send" type="submit">Send</button>
+      </form>
+    </aside>
+  </div>
+</body>
+</html>
