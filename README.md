@@ -20,7 +20,8 @@
 - `styles/workspace.css` contains the left sidebar tabs, address list, sources, and assets list.
 - `styles/records.css` contains expandable query record cards and JSON accordions.
 - `styles/agent.css` contains the right agent chat panel.
-- `public/resources/datasets.json` stores manually maintained dataset source definitions until there is a backend.
+- `server.cjs` runs the Express API and, in development, Vite middleware.
+- `public/resources/datasets.json` stores dataset source definitions and can be updated through the Express API.
 
 ## UI Style Guidance
 
@@ -57,6 +58,7 @@ The Search Box component also receives a Mapbox theme in `src/map/search.js` so 
 
 Use dev mode to bypass Mapbox Search requests and select canned search results from `public/resources/seed.json`, served at `/resources/seed.json`, instead.
 
+- Install dependencies: run `npm install`.
 - Start local server: run `npm run dev`, then open `http://localhost:5173/?devMode=1`.
 - Turn on: add `?devMode=1` to the URL.
 - Turn off: add `?devMode=0` to the URL.
@@ -66,52 +68,21 @@ Use dev mode to bypass Mapbox Search requests and select canned search results f
 
 ## Dataset Source Behavior
 
-When a search result is selected, the Mapbox Search source output mappings assign variables such as `selectedCoordinates` and `selectedAddress`. Dataset sources are not queried automatically. The Sources tab renders expandable dataset endpoint editors from `public/resources/datasets.json`, where parameters can reference variables by name, such as `selectedCoordinates`. Manual runs produce request/response records in Details, including duration in milliseconds. Polygon responses can be toggled on the map from those records.
+When a search result is selected, the Mapbox Search source output mappings assign variables such as `selectedCoordinates` and `selectedAddress`. Dataset sources are not queried automatically. The Sources tab renders expandable dataset endpoint editors from `/api/datasets`, backed by `public/resources/datasets.json`, where parameters can reference variables by name, such as `selectedCoordinates`. Manual runs produce request/response records in Details, including duration in milliseconds. Supported GeoJSON responses can be toggled on the map from those records.
 
 Dataset source overview buttons open the configured ArcGIS REST layer overview in a new tab. Those pages include dataset descriptions, supported query formats, extents, and field lists.
 
-Dataset source settings are recorded in `public/resources/datasets.json` so future dataset additions have a place to live before a server-backed save flow exists.
+Dataset source settings can be saved from the Sources tab. The Express API writes those edits back to `public/resources/datasets.json`.
+
+Dataset source queries are proxied through `POST /api/query` so external endpoints can be requested server-side instead of being blocked by browser CORS.
 
 ## Future Work
 
 Each future-work item has its own TODO section so it can be picked up as an implementable Codex task from VS Code.
 
-## TODO - VS Code-Style View Menu Toolbar
-
-After the React refactor, replace the fixed wrap-text button in the workspace header with a shared per-view menu system.
-
-Use VS Code region naming for the app shell:
-
-- `Activity Bar`: the far-left view switcher, positioned below the app header.
-- `Primary Side Bar`: the workspace area containing Address, Details, Sources, and Assets views.
-- `Editor`: the central map/editor region.
-- `Secondary Side Bar`: the right-side agent/chat region.
-- `Panel`: reserved for future bottom or movable output/debug/status views.
-- `Status Bar`: reserved for future project and file/app status information.
-
-The app header should describe the whole app only. Place a `menu.svg` icon button where the wrap button currently sits in the header area. The menu button toggles a per-view toolbar/menu open and closed, using the same visual toggle behavior as the wrap button: inactive white button with black icon, active black button with inverted white icon.
-
-The per-view menu state should be shared across Activity Bar views. If the menu is open in one view, switching to another view keeps the menu open and shows that view's available tools. Move the Details `wrap.svg` control into this menu instead of placing it directly in the header.
-
-## TODO - Generic GeoJSON Map Rendering
-
-Add generic GeoJSON map rendering for `Point`, `MultiPoint`, `LineString`, `MultiLineString`, `Polygon`, and `MultiPolygon`.
-
 ## TODO - JSON Crack Graph View Tab
 
 Add a `jsoncrack-react` graph-view tab in the central editor panel, opened like a VS Code-style tab, for visualizing JSON records as an interactive graph.
-
-## TODO - JSON Node Action Placement
-
-Make map action buttons appear beside the exact supported JSON node: geometry objects, Feature objects, FeatureCollections, and supported file URL values.
-
-## TODO - Preserve Expanded JSON Nodes
-
-Preserve expanded JSON-node state when any inline action is clicked.
-
-## TODO - Copied Path Affordance
-
-Add a small copied-path affordance after right-click path copy, such as a short inline "Copied" status.
 
 ## TODO - Dataset Output Variable Inspector
 
@@ -121,6 +92,10 @@ Decide whether dataset output variables should be persisted in a shared visible 
 
 Wire the right agent panel to Gemini later. Initial behavior should send the user message plus current query records when `Attach context` is active.
 
-## TODO - In-App Dataset Source Editing
+## TODO - Postman-Style Query Param Sync
 
-Eventually replace manual `datasets.json` editing with an in-app add/edit/save source flow backed by a server.
+Sync Source Query URL parameters and Input Params in both directions, similar to Postman, while keeping variable references in Input Params instead of requiring `{{variable}}` syntax directly in the URL.
+
+## TODO - Safe Formula Authoring
+
+Allow users or the agent to create new formulas through a constrained, validated configuration flow that avoids arbitrary code execution and code injection.

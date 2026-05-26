@@ -4,7 +4,6 @@ import { getSearchResultCoordinates } from "./pluto.js";
 let selectedPlace;
 
 export function createPlaceSearchBox(map, onRetrieve) {
-  console.log("DEBUG")
   if (isDevModeEnabled()) {
     return createSeedSearchBox(map, onRetrieve);
   }

@@ -1,0 +1,67 @@
+[
+    {
+        "id": "mappluto",
+        "name": "MAPPLUTO",
+        "description": "Tax lot polygons and attributes from NYC Planning.",
+        "type": "arcgis-feature-layer",
+        "method": "GET",
+        "overviewUrl": "https://services5.arcgis.com/GfwWNkhOj9bNBqoJ/arcgis/rest/services/MAPPLUTO/FeatureServer/0",
+        "queryUrl": "https://services5.arcgis.com/GfwWNkhOj9bNBqoJ/arcgis/rest/services/MAPPLUTO/FeatureServer/0/query?geometryType=esriGeometryPoint&inSR=4326&spatialRel=esriSpatialRelIntersects&outFields=*&returnGeometry=true&outSR=4326&f=geojson",
+        "defaultParams": [
+            {
+                "key": "geometry",
+                "value": "selectedCoordinates"
+            }
+        ],
+        "defaultOutputs": [
+            {
+                "path": "features.0.properties.Address",
+                "variable": "plutoAddress"
+            },
+            {
+                "path": "features.0.properties.BBL",
+                "variable": "plutoBbl"
+            }
+        ],
+        "mapDisplay": {
+            "supportsGeoJsonToggle": true,
+            "geometryTypes": [
+                "Polygon",
+                "MultiPolygon"
+            ]
+        },
+        "isDeleted": true
+    },
+    {
+        "id": "curb-cut-2022",
+        "name": "Curb Cut 2022",
+        "description": "Curb cut features from an ArcGIS FeatureServer layer.",
+        "type": "arcgis-feature-layer",
+        "method": "GET",
+        "overviewUrl": "https://services6.arcgis.com/yG5s3afENB5iO9fj/arcgis/rest/services/Curb_Cut_2022/FeatureServer/5",
+        "queryUrl": "https://services6.arcgis.com/yG5s3afENB5iO9fj/arcgis/rest/services/Curb_Cut_2022/FeatureServer/5/query?geometryType=esriGeometryPoint&inSR=4326&spatialRel=esriSpatialRelIntersects&outFields=*&returnGeometry=true&outSR=4326&f=geojson&distance=100&units=esriSRUnit_Meter",
+        "defaultParams": [
+            {
+                "key": "geometry",
+                "value": "selectedCoordinates"
+            }
+        ],
+        "defaultOutputs": [
+            {
+                "path": "features.0.properties",
+                "variable": "curbCutFirstProperties"
+            },
+            {
+                "path": "features.length",
+                "variable": "curbCutCount"
+            }
+        ],
+        "mapDisplay": {
+            "supportsGeoJsonToggle": true,
+            "geometryTypes": [
+                "LineString"
+            ]
+        },
+        "isDeleted": true
+    }
+]

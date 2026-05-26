@@ -1,0 +1,15 @@
+<svg width="20" height="20" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg" aria-label="return-like symbol">
+  <path
+    d="
+      M10 12
+      A4 4 0 1 1 12 10
+      M11 11
+      L15 15
+    "
+    fill="none"
+    stroke="#000000"
+    stroke-width="1.1"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+  />
+</svg>

@@ -69,34 +69,124 @@ export function buildUrlWithParams(baseUrl, params) {
 
 export async function queryUrl(url) {
   const startedAt = performance.now();
-  const response = await fetch(url);
-  const durationMs = Math.round(performance.now() - startedAt);
+  let proxyResponse;
 
-  if (!response.ok) {
-    throw new Error(`Query failed with status ${response.status}`);
+  try {
+    proxyResponse = await fetch("/api/query", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({ url })
+    });
+  } catch (error) {
+    throw createQueryError("Query proxy request failed.", {
+      url,
+      durationMs: Math.round(performance.now() - startedAt),
+      originalError: error.message
+    });
+  }
+
+  const proxyPayload = await proxyResponse.json().catch(() => null);
+
+  if (!proxyResponse.ok || !proxyPayload) {
+    throw createQueryError("Query proxy returned an invalid response.", {
+      url,
+      status: proxyResponse.status,
+      durationMs: Math.round(performance.now() - startedAt),
+      proxyPayload
+    });
+  }
+
+  const {
+    contentType = "",
+    durationMs = Math.round(performance.now() - startedAt),
+    request,
+    response,
+    responsePreview,
+    responseText,
+    responseType,
+    status,
+    statusText,
+    timestamp
+  } = proxyPayload;
+
+  if (!proxyPayload.ok) {
+    throw createQueryError(`Query failed with status ${status}`, {
+      url,
+      status,
+      statusText,
+      contentType,
+      durationMs,
+      responsePreview,
+      parseError: proxyPayload.parseError
+    });
+  }
+
+  if (!response && responseType !== "html") {
+    throw createQueryError("Query returned a non-JSON response.", {
+      url,
+      status,
+      statusText,
+      contentType,
+      durationMs,
+      responsePreview
+    });
   }
 
   return {
-    request: {
-      method: "GET",
-      url
-    },
-    response: await response.json(),
+    request,
+    response: responseType === "html" ? parseHtmlResponse(responseText) : response,
+    responseText,
+    responseType: responseType || "json",
     durationMs,
-    timestamp: new Date().toISOString()
+    timestamp
   };
+}
+
+function parseHtmlResponse(html) {
+  const document = new DOMParser().parseFromString(html || "", "text/html");
+  return {
+    type: "HTMLDocument",
+    title: document.title,
+    body: Array.from(document.body.children).map(parseHtmlElement)
+  };
+}
+
+export function parseHtmlElement(element) {
+  return {
+    tag: element.tagName.toLowerCase(),
+    text: getOwnElementText(element),
+    attributes: Object.fromEntries(Array.from(element.attributes).map((attribute) => [attribute.name, attribute.value])),
+    children: Array.from(element.children).map(parseHtmlElement)
+  };
+}
+
+function getOwnElementText(element) {
+  return Array.from(element.childNodes)
+    .filter((node) => node.nodeType === Node.TEXT_NODE)
+    .map((node) => node.textContent.trim())
+    .filter(Boolean)
+    .join(" ");
+}
+
+function createQueryError(message, details) {
+  const error = new Error(message);
+  error.details = details;
+  return error;
 }
 
 function getGeoJsonLayerIds(recordId) {
   return {
     sourceId: `${GEOJSON_LAYER_PREFIX}-${recordId}`,
+    circleLayerId: `${GEOJSON_LAYER_PREFIX}-${recordId}-circle`,
     fillLayerId: `${GEOJSON_LAYER_PREFIX}-${recordId}-fill`,
     lineLayerId: `${GEOJSON_LAYER_PREFIX}-${recordId}-line`
   };
 }
 
 function ensureGeoJsonLayers(map, recordId, geojson) {
-  const { sourceId, fillLayerId, lineLayerId } = getGeoJsonLayerIds(recordId);
+  const { sourceId, circleLayerId, fillLayerId, lineLayerId } = getGeoJsonLayerIds(recordId);
 
   if (!map.getSource(sourceId)) {
     map.addSource(sourceId, {
@@ -110,6 +200,7 @@ function ensureGeoJsonLayers(map, recordId, geojson) {
       id: fillLayerId,
       type: "fill",
       source: sourceId,
+      filter: ["any", ["==", ["geometry-type"], "Polygon"], ["==", ["geometry-type"], "MultiPolygon"]],
       paint: {
         "fill-color": "#2f6fed",
         "fill-opacity": 0.22
@@ -122,9 +213,31 @@ function ensureGeoJsonLayers(map, recordId, geojson) {
       id: lineLayerId,
       type: "line",
       source: sourceId,
+      filter: [
+        "any",
+        ["==", ["geometry-type"], "LineString"],
+        ["==", ["geometry-type"], "MultiLineString"],
+        ["==", ["geometry-type"], "Polygon"],
+        ["==", ["geometry-type"], "MultiPolygon"]
+      ],
       paint: {
         "line-color": "#1f2933",
         "line-width": 2
+      }
+    });
+  }
+
+  if (!map.getLayer(circleLayerId)) {
+    map.addLayer({
+      id: circleLayerId,
+      type: "circle",
+      source: sourceId,
+      filter: ["any", ["==", ["geometry-type"], "Point"], ["==", ["geometry-type"], "MultiPoint"]],
+      paint: {
+        "circle-color": "#2f6fed",
+        "circle-radius": 5,
+        "circle-stroke-color": "#ffffff",
+        "circle-stroke-width": 1.5
       }
     });
   }
@@ -136,7 +249,7 @@ export function showGeoJsonRecord(map, recordId, geojson) {
 }
 
 export function hideGeoJsonRecord(map, recordId) {
-  const { sourceId, fillLayerId, lineLayerId } = getGeoJsonLayerIds(recordId);
+  const { sourceId, circleLayerId, fillLayerId, lineLayerId } = getGeoJsonLayerIds(recordId);
 
   if (map.getLayer(fillLayerId)) {
     map.removeLayer(fillLayerId);
@@ -144,6 +257,10 @@ export function hideGeoJsonRecord(map, recordId) {
 
   if (map.getLayer(lineLayerId)) {
     map.removeLayer(lineLayerId);
+  }
+
+  if (map.getLayer(circleLayerId)) {
+    map.removeLayer(circleLayerId);
   }
 
   if (map.getSource(sourceId)) {
@@ -168,7 +285,7 @@ export function normalizeGeoJson(value) {
     return null;
   }
 
-  if (isPolygonGeometry(value)) {
+  if (isGeoJsonGeometry(value)) {
     return {
       type: "Feature",
       properties: {},
@@ -176,7 +293,7 @@ export function normalizeGeoJson(value) {
     };
   }
 
-  if (value.type === "Feature" && isPolygonFeature(value)) {
+  if (value.type === "Feature" && isGeoJsonFeature(value)) {
     return value;
   }
 
@@ -184,12 +301,12 @@ export function normalizeGeoJson(value) {
     value.type === "FeatureCollection" &&
     Array.isArray(value.features) &&
     value.features.length > 0 &&
-    value.features.every(isPolygonFeature)
+    value.features.every(isGeoJsonFeature)
   ) {
     return value;
   }
 
-  if (Array.isArray(value) && value.every(isPolygonFeature)) {
+  if (Array.isArray(value) && value.length > 0 && value.every(isGeoJsonFeature)) {
     return {
       type: "FeatureCollection",
       features: value
@@ -199,19 +316,26 @@ export function normalizeGeoJson(value) {
   return null;
 }
 
-function isPolygonFeature(feature) {
+function isGeoJsonFeature(feature) {
   return Boolean(
     feature &&
     feature.type === "Feature" &&
     feature.geometry &&
-    (feature.geometry.type === "Polygon" || feature.geometry.type === "MultiPolygon")
+    isGeoJsonGeometry(feature.geometry)
   );
 }
 
-function isPolygonGeometry(geometry) {
+function isGeoJsonGeometry(geometry) {
   return Boolean(
     geometry &&
-    (geometry.type === "Polygon" || geometry.type === "MultiPolygon") &&
+    (
+      geometry.type === "Point" ||
+      geometry.type === "MultiPoint" ||
+      geometry.type === "LineString" ||
+      geometry.type === "MultiLineString" ||
+      geometry.type === "Polygon" ||
+      geometry.type === "MultiPolygon"
+    ) &&
     Array.isArray(geometry.coordinates)
   );
 }

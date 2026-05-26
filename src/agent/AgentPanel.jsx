@@ -1,6 +1,6 @@
 export function AgentPanel() {
   return (
-    <aside className="agent-panel" aria-label="Agent chat">
+    <aside className="agent-panel" aria-label="Secondary Side Bar">
       <header className="panel-header">
         <span className="panel-kicker">Agent</span>
         <strong className="panel-title">Gemini</strong>

@@ -15,17 +15,24 @@
     ],
     "defaultOutputs": [
       {
-        "path": "features.0.properties.Address",
-        "variable": "plutoAddress"
+        "variable": "plutoAddress",
+        "path": "features.0.properties.Address"
       },
       {
-        "path": "features.0.properties.BBL",
-        "variable": "plutoBbl"
+        "variable": "plutoBbl",
+        "path": "features.0.properties.BBL"
+      },
+      {
+        "variable": "plutoBoroBlockLot",
+        "path": "splitBBL(plutoBbl)"
       }
     ],
     "mapDisplay": {
       "supportsGeoJsonToggle": true,
-      "geometryTypes": ["Polygon", "MultiPolygon"]
+      "geometryTypes": [
+        "Polygon",
+        "MultiPolygon"
+      ]
     }
   },
   {
@@ -44,17 +51,65 @@
     ],
     "defaultOutputs": [
       {
-        "path": "features.0.properties",
-        "variable": "curbCutFirstProperties"
+        "variable": "curbCutFirstProperties",
+        "path": "features.0.properties"
       },
       {
-        "path": "features.length",
-        "variable": "curbCutCount"
+        "variable": "curbCutCount",
+        "path": "features.length"
       }
     ],
     "mapDisplay": {
       "supportsGeoJsonToggle": true,
-      "geometryTypes": ["Point"]
+      "geometryTypes": [
+        "LineString"
+      ]
     }
+  },
+  {
+    "id": "source-mpmyo01p",
+    "name": "Richmond County Clerk",
+    "description": "Search documents in Richmond County Clerk office.",
+    "type": "arcgis-feature-layer",
+    "method": "GET",
+    "overviewUrl": "",
+    "queryUrl": "https://www.richmondcountyclerk.com/Search/ShowResultsBlocks",
+    "defaultParams": [
+      {
+        "key": "Block",
+        "value": "plutoBoroBlockLot.block"
+      },
+      {
+        "key": "Lot",
+        "value": "plutoBoroBlockLot.lot"
+      }
+    ],
+    "defaultOutputs": [
+      {
+        "variable": "landDocTable",
+        "path": "table"
+      },
+      {
+        "variable": "landDocArray",
+        "path": "tableToJson(landDocTable)"
+      }
+    ]
+  },
+  {
+    "id": "source-mpn3uswb",
+    "name": "Land Documents",
+    "description": "Richmond County Clerk Land Documents",
+    "type": "arcgis-feature-layer",
+    "queryType": "pdf",
+    "method": "GET",
+    "overviewUrl": "",
+    "queryUrl": "https://www.richmondcountyclerk.com/ViewVscmsDocument/ViewContent",
+    "defaultParams": [
+      {
+        "key": "p_endorsementId",
+        "value": "landDocArray.*.NUMBER"
+      }
+    ],
+    "defaultOutputs": []
   }
 ]

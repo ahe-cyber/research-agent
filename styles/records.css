@@ -12,10 +12,8 @@
 }
 
 .record-summary {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 4px;
+  display: grid;
+  gap: 8px;
   cursor: pointer;
   padding: 10px;
 }
@@ -34,6 +32,20 @@
 .record-summary span {
   color: #526070;
   font-size: 12px;
+}
+
+.record-action-footer {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  border-top: 1px solid #e5e8ec;
+  margin: 2px -10px -10px;
+  padding: 8px 10px;
+  background: #fbfcfd;
+}
+
+.record-action-footer[hidden] {
+  display: none;
 }
 
 .record-body {
@@ -94,7 +106,7 @@
 }
 
 .json-geo-action.is-partially-visible::after {
-  opacity: 0.5;
+  opacity: 0.25;
 }
 
 .json-geo-action:hover {
@@ -199,6 +211,14 @@
   overflow-wrap: anywhere;
 }
 
+.html-tag-value {
+  color: #0d7669;
+}
+
+.html-text-value {
+  color: #526070;
+}
+
 .json-file-action {
   position: relative;
   flex: 0 0 auto;
@@ -232,27 +252,50 @@
 .json-file-action::before {
   content: "";
   position: absolute;
-  top: 5px;
-  left: 6px;
-  width: 10px;
-  height: 13px;
-  border: 2px solid #526070;
-  border-radius: 1px;
+  inset: 3px;
+  background: #000000;
+  mask: center / contain no-repeat url("/resources/document.svg");
+  -webkit-mask: center / contain no-repeat url("/resources/document.svg");
 }
 
 .json-file-action::after {
-  content: "";
-  position: absolute;
-  top: 5px;
-  left: 14px;
-  width: 5px;
-  height: 5px;
-  border-left: 2px solid #526070;
-  border-bottom: 2px solid #526070;
-  background: #ffffff;
+  content: none;
 }
 
 .json-file-action:hover {
+  background: #f7f8fa;
+}
+
+.json-table-action {
+  position: relative;
+  flex: 0 0 auto;
+  width: 24px;
+  height: 24px;
+  border: 1px solid #d6d9de;
+  border-radius: 4px;
+  background: #ffffff;
+  cursor: pointer;
+}
+
+.json-table-action::before {
+  content: "";
+  position: absolute;
+  inset: 3px;
+  background: #1f2933;
+  mask: center / contain no-repeat url("/resources/table.svg");
+  -webkit-mask: center / contain no-repeat url("/resources/table.svg");
+}
+
+.json-table-action.is-active {
+  background: #1f2933;
+  border-color: #1f2933;
+}
+
+.json-table-action.is-active::before {
+  background: #ffffff;
+}
+
+.json-table-action:hover:not(.is-active) {
   background: #f7f8fa;
 }
 

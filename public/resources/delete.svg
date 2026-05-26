@@ -1,0 +1,17 @@
+<svg width="20" height="20" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg" aria-label="return-like symbol">
+  <path
+    d="
+      M6 8
+      V15 H14 V8
+      M5 6 H15
+      M8.5 8 V13
+      M11.5 8 V13
+      M8.5 4 H11.5
+    "
+    fill="none"
+    stroke="#000000"
+    stroke-width="1.1"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+  />
+</svg>

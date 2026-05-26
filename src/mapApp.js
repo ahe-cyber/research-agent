@@ -2,8 +2,9 @@ import { createAgentController } from "./agent/AgentPanel.jsx";
 import { createMap } from "./map/map.js";
 import { createPlaceSearchBox } from "./map/search.js";
 import { createAddressController } from "./workspace/AddressTab.jsx";
-import { createAssetController } from "./workspace/AssetsTab.jsx";
 import { createRecordController, createRecordStore } from "./workspace/DetailsTab.jsx";
+import { createEditorTabController } from "./workspace/EditorTabs.js";
+import { createFormulaController } from "./workspace/FormulasTab.jsx";
 import { createSourceController } from "./workspace/SourcesTab.jsx";
 
 let sourceController;
@@ -37,10 +38,11 @@ export async function initializeMapApp() {
   }
 
   const recordStore = createRecordStore();
-  const assetController = createAssetController();
-  recordController = createRecordController(recordStore, assetController, map);
+  const formulaController = createFormulaController();
+  const editorTabController = createEditorTabController();
+  recordController = createRecordController(recordStore, map, editorTabController);
   addressController = createAddressController();
-  sourceController = createSourceController(recordController);
+  sourceController = createSourceController(recordController, formulaController, editorTabController);
   createAgentController(recordStore);
 
   const searchBox = createPlaceSearchBox(map, handlePlaceRetrieved);
