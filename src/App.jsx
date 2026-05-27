@@ -63,6 +63,14 @@ export default function App() {
             hidden={activeTab !== "details"}
           />
           <button
+            className="section-tool-button cloud-collections-button"
+            type="button"
+            id="postmanCollectionsButton"
+            aria-label="Postman collections"
+            title="Postman collections"
+            hidden={activeTab !== "sources"}
+          />
+          <button
             className="section-tool-button edit-sources-button"
             type="button"
             id="editSourcesButton"

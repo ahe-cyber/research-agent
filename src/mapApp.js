@@ -5,17 +5,19 @@ import { createAddressController } from "./workspace/AddressTab.jsx";
 import { createRecordController, createRecordStore } from "./workspace/DetailsTab.jsx";
 import { createEditorTabController } from "./workspace/EditorTabs.js";
 import { createFormulaController } from "./workspace/FormulasTab.jsx";
+import { createPostmanController } from "./workspace/PostmanTab.js";
 import { createSourceController } from "./workspace/SourcesTab.jsx";
 
 let sourceController;
 let recordController;
 let addressController;
+let agentController;
 
 async function handlePlaceRetrieved(searchResult) {
   addressController.add(searchResult);
   const outputVariables = sourceController.assignMapboxSearchOutputs(searchResult);
 
-  recordController.add({
+  const record = recordController.add({
     kind: "Search",
     title: "Mapbox search result",
     response: searchResult,
@@ -25,6 +27,8 @@ async function handlePlaceRetrieved(searchResult) {
       outputVariables
     }
   });
+
+  agentController.attachRecord(record);
 }
 
 export async function initializeMapApp() {
@@ -42,10 +46,10 @@ export async function initializeMapApp() {
   const editorTabController = createEditorTabController();
   recordController = createRecordController(recordStore, map, editorTabController);
   addressController = createAddressController();
-  sourceController = createSourceController(recordController, formulaController, editorTabController);
-  createAgentController(recordStore);
+  agentController = createAgentController();
+  sourceController = createSourceController(recordController, formulaController, editorTabController, agentController);
+  createPostmanController(editorTabController);
 
   const searchBox = createPlaceSearchBox(map, handlePlaceRetrieved);
-
   searchBoxContainer.appendChild(searchBox);
 }

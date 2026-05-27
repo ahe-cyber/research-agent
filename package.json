@@ -8,9 +8,9 @@
   "dependencies": {
     "@vitejs/plugin-react": "latest",
     "express": "latest",
-    "vite": "latest",
+    "postman-cli": "^1.38.0",
     "react": "latest",
-    "react-dom": "latest"
-  },
-  "devDependencies": {}
+    "react-dom": "latest",
+    "vite": "latest"
+  }
 }

@@ -1,7 +1,40 @@
 .agent-panel {
   display: grid;
-  grid-template-rows: auto 1fr auto;
+  grid-template-rows: auto auto 1fr auto;
   height: 100vh;
+}
+
+/* Explicit row placement so display:none on the toolbar
+   doesn't cause remaining items to shift into wrong tracks */
+.panel-header            { grid-row: 1; }
+.agent-instruction-toolbar { grid-row: 2; }
+.agent-thread            { grid-row: 3; }
+.agent-composer          { grid-row: 4; }
+
+.agent-instruction-toolbar {
+  display: grid;
+  gap: 6px;
+  border-bottom: 1px solid #e5e8ec;
+  background: #fcfdfe;
+  padding: 10px 14px;
+}
+
+.agent-instruction-toolbar[hidden] {
+  display: none;
+}
+
+.agent-instruction-input {
+  width: 100%;
+  box-sizing: border-box;
+  min-height: 90px;
+  resize: vertical;
+  border: 1px solid #c9ced6;
+  border-radius: 4px;
+  padding: 8px 10px;
+  color: #1f2933;
+  font: inherit;
+  font-size: 12px;
+  line-height: 1.45;
 }
 
 .agent-thread {
@@ -31,6 +64,44 @@
   color: #526070;
 }
 
+.agent-message-assistant {
+  border-left: 3px solid #c8e6c9;
+}
+
+.agent-message-error {
+  background: #fff5f5;
+  border-color: #f5c6cb;
+  color: #721c24;
+}
+
+/* Attachment badges in a sent message */
+.agent-message-attachments {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-bottom: 7px;
+}
+
+.agent-message-attachment {
+  display: inline-flex;
+  align-items: center;
+  border: 1px solid #c6d8ff;
+  border-radius: 4px;
+  background: #dceaff;
+  padding: 2px 7px;
+  color: #1f3c7a;
+  font-size: 11px;
+  font-weight: 600;
+  max-width: 160px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.agent-message-text {
+  margin: 0;
+}
+
 .agent-composer {
   display: grid;
   gap: 8px;
@@ -38,17 +109,78 @@
   padding: 12px;
 }
 
-.context-button {
-  justify-self: start;
+/* ── Attachment bar ───────────────────────────────────────────────────────── */
+
+.agent-attachments {
+  display: flex;
+  align-items: center;
+  gap: 6px;
   min-height: 30px;
-  padding: 0 10px;
-  font-size: 12px;
+  overflow-x: auto;
+  scrollbar-width: none;
 }
 
-.context-button.is-active {
-  border-color: #2f6fed;
-  background: #eef4ff;
+.agent-attachments::-webkit-scrollbar {
+  display: none;
 }
+
+.agent-attachment-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  flex: 0 0 auto;
+  border: 1px solid #c6d8ff;
+  border-radius: 4px;
+  background: #eef4ff;
+  padding: 4px 4px 4px 8px;
+  max-width: 180px;
+}
+
+.agent-attachment-chip.is-error {
+  border-color: #e0a0a0;
+  background: #fff0f0;
+}
+
+.agent-attachment-chip.is-error .agent-attachment-label {
+  color: #8a3d3d;
+}
+
+.agent-attachment-label {
+  color: #2f52a0;
+  font-size: 11px;
+  font-weight: 600;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  min-width: 0;
+}
+
+.agent-attachment-remove {
+  position: relative;
+  flex: 0 0 auto;
+  width: 16px;
+  height: 16px;
+  border: none;
+  border-radius: 3px;
+  background: transparent;
+  cursor: pointer;
+  padding: 0;
+}
+
+.agent-attachment-remove::before {
+  content: "";
+  position: absolute;
+  inset: 3px;
+  background: #526070;
+  mask: center / contain no-repeat url("/resources/close.svg");
+  -webkit-mask: center / contain no-repeat url("/resources/close.svg");
+}
+
+.agent-attachment-remove:hover {
+  background: #d4e3ff;
+}
+
+/* ── Input & send ────────────────────────────────────────────────────────── */
 
 .agent-input {
   width: 100%;

@@ -303,7 +303,8 @@ function createRecordActionFooter(record, onToggleGeoJson, editorTabController) 
     });
 
     (record.payload?.pdfUrls || []).forEach(({ url, label }) => {
-      footer.appendChild(createFileActionButton(label, (event) => {
+      const tabId = `pdf::${url}`;
+      footer.appendChild(createFileActionButton(label, tabId, (event) => {
         event.preventDefault();
         event.stopPropagation();
         editorTabController.openPdfTab(url, label);
@@ -381,6 +382,7 @@ function renderJsonNode(key, value, record, onToggleGeoJson, editorTabController
     summary.appendChild(renderJsonLabel(key, Array.isArray(value) ? "Array" : "Object", toDisplayPath(path), value));
     appendGeoJsonAction(summary, value, record, onToggleGeoJson, path);
     appendTableAction(summary, value, record, editorTabController);
+    appendDocumentAction(summary, value, editorTabController);
     details.appendChild(summary);
 
     Object.entries(value).forEach(([childKey, childValue]) => {
@@ -533,6 +535,26 @@ function appendTableAction(parent, value, record, editorTabController) {
   }));
 }
 
+function appendDocumentAction(parent, value, editorTabController) {
+  if (!editorTabController) return;
+
+  const docElement = normalizeDocumentElement(value);
+  if (!docElement) return;
+
+  const tabId = `pdf::${docElement.url}`;
+  parent.appendChild(createFileActionButton(docElement.label, tabId, (event) => {
+    event.preventDefault();
+    event.stopPropagation();
+    editorTabController.openPdfTab(docElement.url, docElement.label);
+  }));
+}
+
+function normalizeDocumentElement(value) {
+  if (!value || typeof value !== "object" || Array.isArray(value)) return null;
+  if (typeof value.url === "string") return { url: value.url, label: value.label ?? value.url };
+  return null;
+}
+
 function normalizeTableElement(value) {
   if (!value || typeof value !== "object") return null;
   if (value.tag === "table") return value;
@@ -605,10 +627,11 @@ function getGeoJsonSignature(geojson) {
   return JSON.stringify(geojson);
 }
 
-function createFileActionButton(label, onClick) {
+function createFileActionButton(label, tabId, onClick) {
   const button = document.createElement("button");
   button.className = "json-file-action";
   button.type = "button";
+  if (tabId) button.dataset.tabId = tabId;
   button.setAttribute("aria-label", `Open ${label}`);
   button.title = label;
   button.addEventListener("click", onClick);

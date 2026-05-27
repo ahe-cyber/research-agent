@@ -55,7 +55,7 @@ export function createEditorTabController() {
     updateTabButtons(id, false);
 
     if (panelMap[id]) {
-      if (id === "sources-editor") {
+      if (id === "sources-editor" || id === "postman-collections") {
         panelMap[id].hidden = true;
       } else {
         panelMap[id].remove();
@@ -110,15 +110,34 @@ export function createEditorTabController() {
     activateTab(tabId);
   }
 
-  function openPdfTab(url, label) {
-    const existing = tabs.find((t) => t.url === url);
+  function openPostmanTab(postmanPanel) {
+    const tabId = "postman-collections";
 
-    if (existing) {
-      activateTab(existing.id);
+    if (tabs.find((t) => t.id === tabId)) {
+      activateTab(tabId);
       return;
     }
 
-    const tabId = `pdf-${Date.now().toString(36)}`;
+    tabs.push({ id: tabId, label: "Collections", closeable: true });
+
+    if (!panelMap[tabId]) {
+      postmanPanel.hidden = true;
+      viewport.appendChild(postmanPanel);
+      panelMap[tabId] = postmanPanel;
+    }
+
+    activateTab(tabId);
+  }
+
+  function openPdfTab(url, label) {
+    const tabId = `pdf::${url}`;
+    const existing = tabs.find((t) => t.id === tabId);
+
+    if (existing) {
+      activateTab(tabId);
+      return;
+    }
+
     tabs.push({ id: tabId, label: label || "PDF", url, closeable: true });
 
     const panel = document.createElement("div");
@@ -132,6 +151,7 @@ export function createEditorTabController() {
     viewport.appendChild(panel);
     panelMap[tabId] = panel;
 
+    updateTabButtons(tabId, true);
     activateTab(tabId);
   }
 
@@ -142,7 +162,7 @@ export function createEditorTabController() {
   }
 
   render();
-  return { openTableTab, openPdfTab, openSourcesTab };
+  return { openTableTab, openPdfTab, openSourcesTab, openPostmanTab };
 }
 
 function renderHtmlElement(element) {

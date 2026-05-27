@@ -190,6 +190,7 @@
 .editor-sources-panel {
   position: absolute;
   inset: 0;
+  overflow: hidden;
   display: flex;
   flex-direction: column;
   background: #ffffff;
@@ -210,6 +211,13 @@
 }
 
 .editor-sources-panel #sourceList {
+  flex: 1;
+  overflow-y: auto;
+  padding: 14px;
+  box-sizing: border-box;
+}
+
+.editor-sources-panel #postmanCollectionList {
   flex: 1;
   overflow-y: auto;
   padding: 14px;

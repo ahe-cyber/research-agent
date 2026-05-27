@@ -1,13 +1,32 @@
 const express = require("express");
 const fs = require("node:fs/promises");
+const fssync = require("node:fs");
 const http = require("node:http");
 const path = require("node:path");
+
+// Load .env file variables into process.env (if not already set)
+try {
+  const envContent = fssync.readFileSync(path.join(__dirname, ".env"), "utf8");
+  for (const line of envContent.split("\n")) {
+    const trimmed = line.trim();
+    if (!trimmed || trimmed.startsWith("#")) continue;
+    const eq = trimmed.indexOf("=");
+    if (eq > 0) {
+      const key = trimmed.slice(0, eq).trim();
+      const value = trimmed.slice(eq + 1).trim();
+      if (!Object.prototype.hasOwnProperty.call(process.env, key)) {
+        process.env[key] = value;
+      }
+    }
+  }
+} catch { /* .env not found or unreadable — skip */ }
 
 const app = express();
 const httpServer = http.createServer(app);
 const port = Number(process.env.PORT || 5173);
 const rootDir = __dirname;
 const datasetsPath = path.join(rootDir, "public", "resources", "datasets.json");
+const POSTMAN_API_BASE = "https://api.getpostman.com";
 
 app.use(express.json({ limit: "1mb" }));
 
@@ -93,6 +112,127 @@ app.post("/api/query", async (request, response) => {
       url: queryUrl,
       durationMs: Math.round(performance.now() - startedAt)
     });
+  }
+});
+
+app.get("/api/postman/collections", async (request, response) => {
+  const apiKey = process.env.POSTMAN_API_KEY;
+  const workspaceId = process.env.POSTMAN_WORKSPACE_ID;
+
+  if (!apiKey) {
+    response.status(503).json({ error: "POSTMAN_API_KEY is not configured." });
+    return;
+  }
+
+  const url = workspaceId
+    ? `${POSTMAN_API_BASE}/collections?workspace=${workspaceId}`
+    : `${POSTMAN_API_BASE}/collections`;
+
+  try {
+    const upstream = await fetch(url, { headers: { "X-Api-Key": apiKey } });
+    const body = await upstream.json();
+    response.status(upstream.status).json(body);
+  } catch (error) {
+    console.error("[Postman] collections list failed", error);
+    response.status(502).json({ error: "Failed to fetch Postman collections.", message: error.message });
+  }
+});
+
+app.get("/api/postman/collections/:id", async (request, response) => {
+  const apiKey = process.env.POSTMAN_API_KEY;
+
+  if (!apiKey) {
+    response.status(503).json({ error: "POSTMAN_API_KEY is not configured." });
+    return;
+  }
+
+  try {
+    const upstream = await fetch(`${POSTMAN_API_BASE}/collections/${request.params.id}`, {
+      headers: { "X-Api-Key": apiKey }
+    });
+    const body = await upstream.json();
+    response.status(upstream.status).json(body);
+  } catch (error) {
+    console.error("[Postman] collection detail failed", error);
+    response.status(502).json({ error: "Failed to fetch Postman collection.", message: error.message });
+  }
+});
+
+// ── Gemini agent ──────────────────────────────────────────────────────────────
+
+app.post("/api/agent/chat", async (request, response) => {
+  const apiKey = process.env.GEMINI_API_KEY || process.env.VITE_GEMINI_API_KEY;
+
+  if (!apiKey) {
+    response.status(503).json({ error: "GEMINI_API_KEY is not configured." });
+    return;
+  }
+
+  const { contents, systemInstruction } = request.body;
+
+  if (!Array.isArray(contents) || contents.length === 0) {
+    response.status(400).json({ error: "contents must be a non-empty array." });
+    return;
+  }
+
+  const model = "gemini-2.5-flash";
+  const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:streamGenerateContent?alt=sse&key=${encodeURIComponent(apiKey)}`;
+
+  const resolvedInstruction = (typeof systemInstruction === "string" && systemInstruction.trim())
+    ? systemInstruction.trim()
+    : "You are a GIS research assistant. Help the user analyze geographic data, property records, and datasets. Be concise and factual. When record data is provided in <context> tags, use it to answer the question.";
+
+  const geminiBody = {
+    contents,
+    systemInstruction: {
+      parts: [{ text: resolvedInstruction }]
+    },
+    generationConfig: {
+      temperature: 0.7,
+      maxOutputTokens: 2048
+    }
+  };
+
+  try {
+    const upstream = await fetch(url, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(geminiBody)
+    });
+
+    if (!upstream.ok) {
+      const errorBody = await upstream.json().catch(() => ({}));
+      response.status(upstream.status).json({
+        error: errorBody.error?.message || `Gemini API returned ${upstream.status}`
+      });
+      return;
+    }
+
+    response.setHeader("Content-Type", "text/event-stream");
+    response.setHeader("Cache-Control", "no-cache");
+    response.setHeader("Connection", "keep-alive");
+
+    const reader = upstream.body.getReader();
+    try {
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        if (!response.write(value)) {
+          await new Promise((resolve) => response.once("drain", resolve));
+        }
+      }
+    } finally {
+      reader.releaseLock();
+    }
+
+    response.end();
+  } catch (error) {
+    console.error("[Agent] Gemini request failed", error);
+    if (!response.headersSent) {
+      response.status(502).json({ error: "Failed to reach Gemini API.", message: error.message });
+    } else {
+      response.end();
+    }
   }
 });
 
