@@ -1,10 +1,10 @@
 export function AddressTab({ active }) {
   return (
     <section className={`workspace-tab${active ? " is-active" : ""}`} id="addressTab" data-tab-panel hidden={!active}>
-      <h2 className="section-title">Address</h2>
-      <label className="field-label" htmlFor="placeSearchBox">
-        Search address or place
-      </label>
+      <div className="section-title-row">
+        <h2 className="section-title">Address</h2>
+        <div id="searchSourceSelector" />
+      </div>
       <div className="search-box-shell" id="placeSearchBox" />
       <div className="address-list" id="addressList" />
     </section>

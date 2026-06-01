@@ -1,6 +1,6 @@
 import { createAgentController } from "./agent/AgentPanel.jsx";
 import { createMap } from "./map/map.js";
-import { createPlaceSearchBox } from "./map/search.js";
+import { createSearchSourceControl } from "./map/searchSource.js";
 import { createAddressController } from "./workspace/AddressTab.jsx";
 import { createAgentModulesController } from "./workspace/AgentModulesTab.jsx";
 import { createCatalogController } from "./workspace/CatalogBrowser.js";
@@ -16,13 +16,14 @@ let recordController;
 let addressController;
 let agentController;
 
-async function handlePlaceRetrieved(searchResult) {
+async function handlePlaceRetrieved(searchResult, searchSourceId) {
   addressController.add(searchResult);
   const outputVariables = sourceController.assignMapboxSearchOutputs(searchResult);
 
+  const title = searchSourceId === "geosearch" ? "NYC GeoSearch result" : "Mapbox search result";
   const record = recordController.add({
     kind: "Search",
-    title: "Mapbox search result",
+    title,
     response: searchResult,
     timestamp: new Date().toISOString(),
     payload: {
@@ -39,7 +40,7 @@ export async function initializeMapApp() {
   let map = null;
 
   try {
-    map = createMap();
+    map = await createMap();
   } catch (error) {
     console.error("[Map App] Map initialization failed; continuing without map-backed features.", error);
   }
@@ -74,6 +75,6 @@ export async function initializeMapApp() {
   agentController.setAttachmentTargetProvider(() => agentModulesController.getAttachmentTarget());
   agentController.setModulesRefresher(() => agentModulesController.reload());
 
-  const searchBox = createPlaceSearchBox(map, handlePlaceRetrieved);
-  searchBoxContainer.appendChild(searchBox);
+  const { element: selectorElement } = createSearchSourceControl(map, handlePlaceRetrieved, searchBoxContainer);
+  document.getElementById("searchSourceSelector").appendChild(selectorElement);
 }

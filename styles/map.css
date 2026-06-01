@@ -2,3 +2,59 @@
   position: absolute;
   inset: 0;
 }
+
+.basemap-ctrl {
+  position: relative;
+}
+
+.basemap-ctrl-btn {
+  display: block;
+  height: 29px;
+  padding: 0 10px;
+  border: 0;
+  border-radius: 4px;
+  background: #ffffff;
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.1), 0 2px 4px rgba(0, 0, 0, 0.12);
+  color: #1f2933;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.basemap-ctrl-btn:hover {
+  background: #f7f8fa;
+}
+
+.basemap-ctrl-menu {
+  position: absolute;
+  bottom: calc(100% + 4px);
+  left: 0;
+  background: #ffffff;
+  border-radius: 4px;
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.1), 0 4px 12px rgba(0, 0, 0, 0.15);
+  overflow: hidden;
+  min-width: 100%;
+}
+
+.basemap-ctrl-item {
+  display: block;
+  width: 100%;
+  padding: 7px 12px;
+  border: 0;
+  background: transparent;
+  color: #1f2933;
+  font-size: 12px;
+  cursor: pointer;
+  text-align: left;
+  white-space: nowrap;
+}
+
+.basemap-ctrl-item:hover {
+  background: #f0f4f8;
+}
+
+.basemap-ctrl-item.is-active {
+  color: #2f6fed;
+  font-weight: 600;
+}

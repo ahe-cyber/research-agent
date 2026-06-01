@@ -13,24 +13,91 @@ mapbox-search-box {
   margin: -1px;
 }
 
-.seed-search {
-  display: grid;
-  gap: 6px;
-  padding: 8px;
+
+/* Search source selector (next to Address heading) */
+.search-source-ctrl {
+  position: relative;
+  flex: 0 0 auto;
 }
 
-.seed-search-select {
-  min-width: 0;
-  border: 1px solid #c9ced6;
+.search-source-menu {
+  position: absolute;
+  top: calc(100% + 4px);
+  right: 0;
+  background: #ffffff;
+  border: 1px solid #d6d9de;
   border-radius: 4px;
-  padding: 7px 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+  z-index: 100;
+  overflow: hidden;
+  min-width: 100%;
+}
+
+.search-source-item {
+  display: block;
+  width: 100%;
+  padding: 7px 12px;
+  border: 0;
+  background: transparent;
+  color: #1f2933;
+  font-size: 12px;
+  cursor: pointer;
+  text-align: left;
+  white-space: nowrap;
+}
+
+.search-source-item:hover { background: #f0f4f8; }
+.search-source-item.is-active { color: #2f6fed; font-weight: 600; }
+
+/* NYC GeoSearch autocomplete */
+.geosearch {
+  position: relative;
+}
+
+.geosearch-input {
+  display: block;
+  width: 100%;
+  padding: 9px 12px;
+  border: 0;
+  background: transparent;
   color: #1f2933;
   font: inherit;
+  font-size: 14px;
+  box-sizing: border-box;
+  outline: none;
 }
 
-.seed-search-status {
+.geosearch-input::placeholder {
+  color: #a0aab4;
+}
+
+.search-box-shell:focus-within {
+  outline: 2px solid blue;
+  outline-offset: 2px;
+}
+
+.geosearch-list {
+  position: fixed;
+  background: #ffffff;
+  border: 1px solid #9ea8b5;
+  border-top: 0;
+  border-radius: 0 0 6px 6px;
+  z-index: 9999;
+  list-style: none;
   margin: 0;
-  color: #526070;
-  font-size: 12px;
-  line-height: 1.35;
+  padding: 4px 0;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  box-sizing: border-box;
+}
+
+.geosearch-item {
+  padding: 7px 12px;
+  cursor: pointer;
+  font-size: 13px;
+  color: #1f2933;
+  line-height: 1.4;
+}
+
+.geosearch-item:hover {
+  background: #f0f4f8;
 }
