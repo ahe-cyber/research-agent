@@ -217,43 +217,103 @@ const FORMULAS = [
   }
 ];
 
+function normalizeToolDeclarations(declarations) {
+  return declarations.map(({ name, description, parameters }) => {
+    const props = parameters?.properties ?? {};
+    const required = parameters?.required ?? [];
+    const params = Object.entries(props).map(([pname, pdef]) => ({
+      name: pname,
+      type: (pdef.type ?? "string").toLowerCase(),
+      required: required.includes(pname),
+      description: pdef.description ?? ""
+    }));
+    return { name, description, params };
+  });
+}
+
 export function FormulasTab({ active }) {
   return (
     <section className={`workspace-tab${active ? " is-active" : ""}`} id="formulasTab" data-tab-panel hidden={!active}>
-      <h2 className="section-title">Formulas</h2>
+      <h2 className="section-title">Agent Tools</h2>
       <div className="formula-list" id="formulaList" />
     </section>
   );
 }
 
-export function createFormulaController() {
+export function createFormulaController(getAgentController = () => null) {
   const formulaList = document.getElementById("formulaList");
   const formulas = Object.fromEntries(FORMULAS.map((formula) => [formula.name, formula]));
 
-  render();
+  let tools = [];
+
+  (async () => {
+    try {
+      const res = await fetch("/api/tools");
+      if (res.ok) tools = normalizeToolDeclarations(await res.json());
+    } catch { /* keep empty */ }
+    render();
+  })();
 
   function render() {
     formulaList.replaceChildren();
 
-    FORMULAS.forEach((formula) => {
-      const item = document.createElement("details");
-      const summary = document.createElement("summary");
-      const text = document.createElement("div");
-      const title = document.createElement("strong");
-      const signature = document.createElement("code");
-      const description = document.createElement("span");
-      const body = document.createElement("div");
+    tools.forEach((tool) => {
+      const item = document.createElement("article");
+      item.className = "formula-item tool-card";
 
-      item.className = "formula-item";
-      summary.className = "formula-summary";
-      body.className = "formula-body";
-      title.textContent = formula.name;
-      signature.textContent = formula.signature;
-      description.textContent = formula.description;
-      text.append(title, signature, description);
-      summary.appendChild(text);
-      body.append(createFormulaTable("Inputs", formula.inputs), createFormulaTable("Outputs", formula.outputs));
-      item.append(summary, body);
+      const attachBtn = document.createElement("button");
+      attachBtn.className = "card-attach-button";
+      attachBtn.type = "button";
+      attachBtn.setAttribute("aria-label", `Suggest ${tool.name} to agent`);
+      attachBtn.title = `Suggest ${tool.name} to agent`;
+      attachBtn.addEventListener("click", () => getAgentController()?.suggestTool(tool.name));
+      item.appendChild(attachBtn);
+
+      const sig = document.createElement("div");
+      sig.className = "tool-signature";
+
+      const nameEl = document.createElement("code");
+      nameEl.className = "tool-name";
+      nameEl.textContent = tool.name;
+      sig.appendChild(nameEl);
+
+      if (tool.params.length > 0) {
+        const open = document.createElement("span");
+        open.className = "tool-paren";
+        open.textContent = "(";
+        sig.appendChild(open);
+
+        tool.params.forEach((param, i) => {
+          const paramEl = document.createElement("span");
+          paramEl.className = "tool-param";
+          paramEl.textContent = param.required ? param.name : `${param.name}?`;
+          paramEl.title = `${param.type} — ${param.description}`;
+          sig.appendChild(paramEl);
+
+          if (i < tool.params.length - 1) {
+            const sep = document.createElement("span");
+            sep.className = "tool-paren";
+            sep.textContent = ", ";
+            sig.appendChild(sep);
+          }
+        });
+
+        const close = document.createElement("span");
+        close.className = "tool-paren";
+        close.textContent = ")";
+        sig.appendChild(close);
+      } else {
+        const parens = document.createElement("span");
+        parens.className = "tool-paren";
+        parens.textContent = "()";
+        sig.appendChild(parens);
+      }
+
+      const desc = document.createElement("p");
+      desc.className = "tool-card-description";
+      desc.textContent = tool.description;
+
+      item.append(sig, desc);
       formulaList.appendChild(item);
     });
   }
@@ -267,62 +327,4 @@ export function createFormulaController() {
   }
 
   return { applyFormula, hasFormula };
-}
-
-function createFormulaTable(title, rows) {
-  const section = document.createElement("section");
-  const heading = document.createElement("h3");
-  const table = document.createElement("table");
-  const body = document.createElement("tbody");
-
-  section.className = "formula-detail-section";
-  heading.textContent = title;
-
-  rows.forEach((row) => {
-    const tableRow = document.createElement("tr");
-    const nameCell = document.createElement("td");
-    const typeCell = document.createElement("td");
-    const descriptionCell = document.createElement("td");
-
-    nameCell.textContent = row.name;
-    typeCell.textContent = row.type;
-    descriptionCell.textContent = row.description;
-    tableRow.append(nameCell, typeCell, descriptionCell);
-    body.appendChild(tableRow);
-  });
-
-  table.appendChild(body);
-  section.append(heading, table);
-  return section;
-}
-
-function getTableRowElements(tableElement) {
-  const rows = [];
-  for (const child of (tableElement.children || [])) {
-    if (child.tag === "tr") {
-      rows.push(child);
-    } else if (child.tag === "thead" || child.tag === "tbody" || child.tag === "tfoot") {
-      for (const grandchild of (child.children || [])) {
-        if (grandchild.tag === "tr") rows.push(grandchild);
-      }
-    }
-  }
-  return rows;
-}
-
-function getCellTexts(trElement) {
-  return (trElement.children || [])
-    .filter((c) => c.tag === "td" || c.tag === "th")
-    .map(getDeepText);
-}
-
-function getDeepText(element) {
-  if (!element || typeof element !== "object") return String(element ?? "");
-  const parts = [];
-  if (element.text) parts.push(element.text);
-  for (const child of (element.children || [])) {
-    const t = getDeepText(child);
-    if (t) parts.push(t);
-  }
-  return parts.join(" ").trim();
 }

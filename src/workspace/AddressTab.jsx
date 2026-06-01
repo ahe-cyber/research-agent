@@ -11,7 +11,7 @@ export function AddressTab({ active }) {
   );
 }
 
-export function createAddressController() {
+export function createAddressController({ onAddressClick } = {}) {
   const addressList = document.getElementById("addressList");
   const addresses = [];
 
@@ -34,7 +34,11 @@ export function createAddressController() {
 
     addresses.forEach((address) => {
       const item = document.createElement("article");
-      item.className = "address-item";
+      item.className = `address-item${onAddressClick ? " is-clickable" : ""}`;
+
+      if (onAddressClick) {
+        item.addEventListener("click", () => onAddressClick(address));
+      }
 
       const text = document.createElement("div");
       const title = document.createElement("strong");

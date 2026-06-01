@@ -3,6 +3,35 @@ import { buildUrlWithParams, queryUrl } from "../map/pluto.js";
 const DATASET_DRAFT_STORAGE_KEY = "research-agent.datasetSourcesDraft";
 const NEW_SOURCE_NAME = "New Source";
 const NEW_SOURCE_DESCRIPTION = "New source description";
+const DEFAULT_SUPPORTED_INPUT_PARAMS_BY_TYPE = {
+  "arcgis-feature-layer": [
+    "where",
+    "geometry",
+    "geometryType",
+    "inSR",
+    "spatialRel",
+    "outFields",
+    "returnGeometry",
+    "outSR",
+    "f",
+    "resultOffset",
+    "resultRecordCount",
+    "orderByFields",
+    "objectIds",
+    "returnDistinctValues",
+    "returnCountOnly"
+  ],
+  "socrata-dataset": [
+    "$select",
+    "$where",
+    "$order",
+    "$group",
+    "$limit",
+    "$offset",
+    "$q",
+    "$query"
+  ]
+};
 
 const BUILT_IN_SOURCES = [
   {
@@ -33,11 +62,12 @@ export function SourcesTab({ active }) {
   );
 }
 
-export function createSourceController(recordController, formulaController, editorTabController, agentController) {
+export function createSourceController(recordController, formulaController, editorTabController, agentController, onBrowseCatalogs = () => {}) {
   const variables = {};
   const sourceElements = {};
   const compactSourceList = document.getElementById("sourcesCompact");
   const editSourcesButton = document.getElementById("editSourcesButton");
+  const browseCatalogsButton = document.getElementById("browseCatalogsButton");
 
   const sourceList = document.createElement("div");
   sourceList.id = "sourceList";
@@ -73,14 +103,17 @@ export function createSourceController(recordController, formulaController, edit
 
   let datasetSources = [];
   let sourceIdToOpen = "";
+  let supportedInputParamsByType = { ...DEFAULT_SUPPORTED_INPUT_PARAMS_BY_TYPE };
 
   renderSources(BUILT_IN_SOURCES);
   renderCompactSources(BUILT_IN_SOURCES);
   loadDatasetSources();
+  loadSupportedInputParams();
   addDatasetSourceButton.addEventListener("click", addDatasetSource);
   saveDatasetsButton.addEventListener("click", saveDatasetSources);
   discardDatasetsButton.addEventListener("click", discardDatasetSourceChanges);
   editSourcesButton.addEventListener("click", () => editorTabController.openSourcesTab(editorPanel));
+  browseCatalogsButton.addEventListener("click", () => onBrowseCatalogs());
 
   function renderSources(sources) {
     sources.forEach((source) => {
@@ -113,6 +146,9 @@ export function createSourceController(recordController, formulaController, edit
     const title = document.createElement("strong");
     const description = document.createElement("span");
     const varFooter = createSourceVariableFooter(source);
+    const attachButton = createAttachButton(`Attach ${getSourceDisplayName(source)} to chat`, () => {
+      agentController?.attachRecord(createSourceAttachment(source));
+    });
 
     card.className = "source-compact-card";
     summaryEl.className = "source-compact-summary";
@@ -155,7 +191,7 @@ export function createSourceController(recordController, formulaController, edit
       }
     }
 
-    summaryEl.appendChild(summaryContent);
+    summaryEl.append(attachButton, summaryContent);
     card.append(summaryEl, varFooter);
     return card;
   }
@@ -215,6 +251,7 @@ export function createSourceController(recordController, formulaController, edit
 
       datasetSources = serializedSources;
       localStorage.removeItem(DATASET_DRAFT_STORAGE_KEY);
+      redrawDatasetSources();
     } catch (error) {
       console.error(error);
     } finally {
@@ -389,6 +426,9 @@ export function createSourceController(recordController, formulaController, edit
     const body = document.createElement("div");
     const outputGrid = createGrid("Variable", "Path");
     const variableFooter = createSourceVariableFooter(source);
+    const attachButton = createAttachButton(`Attach ${getSourceDisplayName(source)} to chat`, () => {
+      agentController?.attachRecord(createSourceAttachment(source));
+    });
     const saveSourceDraft = source.type === "mapbox-search" ? () => {} : saveDatasetDraft;
     const refreshSourceFooter = () => updateSourceVariableFooter(variableFooter, source, paramsGrid && paramsGrid.rows, outputGrid.rows);
     const onSourceChange = () => {
@@ -475,8 +515,8 @@ export function createSourceController(recordController, formulaController, edit
       const syncButton = document.createElement("button");
       syncButton.className = "circle-icon-button sync-source-button source-editor-delete-button";
       syncButton.type = "button";
-      syncButton.setAttribute("aria-label", `Sync ${source.name} from ArcGIS layer`);
-      syncButton.title = "Pull fields from ArcGIS layer (Overview URL)";
+      syncButton.setAttribute("aria-label", `Sync ${source.name} metadata`);
+      syncButton.title = "Pull fields and defaults from the source URL";
 
       syncButton.addEventListener("click", async (event) => {
         event.preventDefault();
@@ -489,51 +529,25 @@ export function createSourceController(recordController, formulaController, edit
         syncButton.classList.remove("is-success", "is-error");
 
         try {
-          const result = await queryUrl(`${url}?f=pjson`);
+          const synced = isSocrataSourceUrl(url)
+            ? await syncSocrataSource(url)
+            : await syncArcGISSource(url);
 
-          if (!result.response?.fields) {
-            console.warn("[Sync] Unexpected response — no fields array", result);
-            syncButton.classList.add("is-error");
-            return;
-          }
-
-          const layerInfo = result.response;
-          const fields = layerInfo.fields;
-
-          // Name
-          if (layerInfo.name) {
-            titleInput.value = layerInfo.name;
-            title.textContent = layerInfo.name;
-            source.name = layerInfo.name;
-          }
-
-          // Description (strip HTML tags ArcGIS sometimes includes)
-          const rawDesc = typeof layerInfo.description === "string" ? layerInfo.description : "";
-          const cleanDesc = rawDesc.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim();
-          if (cleanDesc) {
-            descriptionInput.value = cleanDesc;
-            description.textContent = cleanDesc;
-            source.description = cleanDesc;
-          }
-
-          // Standard ArcGIS query params
-          if (paramsGrid) {
-            paramsGrid.rows.replaceChildren();
-            [
-              ["geometry",       "{{selectedCoordinates}}"],
-              ["geometryType",   "esriGeometryPoint"],
-              ["inSR",           "4326"],
-              ["spatialRel",     "esriSpatialRelIntersects"],
-              ["outFields",      "*"],
-              ["returnGeometry", "true"],
-              ["outSR",          "4326"],
-              ["f",              "geojson"],
-            ].forEach(([k, v]) => appendParamRow(paramsGrid.rows, k, v, onSourceChange, getLayerFields));
-          }
-
-          // Store and display layer fields
-          source.layerFields = fields;
-          if (layerFieldsContainer) renderLayerFields(layerFieldsContainer, fields, onFieldClick);
+          applySyncedSourceMetadata({
+            synced,
+            source,
+            title,
+            titleInput,
+            description,
+            descriptionInput,
+            paramsGrid,
+            outputGrid,
+            overviewUrlInput,
+            layerFieldsContainer,
+            onSourceChange,
+            getLayerFields,
+            onFieldClick
+          });
 
           onSourceChange();
           syncButton.classList.add("is-success");
@@ -556,19 +570,18 @@ export function createSourceController(recordController, formulaController, edit
 
     summaryMain.appendChild(closeButton);
     summaryContent.append(summaryMain, variableFooter);
-    summary.appendChild(summaryContent);
+    summary.append(attachButton, summaryContent);
 
     if (source.note) {
       body.appendChild(createNote(source.note));
     }
 
-    let queryUrlInput = null;
     let overviewUrlInput = null;
     let paramsGrid = null;
     let layerFieldsContainer = null;
     const getLayerFields = () => source.layerFields || [];
     const onFieldClick = (field) => {
-      appendSourceRow(outputGrid.rows, "", `features.0.properties.${field.name}`, onSourceChange);
+      appendSourceRow(outputGrid.rows, "", defaultOutputPathForField(source, field), onSourceChange);
       onSourceChange();
     };
 
@@ -577,7 +590,11 @@ export function createSourceController(recordController, formulaController, edit
       overviewUrlInput.className = "source-url-input";
       overviewUrlInput.type = "text";
       overviewUrlInput.value = source.overviewUrl || "";
-      overviewUrlInput.addEventListener("input", onSourceChange);
+      overviewUrlInput.addEventListener("input", () => {
+        source.overviewUrl = overviewUrlInput.value.trim();
+        source.type = inferDatasetSourceType(source.overviewUrl, source.type);
+        onSourceChange();
+      });
 
       body.append(createFieldGroup("Source URL", overviewUrlInput));
 
@@ -597,28 +614,10 @@ export function createSourceController(recordController, formulaController, edit
       });
       body.appendChild(addParamBtn);
 
-      // Available param tags — click to add a row with the key pre-filled
-      const paramTagsContainer = document.createElement("div");
-      paramTagsContainer.className = "layer-fields-tags param-hint-tags";
-
-      Object.entries(ARCGIS_QUERY_PARAM_HINTS).forEach(([key, hint]) => {
-        const tag = document.createElement("span");
-        tag.className = "layer-fields-tag layer-fields-tag--clickable";
-        tag.textContent = key;
-
-        const lines = [hint.label, hint.description];
-        if (hint.values) lines.push("Options: " + hint.values.join(", "));
-        else if (hint.example) lines.push("e.g. " + hint.example);
-        tag.title = lines.join("\n");
-
-        tag.addEventListener("click", () => {
-          appendParamRow(paramsGrid.rows, key, "", onSourceChange, getLayerFields);
-          onSourceChange();
-        });
-        paramTagsContainer.appendChild(tag);
-      });
-
-      body.appendChild(paramTagsContainer);
+      const inputTags = getSupportedInputParamsForSource(source);
+      if (inputTags.length > 0) {
+        body.appendChild(createInputParamTags(inputTags, paramsGrid.rows, onSourceChange, getLayerFields));
+      }
     }
 
     appendSection(body, "Output Settings", outputGrid);
@@ -645,19 +644,60 @@ export function createSourceController(recordController, formulaController, edit
     };
   }
 
+  async function loadSupportedInputParams() {
+    try {
+      let res = await fetch("/api/hubs");
+      if (!res.ok) {
+        res = await fetch("/resources/hubs.json");
+      }
+      if (!res.ok) return;
+      const registry = await res.json();
+      supportedInputParamsByType = Object.fromEntries(
+        Object.entries(registry).map(([type, group]) => [normalizeSourceType(type), group.supportedInputParams || []])
+      );
+      redrawDatasetSources();
+    } catch (error) {
+      console.error("[Sources] Failed to load supported input params", error);
+    }
+  }
+
+  function getSupportedInputParamsForSource(source) {
+    if (source.type === "mapbox-search") return [];
+    const type = inferDatasetSourceType(source.overviewUrl || "", source.type);
+    return supportedInputParamsByType[type] || DEFAULT_SUPPORTED_INPUT_PARAMS_BY_TYPE[type] || [];
+  }
+
+  function createSourceAttachment(source) {
+    const elements = sourceElements[source.id];
+    return {
+      id: `source-attachment-${source.id}`,
+      kind: "Source",
+      title: elements?.titleInput?.value?.trim() || getSourceDisplayName(source),
+      payload: {
+        source: {
+          ...source,
+          name: elements?.titleInput?.value?.trim() || source.name,
+          description: elements?.descriptionInput?.value?.trim() || source.description,
+          overviewUrl: elements?.overviewUrlInput?.value?.trim() || source.overviewUrl,
+          defaultParams: elements?.paramsGrid ? collectSourceRowPairs(elements.paramsGrid, "key", "value") : source.defaultParams,
+          defaultOutputs: elements?.outputsGrid ? collectSourceRowPairs(elements.outputsGrid, "variable", "path") : source.defaultOutputs,
+          layerFields: source.layerFields || []
+        }
+      }
+    };
+  }
+
   async function runDatasetSource(source) {
     const elements = sourceElements[source.id];
 
     const params = collectSourceRows(elements.paramsGrid, resolveVariableValue);
     const baseUrl = (elements.overviewUrlInput?.value?.trim() || source.overviewUrl || "").replace(/\/$/, "");
-    const url = buildUrlWithParams(`${baseUrl}/query`, params);
+    const url = buildUrlWithParams(getDatasetRequestUrl(source, baseUrl), params);
 
     try {
       updateSourceRunState(elements, "");
       const result = await queryUrl(url);
-      const outputVariables = result.responseType === "html"
-        ? collectHtmlOutputVariables(elements.outputsGrid, result.response, formulaController)
-        : collectOutputVariables(elements.outputsGrid, result.response, formulaController);
+      const outputVariables = collectOutputVariables(elements.outputsGrid, result.response, formulaController);
 
       Object.entries(outputVariables).forEach(([name, value]) => {
         setVariable(name, value);
@@ -683,7 +723,7 @@ export function createSourceController(recordController, formulaController, edit
         }
       });
       agentController?.attachRecord(storedRecord);
-      updateSourceRunState(elements, result.responseType !== "html" && hasResponseError(result.response) ? "error" : "success");
+      updateSourceRunState(elements, hasResponseError(result.response) ? "error" : "success");
     } catch (error) {
       updateSourceRunState(elements, "error");
       console.error("[Sources] Query failed", error.details || error);
@@ -691,7 +731,7 @@ export function createSourceController(recordController, formulaController, edit
   }
 
   function updateSourceRunState(elements, state) {
-    [elements.runHeaderButton, elements.runButton, elements.runCompactButton].forEach((button) => {
+    [elements.runButton, elements.runCompactButton].forEach((button) => {
       if (!button) {
         return;
       }
@@ -787,29 +827,262 @@ export function createSourceController(recordController, formulaController, edit
     }
   }
 
-  return { setVariable, assignMapboxSearchOutputs };
+  function addSourceFromCatalog(item) {
+      const source = {
+        ...createEmptyDatasetSource(),
+        name: item.title || "",
+        description: item.snippet || "",
+        type: item.portalType === "socrata" ? "socrata-dataset" : "arcgis-feature-layer",
+        overviewUrl: normalizeLayerUrl(item.url, item.portalType) || ""
+      };
+    datasetSources.push(source);
+    sourceIdToOpen = source.id;
+    saveDatasetDraft();
+    redrawDatasetSources();
+    editorTabController.openSourcesTab(editorPanel);
+  }
+
+  function normalizeLayerUrl(url, portalType) {
+    if (!url) return "";
+    if (portalType === "socrata") {
+      return normalizeSocrataResourceUrl(url) || url;
+    }
+    // ArcGIS FeatureServer roots — default to layer 0
+    if (portalType !== "socrata" && /\/FeatureServer\/?$/.test(url)) {
+      return url.replace(/\/$/, "") + "/0";
+    }
+    return url;
+  }
+
+  function getVariables() {
+    return { ...variables };
+  }
+
+  return { setVariable, assignMapboxSearchOutputs, addSourceFromCatalog, getVariables };
 }
 
-// availableVars: Map<varName, sourceName>
-// ── ArcGIS query param hints ──────────────────────────────────────────────────
+async function syncArcGISSource(url) {
+  const result = await queryUrl(`${url}?f=pjson`);
 
-const ARCGIS_QUERY_PARAM_HINTS = {
-  where:                { label: "Where Clause",            description: "SQL WHERE clause for attribute filtering.",                                           example: "1=1" },
-  geometry:             { label: "Geometry",                description: "Geometry to apply as spatial filter. For a point, provide coordinates as lng,lat.",   example: "{{selectedCoordinates}}" },
-  geometryType:         { label: "Geometry Type",           description: "Type of geometry specified by the geometry parameter.",                                values: ["esriGeometryPoint", "esriGeometryMultipoint", "esriGeometryPolyline", "esriGeometryPolygon", "esriGeometryEnvelope"] },
-  inSR:                 { label: "Input Spatial Reference", description: "WKID of the input geometry's spatial reference.",                                     example: "4326" },
-  spatialRel:           { label: "Spatial Relationship",    description: "Spatial relationship to apply between the geometry filter and each feature.",          values: ["esriSpatialRelIntersects", "esriSpatialRelContains", "esriSpatialRelWithin", "esriSpatialRelEnvelopeIntersects", "esriSpatialRelTouches", "esriSpatialRelOverlaps", "esriSpatialRelCrosses"] },
-  outFields:            { label: "Output Fields",           description: "Comma-separated field names to return. Use * for all. Layer fields listed below.",     example: "*" },
-  returnGeometry:       { label: "Return Geometry",         description: "Whether to include geometry shapes in the response.",                                  values: ["true", "false"] },
-  outSR:                { label: "Output Spatial Reference", description: "WKID for the spatial reference of returned geometries.",                              example: "4326" },
-  f:                    { label: "Response Format",         description: "Format of the API response.",                                                          values: ["geojson", "json", "pjson"] },
-  resultOffset:         { label: "Result Offset",           description: "Number of records to skip from the start (for pagination).",                           example: "0" },
-  resultRecordCount:    { label: "Result Record Count",     description: "Maximum number of features to return per request.",                                    example: "10" },
-  orderByFields:        { label: "Order By Fields",         description: "Fields to sort results by. Append ASC or DESC.",                                       example: "OBJECTID ASC" },
-  objectIds:            { label: "Object IDs",              description: "Comma-separated list of specific feature object IDs to return.",                       example: "1,2,3" },
-  returnDistinctValues: { label: "Return Distinct Values",  description: "Return only distinct values for the specified outFields.",                             values: ["true", "false"] },
-  returnCountOnly:      { label: "Return Count Only",       description: "Return only the feature count matching the query, not the features themselves.",       values: ["true", "false"] },
-};
+  if (!result.response?.fields) {
+    throw new Error("ArcGIS metadata did not include a fields array.");
+  }
+
+  const layerInfo = result.response;
+  const rawDesc = typeof layerInfo.description === "string" ? layerInfo.description : "";
+
+  return {
+    type: "arcgis-feature-layer",
+    name: layerInfo.name || "",
+    description: cleanDescription(rawDesc),
+    fields: layerInfo.fields || [],
+    params: getArcGISMetadataParams(layerInfo)
+  };
+}
+
+async function syncSocrataSource(url) {
+  const metadataUrl = getSocrataMetadataUrl(url);
+  if (!metadataUrl) {
+    throw new Error("Could not find a Socrata dataset id in the source URL.");
+  }
+
+  const result = await queryUrl(metadataUrl);
+  const metadata = result.response || {};
+  const columns = Array.isArray(metadata.columns) ? metadata.columns : [];
+  const fields = columns
+    .filter((column) => column.fieldName && !column.flags?.includes("hidden"))
+    .map((column) => ({
+      name: column.fieldName,
+      alias: column.name || column.fieldName,
+      type: column.dataTypeName || column.renderTypeName || "text",
+      description: cleanDescription(column.description || "")
+    }));
+
+  return {
+    type: "socrata-dataset",
+    overviewUrl: getSocrataResourceUrl(url) || url,
+    name: metadata.name || "",
+    description: cleanDescription(metadata.description || metadata.metadata?.custom_fields?.Description || ""),
+    fields,
+    params: getSocrataMetadataParams(metadata),
+    outputs: []
+  };
+}
+
+function applySyncedSourceMetadata({
+  synced,
+  source,
+  title,
+  titleInput,
+  description,
+  descriptionInput,
+  paramsGrid,
+  outputGrid,
+  overviewUrlInput,
+  layerFieldsContainer,
+  onSourceChange,
+  getLayerFields,
+  onFieldClick
+}) {
+  source.type = synced.type || source.type;
+
+  if (synced.overviewUrl) {
+    source.overviewUrl = synced.overviewUrl;
+    if (overviewUrlInput) overviewUrlInput.value = synced.overviewUrl;
+  }
+
+  if (synced.name) {
+    titleInput.value = synced.name;
+    title.textContent = synced.name;
+    source.name = synced.name;
+  }
+
+  if (synced.description) {
+    descriptionInput.value = synced.description;
+    description.textContent = synced.description;
+    source.description = synced.description;
+  }
+
+  if (paramsGrid && Array.isArray(synced.params) && synced.params.length > 0) {
+    paramsGrid.rows.replaceChildren();
+    synced.params.forEach(([key, value]) => appendParamRow(paramsGrid.rows, key, value, onSourceChange, getLayerFields));
+  }
+
+  if (outputGrid && Array.isArray(synced.outputs)) {
+    outputGrid.rows.replaceChildren();
+    synced.outputs.forEach(([variable, path]) => appendSourceRow(outputGrid.rows, variable, path, onSourceChange));
+  }
+
+  source.defaultParams = paramsGrid ? collectSourceRowPairs(paramsGrid.rows, "key", "value") : source.defaultParams;
+  source.defaultOutputs = outputGrid ? collectSourceRowPairs(outputGrid.rows, "variable", "path") : source.defaultOutputs;
+  source.layerFields = synced.fields || [];
+
+  if (layerFieldsContainer) renderLayerFields(layerFieldsContainer, source.layerFields, onFieldClick);
+}
+
+function getArcGISMetadataParams(layerInfo) {
+  const params = [];
+
+  if (layerInfo?.drawingInfo?.definitionExpression) {
+    params.push(["where", layerInfo.drawingInfo.definitionExpression]);
+  }
+
+  if (layerInfo?.advancedQueryCapabilities?.supportsReturningGeometry === false) {
+    params.push(["returnGeometry", "false"]);
+  }
+
+  return params;
+}
+
+function getSocrataMetadataParams(metadata) {
+  const params = [];
+  const query = metadata?.metadata?.jsonQuery || metadata?.metadata?.rowLabel;
+
+  if (query && typeof query === "object") {
+    if (query.limit) params.push(["$limit", String(query.limit)]);
+    if (query.order) params.push(["$order", String(query.order)]);
+    if (query.where) params.push(["$where", String(query.where)]);
+    if (query.select) params.push(["$select", String(query.select)]);
+  }
+
+  return params;
+}
+
+function isSocrataSourceUrl(url) {
+  try {
+    const parsed = new URL(url);
+    return /\/resource\/[a-z0-9]{4}-[a-z0-9]{4}\.json$/i.test(parsed.pathname)
+      || /\/api\/views\/[a-z0-9]{4}-[a-z0-9]{4}/i.test(parsed.pathname)
+      || /[a-z0-9]{4}-[a-z0-9]{4}/i.test(parsed.pathname);
+  } catch {
+    return false;
+  }
+}
+
+function normalizeSocrataResourceUrl(url) {
+  return getSocrataResourceUrl(url);
+}
+
+function getSocrataResourceUrl(url) {
+  const parts = getSocrataUrlParts(url);
+  return parts ? `${parts.origin}/resource/${parts.id}.json` : "";
+}
+
+function getSocrataMetadataUrl(url) {
+  const parts = getSocrataUrlParts(url);
+  return parts ? `${parts.origin}/api/views/${parts.id}.json` : "";
+}
+
+function getSocrataUrlParts(url) {
+  try {
+    const parsed = new URL(url);
+    const match = parsed.pathname.match(/([a-z0-9]{4}-[a-z0-9]{4})(?:\.json)?/i);
+    if (!match) return null;
+    return { origin: parsed.origin, id: match[1].toLowerCase() };
+  } catch {
+    return null;
+  }
+}
+
+function getDatasetRequestUrl(source, baseUrl) {
+  if (isSocrataSourceUrl(baseUrl)) {
+    return normalizeSocrataResourceUrl(baseUrl) || baseUrl;
+  }
+  return `${baseUrl}/query`;
+}
+
+function defaultOutputPathForField(source, field) {
+  return isSocrataSourceUrl(source.overviewUrl || "") || source.type === "socrata-dataset"
+    ? `0.${field.name}`
+    : `features.0.properties.${field.name}`;
+}
+
+function inferDatasetSourceType(url, fallbackType = "arcgis-feature-layer") {
+  if (!url) return normalizeSourceType(fallbackType);
+  return isSocrataSourceUrl(url) ? "socrata-dataset" : "arcgis-feature-layer";
+}
+
+function normalizeSourceType(type) {
+  if (type === "socrata" || type === "socrata-dataset") return "socrata-dataset";
+  return "arcgis-feature-layer";
+}
+
+function cleanDescription(value) {
+  return String(value || "").replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim();
+}
+
+function createAttachButton(label, onClick) {
+  const button = document.createElement("button");
+  button.className = "card-attach-button";
+  button.type = "button";
+  button.setAttribute("aria-label", label);
+  button.title = label;
+  button.addEventListener("click", (event) => {
+    event.preventDefault();
+    event.stopPropagation();
+    onClick();
+  });
+  return button;
+}
+
+function createInputParamTags(params, grid, onChange, getLayerFields) {
+  const container = document.createElement("div");
+  container.className = "layer-fields-tags param-hint-tags";
+
+  params.forEach((param) => {
+    const tag = document.createElement("button");
+    tag.className = "layer-fields-tag layer-fields-tag--clickable";
+    tag.type = "button";
+    tag.textContent = param;
+    tag.addEventListener("click", () => {
+      appendParamRow(grid, param, "", onChange, getLayerFields);
+      onChange();
+    });
+    container.appendChild(tag);
+  });
+
+  return container;
+}
 
 // ── Suggestion popover (singleton) ────────────────────────────────────────────
 
@@ -838,10 +1111,9 @@ function getSuggestionPopover() {
 }
 
 function showSuggestionPopover(valueInput, keyName, layerFields) {
-  const hint = ARCGIS_QUERY_PARAM_HINTS[keyName];
   const isOutFields = keyName === "outFields" && layerFields.length > 0;
 
-  if (!hint && !isOutFields) {
+  if (!isOutFields) {
     hideSuggestionPopover();
     return;
   }
@@ -850,64 +1122,9 @@ function showSuggestionPopover(valueInput, keyName, layerFields) {
   _suggestionActiveInput = valueInput;
   popover.replaceChildren();
 
-  if (hint) {
-    const header = document.createElement("div");
-    header.className = "param-suggestion-header";
-
-    const label = document.createElement("strong");
-    label.className = "param-suggestion-label";
-    label.textContent = hint.label;
-
-    const desc = document.createElement("span");
-    desc.className = "param-suggestion-desc";
-    desc.textContent = hint.description;
-
-    header.append(label, desc);
-    popover.appendChild(header);
-
-    if (hint.values) {
-      const opts = document.createElement("div");
-      opts.className = "param-suggestion-options";
-
-      hint.values.forEach((v) => {
-        const btn = document.createElement("button");
-        btn.className = "param-suggestion-item";
-        btn.type = "button";
-        btn.textContent = v;
-        btn.addEventListener("mousedown", (e) => {
-          e.preventDefault();
-          valueInput.value = v;
-          valueInput.dispatchEvent(new Event("input", { bubbles: true }));
-          hideSuggestionPopover();
-        });
-        opts.appendChild(btn);
-      });
-
-      popover.appendChild(opts);
-    } else if (hint.example) {
-      const ex = document.createElement("div");
-      ex.className = "param-suggestion-example";
-      ex.textContent = `e.g. ${hint.example}`;
-      popover.appendChild(ex);
-    }
-  }
-
-  // For outFields: also show layer field names as clickable toggles
   if (isOutFields) {
     const fieldOpts = document.createElement("div");
     fieldOpts.className = "param-suggestion-options";
-
-    const starBtn = document.createElement("button");
-    starBtn.className = "param-suggestion-item";
-    starBtn.type = "button";
-    starBtn.textContent = "* — all fields";
-    starBtn.addEventListener("mousedown", (e) => {
-      e.preventDefault();
-      valueInput.value = "*";
-      valueInput.dispatchEvent(new Event("input", { bubbles: true }));
-      hideSuggestionPopover();
-    });
-    fieldOpts.appendChild(starBtn);
 
     layerFields.forEach((field) => {
       const btn = document.createElement("button");
@@ -1017,15 +1234,6 @@ function renderLayerFields(container, fields, onFieldClick = null) {
 
 function formatEsriFieldType(esriType) {
   return (esriType || "").replace("esriFieldType", "");
-}
-
-// Converts a field name/alias like "Borough Block Lot" or "BBL_NUM" to camelCase.
-function fieldNameToVariable(str) {
-  return str
-    .trim()
-    .replace(/[^a-zA-Z0-9\s_]/g, "")
-    .replace(/[\s_]+(.)/g, (_, c) => c.toUpperCase())
-    .replace(/^[A-Z]/, (c) => c.toLowerCase());
 }
 
 function applyParamValueColor(input, availableVars) {
@@ -1244,155 +1452,6 @@ function collectSourceRowPairs(grid, firstKey, secondKey) {
   return rows;
 }
 
-function collectHtmlOutputVariables(grid, parsedResponse, formulaController) {
-  const inputs = Array.from(grid.querySelectorAll("input"));
-  const outputVariables = {};
-
-  for (let index = 0; index < inputs.length; index += 2) {
-    const variableName = inputs[index].value.trim();
-    const expression = inputs[index + 1].value.trim();
-
-    if (expression && variableName) {
-      outputVariables[variableName] = evaluateHtmlOutputExpression(parsedResponse, expression, formulaController, outputVariables);
-    }
-  }
-
-  return outputVariables;
-}
-
-function evaluateHtmlOutputExpression(response, expression, formulaController, computedVariables = {}) {
-  const formulaMatch = expression.match(/^([A-Za-z_$][\w$]*)\((.*)\)$/);
-
-  if (formulaMatch && formulaController?.hasFormula(formulaMatch[1])) {
-    const argExprs = parseFormulaArgs(formulaMatch[2]);
-    const argValues = argExprs.map((arg) => resolveFormulaHtmlArg(arg, response, computedVariables));
-    return formulaController.applyFormula(formulaMatch[1], argValues);
-  }
-
-  if (Object.prototype.hasOwnProperty.call(computedVariables, expression)) {
-    return computedVariables[expression];
-  }
-
-  return queryHtmlObject(response, expression);
-}
-
-function resolveFormulaHtmlArg(arg, response, computedVariables) {
-  if (arg.startsWith('"') && arg.endsWith('"') && arg.length >= 2) {
-    return arg.slice(1, -1);
-  }
-  if (/^-?\d+(\.\d+)?$/.test(arg)) {
-    return Number(arg);
-  }
-  if (Object.prototype.hasOwnProperty.call(computedVariables, arg)) {
-    return computedVariables[arg];
-  }
-  const fromComputed = getValueAtPath(computedVariables, arg);
-  if (fromComputed !== undefined) return fromComputed;
-  return queryHtmlObject(response, arg);
-}
-
-function queryHtmlObject(root, selector) {
-  const colIndexMatch = selector.match(/^(.*?)\.\*(\d+)$/);
-  if (colIndexMatch) {
-    const el = resolveHtmlSelector(root, colIndexMatch[1].trim());
-    return el?.tag === "table" ? extractTableColumn(el, parseInt(colIndexMatch[2], 10)) : null;
-  }
-
-  const colHeaderMatch = selector.match(/^(.*?)\."([^"]+)"$/);
-  if (colHeaderMatch) {
-    const el = resolveHtmlSelector(root, colHeaderMatch[1].trim());
-    return el?.tag === "table" ? extractTableColumnByHeader(el, colHeaderMatch[2]) : null;
-  }
-
-  const rowMatch = selector.match(/^(.*?)\.(\d+)$/);
-  if (rowMatch) {
-    const el = resolveHtmlSelector(root, rowMatch[1].trim());
-    return el?.tag === "table" ? extractTableRow(el, parseInt(rowMatch[2], 10)) : null;
-  }
-
-  return resolveHtmlSelector(root, selector);
-}
-
-function resolveHtmlSelector(root, selector) {
-  const s = selector.trim().toLowerCase();
-  const dotAt = s.indexOf(".");
-
-  if (dotAt === 0) {
-    const cls = s.slice(1);
-    return findHtmlNode(root, (el) => el.attributes?.class?.split(/\s+/).includes(cls));
-  }
-
-  if (s.startsWith("#")) {
-    const id = s.slice(1);
-    return findHtmlNode(root, (el) => el.attributes?.id === id);
-  }
-
-  if (dotAt > 0) {
-    const tag = s.slice(0, dotAt);
-    const cls = s.slice(dotAt + 1);
-    return findHtmlNode(root, (el) => el.tag === tag && el.attributes?.class?.split(/\s+/).includes(cls));
-  }
-
-  return findHtmlNode(root, (el) => el.tag === s);
-}
-
-function getTableRows(tableElement) {
-  const rows = [];
-  for (const child of (tableElement.children || [])) {
-    if (child.tag === "tr") {
-      rows.push(child);
-    } else if (child.tag === "thead" || child.tag === "tbody" || child.tag === "tfoot") {
-      for (const grandchild of (child.children || [])) {
-        if (grandchild.tag === "tr") rows.push(grandchild);
-      }
-    }
-  }
-  return rows;
-}
-
-function getRowCells(trElement) {
-  return (trElement.children || [])
-    .filter((c) => c.tag === "td" || c.tag === "th")
-    .map((c) => c.text || "");
-}
-
-function extractTableRow(tableElement, index) {
-  const row = getTableRows(tableElement)[index];
-  return row ? getRowCells(row) : null;
-}
-
-function extractTableColumn(tableElement, colIndex) {
-  return getTableRows(tableElement).map((row) => getRowCells(row)[colIndex] ?? "");
-}
-
-function extractTableColumnByHeader(tableElement, header) {
-  const rows = getTableRows(tableElement);
-  if (!rows.length) return null;
-  const colIndex = getRowCells(rows[0]).findIndex((h) => h.toLowerCase() === header.toLowerCase());
-  if (colIndex === -1) return null;
-  return rows.slice(1).map((row) => getRowCells(row)[colIndex] ?? "");
-}
-
-function findHtmlNode(value, predicate) {
-  if (!value || typeof value !== "object") return null;
-
-  if (value.tag !== undefined) {
-    if (predicate(value)) return value;
-    for (const child of (value.children || [])) {
-      const found = findHtmlNode(child, predicate);
-      if (found) return found;
-    }
-    return null;
-  }
-
-  const items = Array.isArray(value) ? value : Object.values(value);
-  for (const item of items) {
-    const found = findHtmlNode(item, predicate);
-    if (found) return found;
-  }
-  return null;
-}
-
 function collectOutputVariables(grid, response, formulaController) {
   const inputs = Array.from(grid.querySelectorAll("input"));
   const outputVariables = {};
@@ -1479,25 +1538,8 @@ function getValueAtPath(value, path) {
   const parts = path.split(".");
   let current = value;
 
-  for (let i = 0; i < parts.length; i++) {
-    if (current === null || current === undefined) {
-      return undefined;
-    }
-
-    const part = parts[i];
-
-    if (part === "*") {
-      if (!Array.isArray(current)) return undefined;
-      const remainingPath = parts.slice(i + 1).join(".");
-      if (!remainingPath) return current;
-      return current.map((item) => getValueAtPath(item, remainingPath));
-    }
-
-    if (/^-\d+$/.test(part) && Array.isArray(current)) {
-      current = current[current.length + parseInt(part, 10)];
-      continue;
-    }
-
+  for (const part of parts) {
+    if (current === null || current === undefined) return undefined;
     current = current[part];
   }
 

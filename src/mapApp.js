@@ -2,6 +2,8 @@ import { createAgentController } from "./agent/AgentPanel.jsx";
 import { createMap } from "./map/map.js";
 import { createPlaceSearchBox } from "./map/search.js";
 import { createAddressController } from "./workspace/AddressTab.jsx";
+import { createAgentModulesController } from "./workspace/AgentModulesTab.jsx";
+import { createCatalogController } from "./workspace/CatalogBrowser.js";
 import { createRecordController, createRecordStore } from "./workspace/DetailsTab.jsx";
 import { createEditorTabController } from "./workspace/EditorTabs.js";
 import { createFormulaController } from "./workspace/FormulasTab.jsx";
@@ -9,6 +11,7 @@ import { createPostmanController } from "./workspace/PostmanTab.js";
 import { createSourceController } from "./workspace/SourcesTab.jsx";
 
 let sourceController;
+let catalogController;
 let recordController;
 let addressController;
 let agentController;
@@ -42,13 +45,34 @@ export async function initializeMapApp() {
   }
 
   const recordStore = createRecordStore();
-  const formulaController = createFormulaController();
-  const editorTabController = createEditorTabController();
-  recordController = createRecordController(recordStore, map, editorTabController);
-  addressController = createAddressController();
+  const formulaController = createFormulaController(() => agentController);
+  const editorTabController = createEditorTabController({
+    onMapActivated: () => {
+      requestAnimationFrame(() => map?.resize?.());
+    }
+  });
+  recordController = createRecordController(recordStore, map, editorTabController, () => agentController);
+  addressController = createAddressController({
+    onAddressClick: (address) => {
+      const reportController = editorTabController.openReportTab(address);
+      agentController.setReportController(reportController);
+    }
+  });
   agentController = createAgentController();
-  sourceController = createSourceController(recordController, formulaController, editorTabController, agentController);
+  sourceController = createSourceController(
+    recordController, formulaController, editorTabController, agentController,
+    () => catalogController?.open()
+  );
+  catalogController = createCatalogController(
+    editorTabController,
+    agentController,
+    () => sourceController.getVariables(),
+    (item) => sourceController.addSourceFromCatalog(item)
+  );
   createPostmanController(editorTabController);
+  const agentModulesController = createAgentModulesController(editorTabController, agentController);
+  agentController.setAttachmentTargetProvider(() => agentModulesController.getAttachmentTarget());
+  agentController.setModulesRefresher(() => agentModulesController.reload());
 
   const searchBox = createPlaceSearchBox(map, handlePlaceRetrieved);
   searchBoxContainer.appendChild(searchBox);

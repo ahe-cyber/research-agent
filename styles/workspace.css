@@ -62,8 +62,10 @@
 .view-menu-button,
 .add-source-button,
 .edit-sources-button,
+.edit-agents-button,
 .wrap-text-button,
 .cloud-collections-button,
+.browse-catalogs-button,
 .agent-more-button {
   position: relative;
   width: 30px;
@@ -74,8 +76,10 @@
 .view-menu-button::before,
 .add-source-button::before,
 .edit-sources-button::before,
+.edit-agents-button::before,
 .wrap-text-button::before,
 .cloud-collections-button::before,
+.browse-catalogs-button::before,
 .agent-more-button::before {
   content: "";
   position: absolute;
@@ -94,6 +98,11 @@
 }
 
 .edit-sources-button::before {
+  mask: center / contain no-repeat url("/resources/edit.svg");
+  -webkit-mask: center / contain no-repeat url("/resources/edit.svg");
+}
+
+.edit-agents-button::before {
   mask: center / contain no-repeat url("/resources/edit.svg");
   -webkit-mask: center / contain no-repeat url("/resources/edit.svg");
 }
@@ -125,8 +134,10 @@
 .view-menu-button.is-active,
 .add-source-button.is-active,
 .edit-sources-button.is-active,
+.edit-agents-button.is-active,
 .wrap-text-button.is-active,
 .cloud-collections-button.is-active,
+.browse-catalogs-button.is-active,
 .agent-more-button.is-active {
   background: #000000;
 }
@@ -134,8 +145,10 @@
 .view-menu-button.is-active::before,
 .add-source-button.is-active::before,
 .edit-sources-button.is-active::before,
+.edit-agents-button.is-active::before,
 .wrap-text-button.is-active::before,
 .cloud-collections-button.is-active::before,
+.browse-catalogs-button.is-active::before,
 .agent-more-button.is-active::before {
   background: #ffffff;
 }
@@ -152,7 +165,7 @@
 .asset-list,
 .formula-list {
   display: grid;
-  gap: 8px;
+  gap: 10px;
   margin-top: 14px;
 }
 
@@ -175,10 +188,12 @@
 
 #sourcesCompact {
   display: grid;
-  gap: 6px;
+  gap: 8px;
+  padding: 8px 8px 0 0;
 }
 
 .source-compact-card {
+  position: relative;
   border: 1px solid #d6d9de;
   border-radius: 6px;
   background: #ffffff;
@@ -228,6 +243,15 @@
   justify-content: space-between;
   gap: 10px;
   padding: 10px;
+}
+
+.address-item.is-clickable {
+  cursor: pointer;
+}
+
+.address-item.is-clickable:hover {
+  background: #f0f4f8;
+  border-color: #b0bec5;
 }
 
 .formula-summary {
@@ -296,6 +320,50 @@
 .formula-detail-section td:nth-child(2) {
   color: #0b5cad;
   font-family: Consolas, "Courier New", monospace;
+}
+
+.tool-card {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  padding: 10px;
+}
+
+.tool-signature {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0;
+  font-family: Consolas, "Courier New", monospace;
+  font-size: 13px;
+}
+
+.tool-name {
+  font-weight: 700;
+  color: #0b5cad;
+}
+
+.tool-paren {
+  color: #526070;
+}
+
+.tool-param {
+  color: #6f42c1;
+  cursor: default;
+  border-bottom: 1px dotted #b8a0e0;
+}
+
+.tool-param:hover {
+  color: #4a2a90;
+  background: #f3eeff;
+  border-radius: 2px;
+}
+
+.tool-card-description {
+  margin: 0;
+  color: #526070;
+  font-size: 12px;
+  line-height: 1.45;
 }
 
 .source-editor-summary {
@@ -471,6 +539,11 @@
   -webkit-mask: center / contain no-repeat url("/resources/sync.svg");
 }
 
+.browse-catalogs-button::before {
+  mask: center / contain no-repeat url("/resources/internet.svg");
+  -webkit-mask: center / contain no-repeat url("/resources/internet.svg");
+}
+
 .sync-source-button.is-success {
   border-color: #89b896;
   background: #89b896;
@@ -491,6 +564,39 @@
 
 .circle-icon-button:hover {
   background: #f7f8fa;
+}
+
+.card-attach-button {
+  position: absolute;
+  top: -7px;
+  right: -7px;
+  z-index: 3;
+  width: 18px;
+  height: 18px;
+  border: 1px solid #c9ced6;
+  border-radius: 50%;
+  background: #ffffff;
+  box-shadow: 0 1px 4px rgba(31, 41, 51, 0.14);
+  cursor: pointer;
+  padding: 0;
+}
+
+.card-attach-button::before {
+  content: "";
+  position: absolute;
+  inset: 4.5px;
+  background: #526070;
+  mask: center / contain no-repeat url("/resources/link.svg");
+  -webkit-mask: center / contain no-repeat url("/resources/link.svg");
+}
+
+.card-attach-button:hover {
+  border-color: #2f6fed;
+  background: #eef4ff;
+}
+
+.card-attach-button:hover::before {
+  background: #2f52a0;
 }
 
 .delete-source-button:hover {
@@ -833,6 +939,11 @@
   font-size: 11px;
   font-family: Consolas, "Courier New", monospace;
   white-space: nowrap;
+}
+
+button.layer-fields-tag {
+  font: inherit;
+  font-family: Consolas, "Courier New", monospace;
 }
 
 .layer-fields-tag--clickable {

@@ -1,13 +1,15 @@
 .record-list {
   display: grid;
   gap: 10px;
+  padding: 8px 8px 0 0;
 }
 
 .record-card {
+  position: relative;
   border: 1px solid #d6d9de;
   border-radius: 6px;
   background: #ffffff;
-  overflow: hidden;
+  overflow: visible;
   min-width: 0;
 }
 

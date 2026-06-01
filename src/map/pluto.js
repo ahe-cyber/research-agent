@@ -1,5 +1,3 @@
-const MAPPLUTO_QUERY_URL = "https://services5.arcgis.com/GfwWNkhOj9bNBqoJ/arcgis/rest/services/MAPPLUTO/FeatureServer/0/query";
-const MAPPLUTO_LAYER_OVERVIEW_URL = "https://services5.arcgis.com/GfwWNkhOj9bNBqoJ/arcgis/rest/services/MAPPLUTO/FeatureServer/0";
 const GEOJSON_LAYER_PREFIX = "record-geojson";
 
 export function getSearchResultCoordinates(searchResult) {
@@ -16,43 +14,6 @@ export function getSearchResultCoordinates(searchResult) {
   }
 
   return null;
-}
-
-function buildMapPlutoCoordinateQuery(coordinates) {
-  const params = new URLSearchParams({
-    geometry: coordinates.join(","),
-    geometryType: "esriGeometryPoint",
-    inSR: "4326",
-    spatialRel: "esriSpatialRelIntersects",
-    outFields: "*",
-    returnGeometry: "true",
-    outSR: "4326",
-    f: "geojson"
-  });
-
-  return `${MAPPLUTO_QUERY_URL}?${params.toString()}`;
-}
-
-async function queryMapPlutoByCoordinates(coordinates) {
-  const startedAt = performance.now();
-  const url = buildMapPlutoCoordinateQuery(coordinates);
-  const response = await fetch(url);
-  const durationMs = Math.round(performance.now() - startedAt);
-
-  if (!response.ok) {
-    throw new Error(`MAPPLUTO query failed with status ${response.status}`);
-  }
-
-  return {
-    request: {
-      method: "GET",
-      url,
-      coordinates
-    },
-    response: await response.json(),
-    durationMs,
-    timestamp: new Date().toISOString()
-  };
 }
 
 export function buildUrlWithParams(baseUrl, params) {
@@ -105,7 +66,6 @@ export async function queryUrl(url) {
     response,
     responsePreview,
     responseText,
-    responseType,
     status,
     statusText,
     timestamp
@@ -123,7 +83,7 @@ export async function queryUrl(url) {
     });
   }
 
-  if (!response && responseType !== "html") {
+  if (!response) {
     throw createQueryError("Query returned a non-JSON response.", {
       url,
       status,
@@ -136,38 +96,11 @@ export async function queryUrl(url) {
 
   return {
     request,
-    response: responseType === "html" ? parseHtmlResponse(responseText) : response,
+    response,
     responseText,
-    responseType: responseType || "json",
     durationMs,
     timestamp
   };
-}
-
-function parseHtmlResponse(html) {
-  const document = new DOMParser().parseFromString(html || "", "text/html");
-  return {
-    type: "HTMLDocument",
-    title: document.title,
-    body: Array.from(document.body.children).map(parseHtmlElement)
-  };
-}
-
-export function parseHtmlElement(element) {
-  return {
-    tag: element.tagName.toLowerCase(),
-    text: getOwnElementText(element),
-    attributes: Object.fromEntries(Array.from(element.attributes).map((attribute) => [attribute.name, attribute.value])),
-    children: Array.from(element.children).map(parseHtmlElement)
-  };
-}
-
-function getOwnElementText(element) {
-  return Array.from(element.childNodes)
-    .filter((node) => node.nodeType === Node.TEXT_NODE)
-    .map((node) => node.textContent.trim())
-    .filter(Boolean)
-    .join(" ");
 }
 
 function createQueryError(message, details) {
@@ -266,18 +199,6 @@ export function hideGeoJsonRecord(map, recordId) {
   if (map.getSource(sourceId)) {
     map.removeSource(sourceId);
   }
-}
-
-function getFirstMapPlutoFeature(featureCollection) {
-  if (!featureCollection.features || featureCollection.features.length === 0) {
-    return null;
-  }
-
-  return featureCollection.features[0];
-}
-
-function isGeoJsonValue(value) {
-  return Boolean(normalizeGeoJson(value));
 }
 
 export function normalizeGeoJson(value) {

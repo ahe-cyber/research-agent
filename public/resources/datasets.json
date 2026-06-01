@@ -2,29 +2,61 @@
   {
     "id": "mappluto",
     "name": "MAPPLUTO",
-    "description": "Tax lot polygons and attributes from NYC Planning.",
+    "description": "This dataset represents a compilation of data from various government agencies throughout the City of New York. The underlying geography is derived from the Tax Lot Polygon feature class which is part of the Department of Finance's Digital Tax Map (DTM). The tax lots have been clipped to the shoreline, as defined by NYCMap planimetric features. The attribute information is from the Department of City Planning's PLUTO data. The attribute data pertains to tax lot and building characteristics and geographic, political and administrative information for each tax lot in New York City. The Tax Lot Polygon feature class and PLUTO are derived from different sources. As a result, some PLUTO records did not have a corresponding tax lot in the Tax Lot polygon feature class at the time of release. These records are included in a separate non-geographic PLUTO Only DBase (*.dbf) table. There are a number of reasons why there can be a tax lot in PLUTO that does not match the DTM; the most common reason is that the various source files are maintained by different departments and divisions with varying update cycles and criteria for adding and removing records. The attribute definitions for the PLUTO Only table are the same as those for MapPLUTO. DCP Mapping Lots includes some features that are not on the tax maps. They have been added by DCP for cartographic purposes. They include street center 'malls', traffic islands and some built streets through parks. These features have very few associated attributes.",
     "type": "arcgis-feature-layer",
     "method": "GET",
     "overviewUrl": "https://services5.arcgis.com/GfwWNkhOj9bNBqoJ/arcgis/rest/services/MAPPLUTO/FeatureServer/0",
-    "queryUrl": "https://services5.arcgis.com/GfwWNkhOj9bNBqoJ/arcgis/rest/services/MAPPLUTO/FeatureServer/0/query?geometryType=esriGeometryPoint&inSR=4326&spatialRel=esriSpatialRelIntersects&outFields=*&returnGeometry=true&outSR=4326&f=geojson",
+    "queryUrl": "https://services5.arcgis.com/GfwWNkhOj9bNBqoJ/arcgis/rest/services/MAPPLUTO/FeatureServer/0/query",
     "defaultParams": [
       {
         "key": "geometry",
-        "value": "selectedCoordinates"
+        "value": "{{selectedCoordinates}}"
+      },
+      {
+        "key": "geometryType",
+        "value": "esriGeometryPoint"
+      },
+      {
+        "key": "inSR",
+        "value": "4326"
+      },
+      {
+        "key": "spatialRel",
+        "value": "esriSpatialRelIntersects"
+      },
+      {
+        "key": "outFields",
+        "value": "*"
+      },
+      {
+        "key": "returnGeometry",
+        "value": "true"
+      },
+      {
+        "key": "outSR",
+        "value": "4326"
+      },
+      {
+        "key": "f",
+        "value": "geojson"
       }
     ],
     "defaultOutputs": [
       {
-        "variable": "plutoAddress",
-        "path": "features.0.properties.Address"
-      },
-      {
-        "variable": "plutoBbl",
+        "variable": "plutoBBL",
         "path": "features.0.properties.BBL"
       },
       {
-        "variable": "plutoBoroBlockLot",
-        "path": "splitBBL(plutoBbl)"
+        "variable": "plutoBoro",
+        "path": "features.0.properties.Borough"
+      },
+      {
+        "variable": "plutoBlock",
+        "path": "features.0.properties.Block"
+      },
+      {
+        "variable": "plutoLot",
+        "path": "features.0.properties.Lot"
       }
     ],
     "mapDisplay": {
@@ -33,12 +65,1096 @@
         "Polygon",
         "MultiPolygon"
       ]
-    }
+    },
+    "layerFields": [
+      {
+        "name": "OBJECTID",
+        "type": "esriFieldTypeOID",
+        "alias": "OBJECTID",
+        "sqlType": "sqlTypeOther",
+        "nullable": false,
+        "editable": false,
+        "domain": null,
+        "defaultValue": null
+      },
+      {
+        "name": "Borough",
+        "type": "esriFieldTypeString",
+        "alias": "Borough",
+        "sqlType": "sqlTypeOther",
+        "length": 2,
+        "nullable": true,
+        "editable": true,
+        "domain": null,
+        "defaultValue": null
+      },
+      {
+        "name": "Block",
+        "type": "esriFieldTypeInteger",
+        "alias": "Block",
+        "sqlType": "sqlTypeOther",
+        "nullable": true,
+        "editable": true,
+        "domain": null,
+        "defaultValue": null
+      },
+      {
+        "name": "Lot",
+        "type": "esriFieldTypeSmallInteger",
+        "alias": "Lot",
+        "sqlType": "sqlTypeOther",
+        "nullable": true,
+        "editable": true,
+        "domain": null,
+        "defaultValue": null
+      },
+      {
+        "name": "CD",
+        "type": "esriFieldTypeSmallInteger",
+        "alias": "CD",
+        "sqlType": "sqlTypeOther",
+        "nullable": true,
+        "editable": true,
+        "domain": null,
+        "defaultValue": null
+      },
+      {
+        "name": "BCT2020",
+        "type": "esriFieldTypeString",
+        "alias": "BCT2020",
+        "sqlType": "sqlTypeOther",
+        "length": 7,
+        "nullable": true,
+        "editable": true,
+        "domain": null,
+        "defaultValue": null
+      },
+      {
+        "name": "BCTCB2020",
+        "type": "esriFieldTypeString",
+        "alias": "BCTCB2020",
+        "sqlType": "sqlTypeOther",
+        "length": 11,
+        "nullable": true,
+        "editable": true,
+        "domain": null,
+        "defaultValue": null
+      },
+      {
+        "name": "CT2010",
+        "type": "esriFieldTypeString",
+        "alias": "CT2010",
+        "sqlType": "sqlTypeOther",
+        "length": 7,
+        "nullable": true,
+        "editable": true,
+        "domain": null,
+        "defaultValue": null
+      },
+      {
+        "name": "CB2010",
+        "type": "esriFieldTypeString",
+        "alias": "CB2010",
+        "sqlType": "sqlTypeOther",
+        "length": 5,
+        "nullable": true,
+        "editable": true,
+        "domain": null,
+        "defaultValue": null
+      },
+      {
+        "name": "SchoolDist",
+        "type": "esriFieldTypeString",
+        "alias": "SchoolDist",
+        "sqlType": "sqlTypeOther",
+        "length": 3,
+        "nullable": true,
+        "editable": true,
+        "domain": null,
+        "defaultValue": null
+      },
+      {
+        "name": "Council",
+        "type": "esriFieldTypeSmallInteger",
+        "alias": "Council",
+        "sqlType": "sqlTypeOther",
+        "nullable": true,
+        "editable": true,
+        "domain": null,
+        "defaultValue": null
+      },
+      {
+        "name": "ZipCode",
+        "type": "esriFieldTypeInteger",
+        "alias": "ZipCode",
+        "sqlType": "sqlTypeOther",
+        "nullable": true,
+        "editable": true,
+        "domain": null,
+        "defaultValue": null
+      },
+      {
+        "name": "FireComp",
+        "type": "esriFieldTypeString",
+        "alias": "FireComp",
+        "sqlType": "sqlTypeOther",
+        "length": 4,
+        "nullable": true,
+        "editable": true,
+        "domain": null,
+        "defaultValue": null
+      },
+      {
+        "name": "PolicePrct",
+        "type": "esriFieldTypeSmallInteger",
+        "alias": "PolicePrct",
+        "sqlType": "sqlTypeOther",
+        "nullable": true,
+        "editable": true,
+        "domain": null,
+        "defaultValue": null
+      },
+      {
+        "name": "HealthCenterDistrict",
+        "type": "esriFieldTypeSmallInteger",
+        "alias": "HealthCenterDistrict",
+        "sqlType": "sqlTypeOther",
+        "nullable": true,
+        "editable": true,
+        "domain": null,
+        "defaultValue": null
+      },
+      {
+        "name": "HealthArea",
+        "type": "esriFieldTypeSmallInteger",
+        "alias": "HealthArea",
+        "sqlType": "sqlTypeOther",
+        "nullable": true,
+        "editable": true,
+        "domain": null,
+        "defaultValue": null
+      },
+      {
+        "name": "Sanitboro",
+        "type": "esriFieldTypeString",
+        "alias": "SanitBoro",
+        "sqlType": "sqlTypeOther",
+        "length": 2,
+        "nullable": true,
+        "editable": true,
+        "domain": null,
+        "defaultValue": null
+      },
+      {
+        "name": "SanitDistrict",
+        "type": "esriFieldTypeString",
+        "alias": "SanitDistrict",
+        "sqlType": "sqlTypeOther",
+        "length": 2,
+        "nullable": true,
+        "editable": true,
+        "domain": null,
+        "defaultValue": null
+      },
+      {
+        "name": "SanitSub",
+        "type": "esriFieldTypeString",
+        "alias": "SanitSub",
+        "sqlType": "sqlTypeOther",
+        "length": 2,
+        "nullable": true,
+        "editable": true,
+        "domain": null,
+        "defaultValue": null
+      },
+      {
+        "name": "Address",
+        "type": "esriFieldTypeString",
+        "alias": "Address",
+        "sqlType": "sqlTypeOther",
+        "length": 39,
+        "nullable": true,
+        "editable": true,
+        "domain": null,
+        "defaultValue": null
+      },
+      {
+        "name": "ZoneDist1",
+        "type": "esriFieldTypeString",
+        "alias": "ZoneDist1",
+        "sqlType": "sqlTypeOther",
+        "length": 12,
+        "nullable": true,
+        "editable": true,
+        "domain": null,
+        "defaultValue": null
+      },
+      {
+        "name": "ZoneDist2",
+        "type": "esriFieldTypeString",
+        "alias": "ZoneDist2",
+        "sqlType": "sqlTypeOther",
+        "length": 12,
+        "nullable": true,
+        "editable": true,
+        "domain": null,
+        "defaultValue": null
+      },
+      {
+        "name": "ZoneDist3",
+        "type": "esriFieldTypeString",
+        "alias": "ZoneDist3",
+        "sqlType": "sqlTypeOther",
+        "length": 12,
+        "nullable": true,
+        "editable": true,
+        "domain": null,
+        "defaultValue": null
+      },
+      {
+        "name": "ZoneDist4",
+        "type": "esriFieldTypeString",
+        "alias": "ZoneDist4",
+        "sqlType": "sqlTypeOther",
+        "length": 12,
+        "nullable": true,
+        "editable": true,
+        "domain": null,
+        "defaultValue": null
+      },
+      {
+        "name": "Overlay1",
+        "type": "esriFieldTypeString",
+        "alias": "Overlay1",
+        "sqlType": "sqlTypeOther",
+        "length": 4,
+        "nullable": true,
+        "editable": true,
+        "domain": null,
+        "defaultValue": null
+      },
+      {
+        "name": "Overlay2",
+        "type": "esriFieldTypeString",
+        "alias": "Overlay2",
+        "sqlType": "sqlTypeOther",
+        "length": 4,
+        "nullable": true,
+        "editable": true,
+        "domain": null,
+        "defaultValue": null
+      },
+      {
+        "name": "SPDist1",
+        "type": "esriFieldTypeString",
+        "alias": "SPDist1",
+        "sqlType": "sqlTypeOther",
+        "length": 12,
+        "nullable": true,
+        "editable": true,
+        "domain": null,
+        "defaultValue": null
+      },
+      {
+        "name": "SPDist2",
+        "type": "esriFieldTypeString",
+        "alias": "SPDist2",
+        "sqlType": "sqlTypeOther",
+        "length": 12,
+        "nullable": true,
+        "editable": true,
+        "domain": null,
+        "defaultValue": null
+      },
+      {
+        "name": "SPDist3",
+        "type": "esriFieldTypeString",
+        "alias": "SPDist3",
+        "sqlType": "sqlTypeOther",
+        "length": 12,
+        "nullable": true,
+        "editable": true,
+        "domain": null,
+        "defaultValue": null
+      },
+      {
+        "name": "LtdHeight",
+        "type": "esriFieldTypeString",
+        "alias": "LtdHeight",
+        "sqlType": "sqlTypeOther",
+        "length": 5,
+        "nullable": true,
+        "editable": true,
+        "domain": null,
+        "defaultValue": null
+      },
+      {
+        "name": "SplitZone",
+        "type": "esriFieldTypeString",
+        "alias": "SplitZone",
+        "sqlType": "sqlTypeOther",
+        "length": 1,
+        "nullable": true,
+        "editable": true,
+        "domain": null,
+        "defaultValue": null
+      },
+      {
+        "name": "BldgClass",
+        "type": "esriFieldTypeString",
+        "alias": "BldgClass",
+        "sqlType": "sqlTypeOther",
+        "length": 2,
+        "nullable": true,
+        "editable": true,
+        "domain": null,
+        "defaultValue": null
+      },
+      {
+        "name": "LandUse",
+        "type": "esriFieldTypeString",
+        "alias": "LandUse",
+        "sqlType": "sqlTypeOther",
+        "length": 2,
+        "nullable": true,
+        "editable": true,
+        "domain": null,
+        "defaultValue": null
+      },
+      {
+        "name": "Easements",
+        "type": "esriFieldTypeSmallInteger",
+        "alias": "Easements",
+        "sqlType": "sqlTypeOther",
+        "nullable": true,
+        "editable": true,
+        "domain": null,
+        "defaultValue": null
+      },
+      {
+        "name": "OwnerType",
+        "type": "esriFieldTypeString",
+        "alias": "OwnerType",
+        "sqlType": "sqlTypeOther",
+        "length": 1,
+        "nullable": true,
+        "editable": true,
+        "domain": null,
+        "defaultValue": null
+      },
+      {
+        "name": "OwnerName",
+        "type": "esriFieldTypeString",
+        "alias": "OwnerName",
+        "sqlType": "sqlTypeOther",
+        "length": 85,
+        "nullable": true,
+        "editable": true,
+        "domain": null,
+        "defaultValue": null
+      },
+      {
+        "name": "LotArea",
+        "type": "esriFieldTypeInteger",
+        "alias": "LotArea",
+        "sqlType": "sqlTypeOther",
+        "nullable": true,
+        "editable": true,
+        "domain": null,
+        "defaultValue": null
+      },
+      {
+        "name": "BldgArea",
+        "type": "esriFieldTypeInteger",
+        "alias": "BldgArea",
+        "sqlType": "sqlTypeOther",
+        "nullable": true,
+        "editable": true,
+        "domain": null,
+        "defaultValue": null
+      },
+      {
+        "name": "ComArea",
+        "type": "esriFieldTypeInteger",
+        "alias": "ComArea",
+        "sqlType": "sqlTypeOther",
+        "nullable": true,
+        "editable": true,
+        "domain": null,
+        "defaultValue": null
+      },
+      {
+        "name": "ResArea",
+        "type": "esriFieldTypeInteger",
+        "alias": "ResArea",
+        "sqlType": "sqlTypeOther",
+        "nullable": true,
+        "editable": true,
+        "domain": null,
+        "defaultValue": null
+      },
+      {
+        "name": "OfficeArea",
+        "type": "esriFieldTypeInteger",
+        "alias": "OfficeArea",
+        "sqlType": "sqlTypeOther",
+        "nullable": true,
+        "editable": true,
+        "domain": null,
+        "defaultValue": null
+      },
+      {
+        "name": "RetailArea",
+        "type": "esriFieldTypeInteger",
+        "alias": "RetailArea",
+        "sqlType": "sqlTypeOther",
+        "nullable": true,
+        "editable": true,
+        "domain": null,
+        "defaultValue": null
+      },
+      {
+        "name": "GarageArea",
+        "type": "esriFieldTypeInteger",
+        "alias": "GarageArea",
+        "sqlType": "sqlTypeOther",
+        "nullable": true,
+        "editable": true,
+        "domain": null,
+        "defaultValue": null
+      },
+      {
+        "name": "StrgeArea",
+        "type": "esriFieldTypeInteger",
+        "alias": "StrgeArea",
+        "sqlType": "sqlTypeOther",
+        "nullable": true,
+        "editable": true,
+        "domain": null,
+        "defaultValue": null
+      },
+      {
+        "name": "FactryArea",
+        "type": "esriFieldTypeInteger",
+        "alias": "FactryArea",
+        "sqlType": "sqlTypeOther",
+        "nullable": true,
+        "editable": true,
+        "domain": null,
+        "defaultValue": null
+      },
+      {
+        "name": "OtherArea",
+        "type": "esriFieldTypeInteger",
+        "alias": "OtherArea",
+        "sqlType": "sqlTypeOther",
+        "nullable": true,
+        "editable": true,
+        "domain": null,
+        "defaultValue": null
+      },
+      {
+        "name": "AreaSource",
+        "type": "esriFieldTypeString",
+        "alias": "AreaSource",
+        "sqlType": "sqlTypeOther",
+        "length": 1,
+        "nullable": true,
+        "editable": true,
+        "domain": null,
+        "defaultValue": null
+      },
+      {
+        "name": "NumBldgs",
+        "type": "esriFieldTypeInteger",
+        "alias": "NumBldgs",
+        "sqlType": "sqlTypeOther",
+        "nullable": true,
+        "editable": true,
+        "domain": null,
+        "defaultValue": null
+      },
+      {
+        "name": "NumFloors",
+        "type": "esriFieldTypeDouble",
+        "alias": "NumFloors",
+        "sqlType": "sqlTypeOther",
+        "nullable": true,
+        "editable": true,
+        "domain": null,
+        "defaultValue": null
+      },
+      {
+        "name": "UnitsRes",
+        "type": "esriFieldTypeInteger",
+        "alias": "UnitsRes",
+        "sqlType": "sqlTypeOther",
+        "nullable": true,
+        "editable": true,
+        "domain": null,
+        "defaultValue": null
+      },
+      {
+        "name": "UnitsTotal",
+        "type": "esriFieldTypeInteger",
+        "alias": "UnitsTotal",
+        "sqlType": "sqlTypeOther",
+        "nullable": true,
+        "editable": true,
+        "domain": null,
+        "defaultValue": null
+      },
+      {
+        "name": "LotFront",
+        "type": "esriFieldTypeDouble",
+        "alias": "LotFront",
+        "sqlType": "sqlTypeOther",
+        "nullable": true,
+        "editable": true,
+        "domain": null,
+        "defaultValue": null
+      },
+      {
+        "name": "LotDepth",
+        "type": "esriFieldTypeDouble",
+        "alias": "LotDepth",
+        "sqlType": "sqlTypeOther",
+        "nullable": true,
+        "editable": true,
+        "domain": null,
+        "defaultValue": null
+      },
+      {
+        "name": "BldgFront",
+        "type": "esriFieldTypeDouble",
+        "alias": "BldgFront",
+        "sqlType": "sqlTypeOther",
+        "nullable": true,
+        "editable": true,
+        "domain": null,
+        "defaultValue": null
+      },
+      {
+        "name": "BldgDepth",
+        "type": "esriFieldTypeDouble",
+        "alias": "BldgDepth",
+        "sqlType": "sqlTypeOther",
+        "nullable": true,
+        "editable": true,
+        "domain": null,
+        "defaultValue": null
+      },
+      {
+        "name": "Ext",
+        "type": "esriFieldTypeString",
+        "alias": "Ext",
+        "sqlType": "sqlTypeOther",
+        "length": 2,
+        "nullable": true,
+        "editable": true,
+        "domain": null,
+        "defaultValue": null
+      },
+      {
+        "name": "ProxCode",
+        "type": "esriFieldTypeString",
+        "alias": "ProxCode",
+        "sqlType": "sqlTypeOther",
+        "length": 1,
+        "nullable": true,
+        "editable": true,
+        "domain": null,
+        "defaultValue": null
+      },
+      {
+        "name": "IrrLotCode",
+        "type": "esriFieldTypeString",
+        "alias": "IrrLotCode",
+        "sqlType": "sqlTypeOther",
+        "length": 1,
+        "nullable": true,
+        "editable": true,
+        "domain": null,
+        "defaultValue": null
+      },
+      {
+        "name": "LotType",
+        "type": "esriFieldTypeString",
+        "alias": "LotType",
+        "sqlType": "sqlTypeOther",
+        "length": 1,
+        "nullable": true,
+        "editable": true,
+        "domain": null,
+        "defaultValue": null
+      },
+      {
+        "name": "BsmtCode",
+        "type": "esriFieldTypeString",
+        "alias": "BsmtCode",
+        "sqlType": "sqlTypeOther",
+        "length": 1,
+        "nullable": true,
+        "editable": true,
+        "domain": null,
+        "defaultValue": null
+      },
+      {
+        "name": "AssessLand",
+        "type": "esriFieldTypeDouble",
+        "alias": "AssessLand",
+        "sqlType": "sqlTypeOther",
+        "nullable": true,
+        "editable": true,
+        "domain": null,
+        "defaultValue": null
+      },
+      {
+        "name": "AssessTot",
+        "type": "esriFieldTypeDouble",
+        "alias": "AssessTot",
+        "sqlType": "sqlTypeOther",
+        "nullable": true,
+        "editable": true,
+        "domain": null,
+        "defaultValue": null
+      },
+      {
+        "name": "ExemptTot",
+        "type": "esriFieldTypeDouble",
+        "alias": "ExemptTot",
+        "sqlType": "sqlTypeOther",
+        "nullable": true,
+        "editable": true,
+        "domain": null,
+        "defaultValue": null
+      },
+      {
+        "name": "YearBuilt",
+        "type": "esriFieldTypeSmallInteger",
+        "alias": "YearBuilt",
+        "sqlType": "sqlTypeOther",
+        "nullable": true,
+        "editable": true,
+        "domain": null,
+        "defaultValue": null
+      },
+      {
+        "name": "YearAlter1",
+        "type": "esriFieldTypeSmallInteger",
+        "alias": "YearAlter1",
+        "sqlType": "sqlTypeOther",
+        "nullable": true,
+        "editable": true,
+        "domain": null,
+        "defaultValue": null
+      },
+      {
+        "name": "YearAlter2",
+        "type": "esriFieldTypeSmallInteger",
+        "alias": "YearAlter2",
+        "sqlType": "sqlTypeOther",
+        "nullable": true,
+        "editable": true,
+        "domain": null,
+        "defaultValue": null
+      },
+      {
+        "name": "HistDist",
+        "type": "esriFieldTypeString",
+        "alias": "HistDist",
+        "sqlType": "sqlTypeOther",
+        "length": 66,
+        "nullable": true,
+        "editable": true,
+        "domain": null,
+        "defaultValue": null
+      },
+      {
+        "name": "Landmark",
+        "type": "esriFieldTypeString",
+        "alias": "Landmark",
+        "sqlType": "sqlTypeOther",
+        "length": 150,
+        "nullable": true,
+        "editable": true,
+        "domain": null,
+        "defaultValue": null
+      },
+      {
+        "name": "BuiltFAR",
+        "type": "esriFieldTypeDouble",
+        "alias": "BuiltFAR",
+        "sqlType": "sqlTypeOther",
+        "nullable": true,
+        "editable": true,
+        "domain": null,
+        "defaultValue": null
+      },
+      {
+        "name": "ResidFAR",
+        "type": "esriFieldTypeDouble",
+        "alias": "ResidFAR",
+        "sqlType": "sqlTypeOther",
+        "nullable": true,
+        "editable": true,
+        "domain": null,
+        "defaultValue": null
+      },
+      {
+        "name": "CommFAR",
+        "type": "esriFieldTypeDouble",
+        "alias": "CommFAR",
+        "sqlType": "sqlTypeOther",
+        "nullable": true,
+        "editable": true,
+        "domain": null,
+        "defaultValue": null
+      },
+      {
+        "name": "FacilFAR",
+        "type": "esriFieldTypeDouble",
+        "alias": "FacilFAR",
+        "sqlType": "sqlTypeOther",
+        "nullable": true,
+        "editable": true,
+        "domain": null,
+        "defaultValue": null
+      },
+      {
+        "name": "BoroCode",
+        "type": "esriFieldTypeInteger",
+        "alias": "BoroCode",
+        "sqlType": "sqlTypeOther",
+        "nullable": true,
+        "editable": true,
+        "domain": null,
+        "defaultValue": null
+      },
+      {
+        "name": "BBL",
+        "type": "esriFieldTypeDouble",
+        "alias": "BBL",
+        "sqlType": "sqlTypeOther",
+        "nullable": true,
+        "editable": true,
+        "domain": null,
+        "defaultValue": null
+      },
+      {
+        "name": "CondoNo",
+        "type": "esriFieldTypeInteger",
+        "alias": "CondoNo",
+        "sqlType": "sqlTypeOther",
+        "nullable": true,
+        "editable": true,
+        "domain": null,
+        "defaultValue": null
+      },
+      {
+        "name": "Tract2010",
+        "type": "esriFieldTypeString",
+        "alias": "Tract2010",
+        "sqlType": "sqlTypeOther",
+        "length": 7,
+        "nullable": true,
+        "editable": true,
+        "domain": null,
+        "defaultValue": null
+      },
+      {
+        "name": "XCoord",
+        "type": "esriFieldTypeInteger",
+        "alias": "XCoord",
+        "sqlType": "sqlTypeOther",
+        "nullable": true,
+        "editable": true,
+        "domain": null,
+        "defaultValue": null
+      },
+      {
+        "name": "YCoord",
+        "type": "esriFieldTypeInteger",
+        "alias": "YCoord",
+        "sqlType": "sqlTypeOther",
+        "nullable": true,
+        "editable": true,
+        "domain": null,
+        "defaultValue": null
+      },
+      {
+        "name": "ZoneMap",
+        "type": "esriFieldTypeString",
+        "alias": "ZoneMap",
+        "sqlType": "sqlTypeOther",
+        "length": 3,
+        "nullable": true,
+        "editable": true,
+        "domain": null,
+        "defaultValue": null
+      },
+      {
+        "name": "ZMCode",
+        "type": "esriFieldTypeString",
+        "alias": "ZMCode",
+        "sqlType": "sqlTypeOther",
+        "length": 1,
+        "nullable": true,
+        "editable": true,
+        "domain": null,
+        "defaultValue": null
+      },
+      {
+        "name": "Sanborn",
+        "type": "esriFieldTypeString",
+        "alias": "Sanborn",
+        "sqlType": "sqlTypeOther",
+        "length": 8,
+        "nullable": true,
+        "editable": true,
+        "domain": null,
+        "defaultValue": null
+      },
+      {
+        "name": "TaxMap",
+        "type": "esriFieldTypeString",
+        "alias": "TaxMap",
+        "sqlType": "sqlTypeOther",
+        "length": 5,
+        "nullable": true,
+        "editable": true,
+        "domain": null,
+        "defaultValue": null
+      },
+      {
+        "name": "EDesigNum",
+        "type": "esriFieldTypeString",
+        "alias": "EDesigNum",
+        "sqlType": "sqlTypeOther",
+        "length": 5,
+        "nullable": true,
+        "editable": true,
+        "domain": null,
+        "defaultValue": null
+      },
+      {
+        "name": "APPBBL",
+        "type": "esriFieldTypeDouble",
+        "alias": "APPBBL",
+        "sqlType": "sqlTypeOther",
+        "nullable": true,
+        "editable": true,
+        "domain": null,
+        "defaultValue": null
+      },
+      {
+        "name": "APPDate",
+        "type": "esriFieldTypeString",
+        "alias": "APPDate",
+        "sqlType": "sqlTypeOther",
+        "length": 10,
+        "nullable": true,
+        "editable": true,
+        "domain": null,
+        "defaultValue": null
+      },
+      {
+        "name": "PLUTOMapID",
+        "type": "esriFieldTypeString",
+        "alias": "PLUTOMapID",
+        "sqlType": "sqlTypeOther",
+        "length": 1,
+        "nullable": true,
+        "editable": true,
+        "domain": null,
+        "defaultValue": null
+      },
+      {
+        "name": "FIRM07_FLAG",
+        "type": "esriFieldTypeString",
+        "alias": "FIRM07_FLAG",
+        "sqlType": "sqlTypeOther",
+        "length": 1,
+        "nullable": true,
+        "editable": true,
+        "domain": null,
+        "defaultValue": null
+      },
+      {
+        "name": "PFIRM15_FLAG",
+        "type": "esriFieldTypeString",
+        "alias": "PFIRM15_FLAG",
+        "sqlType": "sqlTypeOther",
+        "length": 1,
+        "nullable": true,
+        "editable": true,
+        "domain": null,
+        "defaultValue": null
+      },
+      {
+        "name": "Version",
+        "type": "esriFieldTypeString",
+        "alias": "Version",
+        "sqlType": "sqlTypeOther",
+        "length": 6,
+        "nullable": true,
+        "editable": true,
+        "domain": null,
+        "defaultValue": null
+      },
+      {
+        "name": "DCPEdited",
+        "type": "esriFieldTypeString",
+        "alias": "DCPEdited",
+        "sqlType": "sqlTypeOther",
+        "length": 3,
+        "nullable": true,
+        "editable": true,
+        "domain": null,
+        "defaultValue": null
+      },
+      {
+        "name": "Latitude",
+        "type": "esriFieldTypeDouble",
+        "alias": "Latitude",
+        "sqlType": "sqlTypeOther",
+        "nullable": true,
+        "editable": true,
+        "domain": null,
+        "defaultValue": null
+      },
+      {
+        "name": "Longitude",
+        "type": "esriFieldTypeDouble",
+        "alias": "Longitude",
+        "sqlType": "sqlTypeOther",
+        "nullable": true,
+        "editable": true,
+        "domain": null,
+        "defaultValue": null
+      },
+      {
+        "name": "Notes",
+        "type": "esriFieldTypeString",
+        "alias": "Notes",
+        "sqlType": "sqlTypeOther",
+        "length": 20,
+        "nullable": true,
+        "editable": true,
+        "domain": null,
+        "defaultValue": null
+      },
+      {
+        "name": "MIHOption1",
+        "type": "esriFieldTypeString",
+        "alias": "MIHOption1",
+        "sqlType": "sqlTypeOther",
+        "length": 1,
+        "nullable": true,
+        "editable": true,
+        "domain": null,
+        "defaultValue": null
+      },
+      {
+        "name": "MIHOption2",
+        "type": "esriFieldTypeString",
+        "alias": "MIHOption2",
+        "sqlType": "sqlTypeOther",
+        "length": 1,
+        "nullable": true,
+        "editable": true,
+        "domain": null,
+        "defaultValue": null
+      },
+      {
+        "name": "MIHOption3",
+        "type": "esriFieldTypeString",
+        "alias": "MIHOption3",
+        "sqlType": "sqlTypeOther",
+        "length": 1,
+        "nullable": true,
+        "editable": true,
+        "domain": null,
+        "defaultValue": null
+      },
+      {
+        "name": "MIHOption4",
+        "type": "esriFieldTypeString",
+        "alias": "MIHOption4",
+        "sqlType": "sqlTypeOther",
+        "length": 1,
+        "nullable": true,
+        "editable": true,
+        "domain": null,
+        "defaultValue": null
+      },
+      {
+        "name": "TrnstZone",
+        "type": "esriFieldTypeString",
+        "alias": "TrnstZone",
+        "sqlType": "sqlTypeOther",
+        "length": 50,
+        "nullable": true,
+        "editable": true,
+        "domain": null,
+        "defaultValue": null
+      },
+      {
+        "name": "AffResFAR",
+        "type": "esriFieldTypeDouble",
+        "alias": "AffResFAR",
+        "sqlType": "sqlTypeOther",
+        "nullable": true,
+        "editable": true,
+        "domain": null,
+        "defaultValue": null
+      },
+      {
+        "name": "ManuFAR",
+        "type": "esriFieldTypeDouble",
+        "alias": "ManuFAR",
+        "sqlType": "sqlTypeOther",
+        "nullable": true,
+        "editable": true,
+        "domain": null,
+        "defaultValue": null
+      },
+      {
+        "name": "Shape_Leng",
+        "type": "esriFieldTypeDouble",
+        "alias": "Shape_Leng",
+        "sqlType": "sqlTypeOther",
+        "nullable": true,
+        "editable": true,
+        "domain": null,
+        "defaultValue": null
+      },
+      {
+        "name": "Shape__Area",
+        "type": "esriFieldTypeDouble",
+        "alias": "Shape__Area",
+        "sqlType": "sqlTypeDouble",
+        "nullable": true,
+        "editable": false,
+        "domain": null,
+        "defaultValue": null
+      },
+      {
+        "name": "Shape__Length",
+        "type": "esriFieldTypeDouble",
+        "alias": "Shape__Length",
+        "sqlType": "sqlTypeDouble",
+        "nullable": true,
+        "editable": false,
+        "domain": null,
+        "defaultValue": null
+      }
+    ]
   },
   {
     "id": "curb-cut-2022",
-    "name": "Curb Cut 2022",
-    "description": "Curb cut features from an ArcGIS FeatureServer layer.",
+    "name": "CURB_CUT",
+    "description": "A curb cut is a dip in a sidewalk and curb that enables a vehicle to drive to a driveway, garage, parking lot, loading dock or drive-through. There are two types of curb cuts captured in the dataset: MIDBLOCK_CURBCUT - Break CURB features at extents of curbcuts located along block edges CORNER_CURBCUT - Break CURB features at extents of curbcuts located along block corners or street intersections Digital planimetrics are derived using the imagery products delivered with the 2022 New York Statewide Flyover (see Summary for specific flight dates), which includes raw imagery collected to support the generation of 0.5 Ft Ground Sample Distance (GSD) natural color imagery. The images were captured with 80% forward lap and side lap to support 1”=100’ mapping and meet the distortion free requirements within New York City. Planimetrics are developed to meet American Society for Photogrammetry and Remote Sensing (ASPRS) Class 1 (one) horizontal mapping standards and ASPRS vertical Class 2 (two) accuracy specifications. Planimetrics are delivered via an ESRI file geodatabase in New York State Plane Coordinate System, Long Island East Zone, NAD83, US foot (EPSG: 2263).",
     "type": "arcgis-feature-layer",
     "method": "GET",
     "overviewUrl": "https://services6.arcgis.com/yG5s3afENB5iO9fj/arcgis/rest/services/Curb_Cut_2022/FeatureServer/5",
@@ -46,7 +1162,7 @@
     "defaultParams": [
       {
         "key": "geometry",
-        "value": "selectedCoordinates"
+        "value": "{{selectedCoordinates}}"
       }
     ],
     "defaultOutputs": [
@@ -64,52 +1180,813 @@
       "geometryTypes": [
         "LineString"
       ]
-    }
-  },
-  {
-    "id": "source-mpmyo01p",
-    "name": "Richmond County Clerk",
-    "description": "Search documents in Richmond County Clerk office.",
-    "type": "arcgis-feature-layer",
-    "method": "GET",
-    "overviewUrl": "",
-    "queryUrl": "https://www.richmondcountyclerk.com/Search/ShowResultsBlocks",
-    "defaultParams": [
+    },
+    "layerFields": [
       {
-        "key": "Block",
-        "value": "plutoBoroBlockLot.block"
+        "name": "OBJECTID",
+        "type": "esriFieldTypeOID",
+        "alias": "OBJECTID",
+        "sqlType": "sqlTypeOther",
+        "nullable": false,
+        "editable": false,
+        "domain": null,
+        "defaultValue": null
       },
       {
-        "key": "Lot",
-        "value": "plutoBoroBlockLot.lot"
-      }
-    ],
-    "defaultOutputs": [
-      {
-        "variable": "landDocTable",
-        "path": "table"
+        "name": "SOURCE_ID",
+        "type": "esriFieldTypeDouble",
+        "alias": "SOURCE_ID",
+        "sqlType": "sqlTypeOther",
+        "nullable": false,
+        "editable": true,
+        "domain": null,
+        "defaultValue": null
       },
       {
-        "variable": "landDocArray",
-        "path": "tableToJson(landDocTable)"
+        "name": "FEATURE_CODE",
+        "type": "esriFieldTypeSmallInteger",
+        "alias": "FEATURE_CODE",
+        "sqlType": "sqlTypeOther",
+        "nullable": false,
+        "editable": true,
+        "domain": null,
+        "defaultValue": 2260
+      },
+      {
+        "name": "SUB_FEATURE_CODE",
+        "type": "esriFieldTypeInteger",
+        "alias": "SUB_FEATURE_CODE",
+        "sqlType": "sqlTypeOther",
+        "nullable": false,
+        "editable": true,
+        "domain": {
+          "type": "codedValue",
+          "name": "dCurb",
+          "mergePolicy": "esriMPTDefaultValue",
+          "splitPolicy": "esriSPTDefaultValue",
+          "description": "Domain for Curb",
+          "codedValues": [
+            {
+              "name": "Curb",
+              "code": 225000
+            }
+          ]
+        },
+        "defaultValue": null
+      },
+      {
+        "name": "STATUS",
+        "type": "esriFieldTypeString",
+        "alias": "STATUS",
+        "sqlType": "sqlTypeOther",
+        "length": 16,
+        "nullable": false,
+        "editable": true,
+        "domain": {
+          "type": "codedValue",
+          "name": "dStatus",
+          "mergePolicy": "esriMPTDefaultValue",
+          "splitPolicy": "esriSPTDuplicate",
+          "description": "Domain for Feature Update Status",
+          "codedValues": [
+            {
+              "name": "Newly collected in 2022",
+              "code": "New"
+            },
+            {
+              "name": "Feature has changed in 2022 collection",
+              "code": "Updated"
+            },
+            {
+              "name": "No change in 2022 collection",
+              "code": "Unchanged"
+            }
+          ]
+        },
+        "defaultValue": null
+      },
+      {
+        "name": "GlobalID",
+        "type": "esriFieldTypeGlobalID",
+        "alias": "GlobalID",
+        "sqlType": "sqlTypeOther",
+        "length": 38,
+        "nullable": false,
+        "editable": false,
+        "domain": null,
+        "defaultValue": null
+      },
+      {
+        "name": "Shape__Length",
+        "type": "esriFieldTypeDouble",
+        "alias": "Shape__Length",
+        "sqlType": "sqlTypeDouble",
+        "nullable": true,
+        "editable": false,
+        "domain": null,
+        "defaultValue": null
       }
     ]
   },
   {
-    "id": "source-mpn3uswb",
-    "name": "Land Documents",
-    "description": "Richmond County Clerk Land Documents",
-    "type": "arcgis-feature-layer",
-    "queryType": "pdf",
+    "id": "source-mpojg54m",
+    "name": "BUILDING",
+    "description": "Footprint outlines of buildings in New York City. Please see the following link for additional documentation: https://github.com/CityOfNewYork/nyc-geo-metadata/blob/master/Metadata/Metadata_BuildingFootprints.md For additional resources, please refer to: https://nycmaps-nyc.hub.arcgis.com/search?tags=building&type=feature%2520service%2Cfeature%2520layer",
+    "type": "socrata-dataset",
     "method": "GET",
-    "overviewUrl": "",
-    "queryUrl": "https://www.richmondcountyclerk.com/ViewVscmsDocument/ViewContent",
-    "defaultParams": [
+    "overviewUrl": "https://data.cityofnewyork.us/resource/5zhs-2jue.json",
+    "defaultParams": [],
+    "defaultOutputs": [],
+    "layerFields": [
       {
-        "key": "p_endorsementId",
-        "value": "landDocArray.*.NUMBER"
+        "name": "the_geom",
+        "alias": "the_geom",
+        "type": "multipolygon",
+        "description": "Geometry column used for mapping"
+      },
+      {
+        "name": "name",
+        "alias": "NAME",
+        "type": "text",
+        "description": "Building name (limited to commonly known names). This field has not been actively maintained since the original creation of this dataset."
+      },
+      {
+        "name": "bin",
+        "alias": "BIN",
+        "type": "number",
+        "description": "Building Identification Number. A number assigned by City Planning and used by Dept. of Buildings to reference information pertaining to an individual building. The first digit is a borough code (1 = Manhattan, 2 = The Bronx, 3 = Brooklyn, 4 = Queens, 5 = Staten Island). The remaining 6 digits are unique for buildings within that borough. In some cases where these 6 digits are all zeros (e.g. 1000000, 2000000, etc.) the BIN is unassigned or unknown."
+      },
+      {
+        "name": "doitt_id",
+        "alias": "DOITT_ID",
+        "type": "number",
+        "description": "Consistent unique identifier assigned by OTI (formerly DOITT)."
+      },
+      {
+        "name": "shape_area",
+        "alias": "SHAPE_AREA",
+        "type": "number",
+        "description": "Measures the enclosed area within a polygon."
+      },
+      {
+        "name": "base_bbl",
+        "alias": "BASE_BBL",
+        "type": "text",
+        "description": "Borough, block, and lot number for the tax lot that the footprint is physically located within."
+      },
+      {
+        "name": "objectid",
+        "alias": "OBJECTID",
+        "type": "number",
+        "description": ""
+      },
+      {
+        "name": "construction_year",
+        "alias": "Construction Year",
+        "type": "number",
+        "description": ""
+      },
+      {
+        "name": "feature_code",
+        "alias": "Feature Code",
+        "type": "number",
+        "description": ""
+      },
+      {
+        "name": "geom_source",
+        "alias": "Geometry Source",
+        "type": "text",
+        "description": ""
+      },
+      {
+        "name": "ground_elevation",
+        "alias": "Ground Elevation",
+        "type": "number",
+        "description": ""
+      },
+      {
+        "name": "height_roof",
+        "alias": "Height Roof",
+        "type": "number",
+        "description": ""
+      },
+      {
+        "name": "last_edited_date",
+        "alias": "LAST_EDITED_DATE",
+        "type": "date",
+        "description": ""
+      },
+      {
+        "name": "last_status_type",
+        "alias": "LAST_STATUS_TYPE",
+        "type": "text",
+        "description": ""
+      },
+      {
+        "name": "mappluto_bbl",
+        "alias": "Map Pluto BBL",
+        "type": "text",
+        "description": ""
+      },
+      {
+        "name": "shape_length",
+        "alias": "Length",
+        "type": "number",
+        "description": ""
+      }
+    ]
+  },
+  {
+    "id": "source-mpokj6su",
+    "name": "Zoning GIS Data: Geodatabase",
+    "description": "This data set consists of 6 classes of zoning features: zoning districts, special purpose districts, special purpose district subdistricts, limited height districts, commercial overlay districts, and zoning map amendments. All previously released versions of this data are available on the DCP Website: BYTES of the BIG APPLE . Current version: 202604",
+    "type": "socrata-dataset",
+    "method": "GET",
+    "overviewUrl": "https://data.cityofnewyork.us/resource/mm69-vrje.json",
+    "defaultParams": [],
+    "defaultOutputs": [],
+    "layerFields": []
+  },
+  {
+    "id": "source-mpokms3m",
+    "name": "nyzd",
+    "description": "Polygon features representing the zoning districts. These features are continuous over the entire city. They extend to the city limits on land and out to the US Army Corps of Engineers Pierhead lines over water. Zoning district designations are indicated in the ZONEDIST attribute.",
+    "type": "arcgis-feature-layer",
+    "method": "GET",
+    "overviewUrl": "https://services5.arcgis.com/GfwWNkhOj9bNBqoJ/arcgis/rest/services/nyzd/FeatureServer/0",
+    "defaultParams": [],
+    "defaultOutputs": [],
+    "layerFields": [
+      {
+        "name": "OBJECTID",
+        "type": "esriFieldTypeOID",
+        "alias": "OBJECTID",
+        "sqlType": "sqlTypeOther",
+        "nullable": false,
+        "editable": false,
+        "domain": null,
+        "defaultValue": null
+      },
+      {
+        "name": "ZONEDIST",
+        "type": "esriFieldTypeString",
+        "alias": "ZONEDIST",
+        "sqlType": "sqlTypeOther",
+        "length": 15,
+        "nullable": true,
+        "editable": true,
+        "domain": null,
+        "defaultValue": null
+      },
+      {
+        "name": "Shape__Area",
+        "type": "esriFieldTypeDouble",
+        "alias": "Shape__Area",
+        "sqlType": "sqlTypeDouble",
+        "nullable": true,
+        "editable": false,
+        "domain": null,
+        "defaultValue": null
+      },
+      {
+        "name": "Shape__Length",
+        "type": "esriFieldTypeDouble",
+        "alias": "Shape__Length",
+        "sqlType": "sqlTypeDouble",
+        "nullable": true,
+        "editable": false,
+        "domain": null,
+        "defaultValue": null
+      }
+    ]
+  },
+  {
+    "id": "source-mpoljs80",
+    "name": "Broadway Curb Cut Survey Data",
+    "description": "",
+    "type": "socrata-dataset",
+    "method": "GET",
+    "overviewUrl": "https://data.cityofnewyork.us/resource/4y9q-t4wb.json",
+    "defaultParams": [],
+    "defaultOutputs": [
+      {
+        "variable": "slope",
+        "path": "0.slope_inch"
       }
     ],
-    "defaultOutputs": []
+    "layerFields": [
+      {
+        "name": "street_1",
+        "alias": "Street 1",
+        "type": "text",
+        "description": ""
+      },
+      {
+        "name": "street_2",
+        "alias": "Street 2",
+        "type": "text",
+        "description": ""
+      },
+      {
+        "name": "curb_cut",
+        "alias": "Curb Cut",
+        "type": "text",
+        "description": ""
+      },
+      {
+        "name": "slope_inch",
+        "alias": "Slope (inch)",
+        "type": "text",
+        "description": ""
+      },
+      {
+        "name": "ramp_width",
+        "alias": "Ramp Width",
+        "type": "number",
+        "description": ""
+      },
+      {
+        "name": "no_curb_cut",
+        "alias": "No Curb Cut",
+        "type": "text",
+        "description": ""
+      },
+      {
+        "name": "center_cut",
+        "alias": "Center Cut",
+        "type": "text",
+        "description": ""
+      },
+      {
+        "name": "lip_bump_measurement_in_inches",
+        "alias": "Lip/bump (measurement in inches)",
+        "type": "text",
+        "description": ""
+      },
+      {
+        "name": "crumbling_concrete",
+        "alias": "Crumbling concrete?",
+        "type": "text",
+        "description": ""
+      },
+      {
+        "name": "led_to_pot_hole",
+        "alias": "Led to pot hole?",
+        "type": "text",
+        "description": ""
+      },
+      {
+        "name": "detectable_warnings",
+        "alias": "Detectable warnings ?",
+        "type": "text",
+        "description": ""
+      },
+      {
+        "name": "object_barriers",
+        "alias": "Object barriers ?",
+        "type": "text",
+        "description": ""
+      },
+      {
+        "name": "barriers_above",
+        "alias": "Barriers above?",
+        "type": "text",
+        "description": ""
+      }
+    ]
+  },
+  {
+    "id": "source-mpr3pl3k",
+    "name": "DOB Violations",
+    "description": "This data set includes older civil penalties (commonly referred to as ‘DOB Violations’) that were issued by the Department of Buildings (DOB) in the Buildings Information System (BIS). For newer civil penalties, see the DOB Safety Violations data set (note: some violations are duplicated in both data sets). Separately, summonses that are issued by DOB but adjudicated by OATH/ECB are in the DOB ECB Violations data set.",
+    "type": "socrata-dataset",
+    "method": "GET",
+    "overviewUrl": "https://data.cityofnewyork.us/resource/3h2n-5cm9.json",
+    "defaultParams": [
+      {
+        "key": "boro",
+        "value": "5"
+      },
+      {
+        "key": "block",
+        "value": "{{plutoBlock}}"
+      },
+      {
+        "key": "lot",
+        "value": "{{plutoLot}}"
+      }
+    ],
+    "defaultOutputs": [],
+    "layerFields": [
+      {
+        "name": "isn_dob_bis_viol",
+        "alias": "ISN_DOB_BIS_VIOL",
+        "type": "text",
+        "description": ""
+      },
+      {
+        "name": "boro",
+        "alias": "BORO",
+        "type": "text",
+        "description": ""
+      },
+      {
+        "name": "bin",
+        "alias": "BIN",
+        "type": "text",
+        "description": ""
+      },
+      {
+        "name": "block",
+        "alias": "BLOCK",
+        "type": "text",
+        "description": ""
+      },
+      {
+        "name": "lot",
+        "alias": "LOT",
+        "type": "text",
+        "description": ""
+      },
+      {
+        "name": "issue_date",
+        "alias": "ISSUE_DATE",
+        "type": "text",
+        "description": ""
+      },
+      {
+        "name": "violation_type_code",
+        "alias": "VIOLATION_TYPE_CODE",
+        "type": "text",
+        "description": ""
+      },
+      {
+        "name": "violation_number",
+        "alias": "VIOLATION_NUMBER",
+        "type": "text",
+        "description": ""
+      },
+      {
+        "name": "house_number",
+        "alias": "HOUSE_NUMBER",
+        "type": "text",
+        "description": ""
+      },
+      {
+        "name": "street",
+        "alias": "STREET",
+        "type": "text",
+        "description": ""
+      },
+      {
+        "name": "disposition_date",
+        "alias": "DISPOSITION_DATE",
+        "type": "text",
+        "description": ""
+      },
+      {
+        "name": "disposition_comments",
+        "alias": "DISPOSITION_COMMENTS",
+        "type": "text",
+        "description": ""
+      },
+      {
+        "name": "device_number",
+        "alias": "DEVICE_NUMBER",
+        "type": "text",
+        "description": ""
+      },
+      {
+        "name": "description",
+        "alias": "DESCRIPTION",
+        "type": "text",
+        "description": ""
+      },
+      {
+        "name": "ecb_number",
+        "alias": "ECB_NUMBER",
+        "type": "text",
+        "description": ""
+      },
+      {
+        "name": "number",
+        "alias": "NUMBER",
+        "type": "text",
+        "description": ""
+      },
+      {
+        "name": "violation_category",
+        "alias": "VIOLATION_CATEGORY",
+        "type": "text",
+        "description": ""
+      },
+      {
+        "name": "violation_type",
+        "alias": "VIOLATION_TYPE",
+        "type": "text",
+        "description": ""
+      }
+    ]
+  },
+  {
+    "id": "source-mpr3pqjc",
+    "name": "DOB ECB Violations",
+    "description": "This data set includes summonses issued by the Department of Buildings that are adjudicated by OATH/ECB. Separately, civil penalties (commonly referred to as ‘DOB Violations’) are found in the DOB Safety Violations (for newer issuances) and DOB Violations (for older issuances) data sets.",
+    "type": "socrata-dataset",
+    "method": "GET",
+    "overviewUrl": "https://data.cityofnewyork.us/resource/6bgk-3dad.json",
+    "defaultParams": [
+      {
+        "key": "boro",
+        "value": "5"
+      },
+      {
+        "key": "block",
+        "value": "{{plutoBlock}}"
+      },
+      {
+        "key": "lot",
+        "value": "{{plutoLot}}"
+      }
+    ],
+    "defaultOutputs": [],
+    "layerFields": [
+      {
+        "name": "isn_dob_bis_extract",
+        "alias": "ISN_DOB_BIS_EXTRACT",
+        "type": "text",
+        "description": ""
+      },
+      {
+        "name": "ecb_violation_number",
+        "alias": "ECB_VIOLATION_NUMBER",
+        "type": "text",
+        "description": ""
+      },
+      {
+        "name": "ecb_violation_status",
+        "alias": "ECB_VIOLATION_STATUS",
+        "type": "text",
+        "description": ""
+      },
+      {
+        "name": "dob_violation_number",
+        "alias": "DOB_VIOLATION_NUMBER",
+        "type": "text",
+        "description": ""
+      },
+      {
+        "name": "bin",
+        "alias": "BIN",
+        "type": "text",
+        "description": ""
+      },
+      {
+        "name": "boro",
+        "alias": "BORO",
+        "type": "text",
+        "description": ""
+      },
+      {
+        "name": "block",
+        "alias": "BLOCK",
+        "type": "text",
+        "description": ""
+      },
+      {
+        "name": "lot",
+        "alias": "LOT",
+        "type": "text",
+        "description": ""
+      },
+      {
+        "name": "hearing_date",
+        "alias": "HEARING_DATE",
+        "type": "text",
+        "description": ""
+      },
+      {
+        "name": "hearing_time",
+        "alias": "HEARING_TIME",
+        "type": "text",
+        "description": ""
+      },
+      {
+        "name": "served_date",
+        "alias": "SERVED_DATE",
+        "type": "text",
+        "description": ""
+      },
+      {
+        "name": "issue_date",
+        "alias": "ISSUE_DATE",
+        "type": "text",
+        "description": ""
+      },
+      {
+        "name": "severity",
+        "alias": "SEVERITY",
+        "type": "text",
+        "description": ""
+      },
+      {
+        "name": "violation_type",
+        "alias": "VIOLATION_TYPE",
+        "type": "text",
+        "description": ""
+      },
+      {
+        "name": "respondent_name",
+        "alias": "RESPONDENT_NAME",
+        "type": "text",
+        "description": ""
+      },
+      {
+        "name": "respondent_house_number",
+        "alias": "RESPONDENT_HOUSE_NUMBER",
+        "type": "text",
+        "description": ""
+      },
+      {
+        "name": "respondent_street",
+        "alias": "RESPONDENT_STREET",
+        "type": "text",
+        "description": ""
+      },
+      {
+        "name": "respondent_city",
+        "alias": "RESPONDENT_CITY",
+        "type": "text",
+        "description": ""
+      },
+      {
+        "name": "respondent_zip",
+        "alias": "RESPONDENT_ZIP",
+        "type": "text",
+        "description": ""
+      },
+      {
+        "name": "violation_description",
+        "alias": "VIOLATION_DESCRIPTION",
+        "type": "text",
+        "description": ""
+      },
+      {
+        "name": "penality_imposed",
+        "alias": "PENALITY_IMPOSED",
+        "type": "number",
+        "description": ""
+      },
+      {
+        "name": "amount_paid",
+        "alias": "AMOUNT_PAID",
+        "type": "number",
+        "description": ""
+      },
+      {
+        "name": "balance_due",
+        "alias": "BALANCE_DUE",
+        "type": "number",
+        "description": ""
+      },
+      {
+        "name": "infraction_code1",
+        "alias": "INFRACTION_CODE1",
+        "type": "text",
+        "description": ""
+      },
+      {
+        "name": "section_law_description1",
+        "alias": "SECTION_LAW_DESCRIPTION1",
+        "type": "text",
+        "description": ""
+      },
+      {
+        "name": "infraction_code2",
+        "alias": "INFRACTION_CODE2",
+        "type": "text",
+        "description": ""
+      },
+      {
+        "name": "section_law_description2",
+        "alias": "SECTION_LAW_DESCRIPTION2",
+        "type": "text",
+        "description": ""
+      },
+      {
+        "name": "infraction_code3",
+        "alias": "INFRACTION_CODE3",
+        "type": "text",
+        "description": ""
+      },
+      {
+        "name": "section_law_description3",
+        "alias": "SECTION_LAW_DESCRIPTION3",
+        "type": "text",
+        "description": ""
+      },
+      {
+        "name": "infraction_code4",
+        "alias": "INFRACTION_CODE4",
+        "type": "text",
+        "description": ""
+      },
+      {
+        "name": "section_law_description4",
+        "alias": "SECTION_LAW_DESCRIPTION4",
+        "type": "text",
+        "description": ""
+      },
+      {
+        "name": "infraction_code5",
+        "alias": "INFRACTION_CODE5",
+        "type": "text",
+        "description": ""
+      },
+      {
+        "name": "section_law_description5",
+        "alias": "SECTION_LAW_DESCRIPTION5",
+        "type": "text",
+        "description": ""
+      },
+      {
+        "name": "infraction_code6",
+        "alias": "INFRACTION_CODE6",
+        "type": "text",
+        "description": ""
+      },
+      {
+        "name": "section_law_description6",
+        "alias": "SECTION_LAW_DESCRIPTION6",
+        "type": "text",
+        "description": ""
+      },
+      {
+        "name": "infraction_code7",
+        "alias": "INFRACTION_CODE7",
+        "type": "text",
+        "description": ""
+      },
+      {
+        "name": "section_law_description7",
+        "alias": "SECTION_LAW_DESCRIPTION7",
+        "type": "text",
+        "description": ""
+      },
+      {
+        "name": "infraction_code8",
+        "alias": "INFRACTION_CODE8",
+        "type": "text",
+        "description": ""
+      },
+      {
+        "name": "section_law_description8",
+        "alias": "SECTION_LAW_DESCRIPTION8",
+        "type": "text",
+        "description": ""
+      },
+      {
+        "name": "infraction_code9",
+        "alias": "INFRACTION_CODE9",
+        "type": "text",
+        "description": ""
+      },
+      {
+        "name": "section_law_description9",
+        "alias": "SECTION_LAW_DESCRIPTION9",
+        "type": "text",
+        "description": ""
+      },
+      {
+        "name": "infraction_code10",
+        "alias": "INFRACTION_CODE10",
+        "type": "text",
+        "description": ""
+      },
+      {
+        "name": "section_law_description10",
+        "alias": "SECTION_LAW_DESCRIPTION10",
+        "type": "text",
+        "description": ""
+      },
+      {
+        "name": "aggravated_level",
+        "alias": "AGGRAVATED_LEVEL",
+        "type": "text",
+        "description": ""
+      },
+      {
+        "name": "hearing_status",
+        "alias": "HEARING_STATUS",
+        "type": "text",
+        "description": ""
+      },
+      {
+        "name": "certification_status",
+        "alias": "CERTIFICATION_STATUS",
+        "type": "text",
+        "description": ""
+      }
+    ]
   }
 ]

@@ -45,7 +45,7 @@ export function createRecordStore() {
   return { add, all, find };
 }
 
-export function createRecordController(recordStore, map, editorTabController) {
+export function createRecordController(recordStore, map, editorTabController, getAgentController = () => null) {
   const recordList = document.getElementById("recordList");
   const wrapJsonTextButton = document.getElementById("wrapJsonTextButton");
   const expandedRecordIds = new Set();
@@ -94,11 +94,15 @@ export function createRecordController(recordStore, map, editorTabController) {
     const summary = document.createElement("summary");
     summary.className = "record-summary";
 
+    const attachButton = createAttachButton(`Attach ${record.title || record.kind} to chat`, () => {
+      getAgentController()?.attachRecord(record);
+    });
+
     const summaryText = document.createElement("div");
     summaryText.className = "record-summary-text";
     summaryText.append(createText("strong", record.title));
     summaryText.append(createText("span", `${record.kind} - ${record.timestamp || "No timestamp"}${record.durationMs ? ` - ${record.durationMs} ms` : ""}`));
-    summary.append(summaryText, createRecordActionFooter(record, toggleRecordGeoJson, editorTabController));
+    summary.append(attachButton, summaryText, createRecordActionFooter(record, toggleRecordGeoJson, editorTabController));
 
     const body = document.createElement("div");
     body.className = "record-body";
@@ -149,6 +153,20 @@ export function createRecordController(recordStore, map, editorTabController) {
   updateWrapJsonText();
 
   return { add, render };
+}
+
+function createAttachButton(label, onClick) {
+  const button = document.createElement("button");
+  button.className = "card-attach-button";
+  button.type = "button";
+  button.setAttribute("aria-label", label);
+  button.title = label;
+  button.addEventListener("click", (event) => {
+    event.preventDefault();
+    event.stopPropagation();
+    onClick();
+  });
+  return button;
 }
 
 function updateGeoJsonButtons(record) {

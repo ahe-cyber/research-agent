@@ -1,0 +1,41 @@
+{
+  "arcgis": {
+    "supportedInputParams": [
+      "where",
+      "geometry",
+      "geometryType",
+      "inSR",
+      "spatialRel",
+      "outFields",
+      "returnGeometry",
+      "outSR",
+      "f",
+      "resultOffset",
+      "resultRecordCount",
+      "orderByFields",
+      "objectIds",
+      "returnDistinctValues",
+      "returnCountOnly"
+    ],
+    "items": [
+      { "id": "arcgis-online", "name": "ArcGIS Online", "url": "https://www.arcgis.com" },
+      { "id": "nyc-maps-hub", "name": "NYC Maps Hub", "url": "https://nycmaps-nyc.hub.arcgis.com" },
+      { "id": "ny-gis", "name": "NY GIS", "url": "https://data.gis.ny.gov" }
+    ]
+  },
+  "socrata": {
+    "supportedInputParams": [
+      "$select",
+      "$where",
+      "$order",
+      "$group",
+      "$limit",
+      "$offset",
+      "$q",
+      "$query"
+    ],
+    "items": [
+      { "id": "nyc-open-data", "name": "NYC Open Data", "url": "https://data.cityofnewyork.us" }
+    ]
+  }
+}

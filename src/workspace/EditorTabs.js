@@ -1,4 +1,6 @@
-export function createEditorTabController() {
+import { markdownToHtml } from "../utils/markdown.js";
+
+export function createEditorTabController({ onMapActivated = () => {} } = {}) {
   const tabBar = document.getElementById("editorTabBar");
   const viewport = document.getElementById("editorViewport");
   const mapPanel = document.getElementById("map");
@@ -45,6 +47,9 @@ export function createEditorTabController() {
   function activateTab(id) {
     activeTabId = id;
     render();
+    if (id === "map") {
+      onMapActivated();
+    }
   }
 
   function closeTab(id) {
@@ -55,7 +60,7 @@ export function createEditorTabController() {
     updateTabButtons(id, false);
 
     if (panelMap[id]) {
-      if (id === "sources-editor" || id === "postman-collections") {
+      if (id === "sources-editor" || id === "postman-collections" || id === "catalog-results" || id === "agents-editor") {
         panelMap[id].hidden = true;
       } else {
         panelMap[id].remove();
@@ -161,8 +166,154 @@ export function createEditorTabController() {
     });
   }
 
+  function openAgentsTab(agentsPanel) {
+    const tabId = "agents-editor";
+
+    if (tabs.find((t) => t.id === tabId)) {
+      activateTab(tabId);
+      return;
+    }
+
+    tabs.push({ id: tabId, label: "Agent Modules", closeable: true });
+
+    if (!panelMap[tabId]) {
+      agentsPanel.hidden = true;
+      viewport.appendChild(agentsPanel);
+      panelMap[tabId] = agentsPanel;
+    }
+
+    activateTab(tabId);
+  }
+
+  function openCatalogResultsTab(resultsPanel) {
+    const tabId = "catalog-results";
+
+    if (tabs.find((t) => t.id === tabId)) {
+      activateTab(tabId);
+      return;
+    }
+
+    tabs.push({ id: tabId, label: "Catalog", closeable: true });
+
+    if (!panelMap[tabId]) {
+      resultsPanel.hidden = true;
+      viewport.appendChild(resultsPanel);
+      panelMap[tabId] = resultsPanel;
+    }
+
+    activateTab(tabId);
+  }
+
+  function openCatalogDatasetTab(item, detailPanel) {
+    const tabId = `catalog-dataset-${item.id}`;
+
+    if (tabs.find((t) => t.id === tabId)) {
+      activateTab(tabId);
+      return;
+    }
+
+    tabs.push({ id: tabId, label: item.title || "Dataset", closeable: true });
+
+    detailPanel.hidden = true;
+    viewport.appendChild(detailPanel);
+    panelMap[tabId] = detailPanel;
+
+    activateTab(tabId);
+  }
+
+  function openReportTab(address) {
+    const tabId = `report-${address.title}`;
+
+    if (tabs.find((t) => t.id === tabId)) {
+      activateTab(tabId);
+      return panelMap[tabId]._reportController;
+    }
+
+    tabs.push({ id: tabId, label: address.title, closeable: true });
+
+    const panel = document.createElement("div");
+    panel.className = "editor-report-panel";
+    panel.hidden = true;
+
+    const toolbar = document.createElement("div");
+    toolbar.className = "report-toolbar";
+
+    [
+      { cmd: "bold", label: "B", title: "Bold" },
+      { cmd: "italic", label: "I", title: "Italic" },
+      { cmd: "insertUnorderedList", label: "•", title: "Bullet list" },
+      { cmd: "insertOrderedList", label: "1.", title: "Numbered list" },
+    ].forEach(({ cmd, label, title }) => {
+      const btn = document.createElement("button");
+      btn.type = "button";
+      btn.className = "report-toolbar-btn";
+      btn.textContent = label;
+      btn.title = title;
+      btn.addEventListener("mousedown", (e) => {
+        e.preventDefault();
+        document.execCommand(cmd, false, null);
+      });
+      toolbar.appendChild(btn);
+    });
+
+    ["H2", "H3", "P"].forEach((tag) => {
+      const btn = document.createElement("button");
+      btn.type = "button";
+      btn.className = "report-toolbar-btn";
+      btn.textContent = tag.toLowerCase();
+      btn.title = tag === "P" ? "Paragraph" : `Heading ${tag[1]}`;
+      btn.addEventListener("mousedown", (e) => {
+        e.preventDefault();
+        document.execCommand("formatBlock", false, tag);
+      });
+      toolbar.appendChild(btn);
+    });
+
+    const editor = document.createElement("div");
+    editor.className = "report-editor";
+    editor.contentEditable = "true";
+
+    const h1 = document.createElement("h1");
+    h1.textContent = address.title;
+    editor.appendChild(h1);
+
+    if (address.subtitle) {
+      const sub = document.createElement("p");
+      sub.className = "report-subtitle";
+      sub.textContent = address.subtitle;
+      editor.appendChild(sub);
+    }
+
+    panel.appendChild(toolbar);
+    panel.appendChild(editor);
+    viewport.appendChild(panel);
+    panelMap[tabId] = panel;
+
+    const reportController = {
+      append(heading, content) {
+        if (heading) {
+          const h = document.createElement("h2");
+          h.textContent = heading;
+          editor.appendChild(h);
+        }
+        const div = document.createElement("div");
+        div.innerHTML = markdownToHtml(content);
+        editor.appendChild(div);
+        editor.scrollTop = editor.scrollHeight;
+      },
+      getContent() {
+        return editor.innerText.trim();
+      }
+    };
+
+    panel._reportController = reportController;
+
+    activateTab(tabId);
+    return reportController;
+  }
+
   render();
-  return { openTableTab, openPdfTab, openSourcesTab, openPostmanTab };
+  return { openTableTab, openPdfTab, openSourcesTab, openPostmanTab, openCatalogResultsTab, openCatalogDatasetTab, openReportTab, openAgentsTab };
 }
 
 function renderHtmlElement(element) {

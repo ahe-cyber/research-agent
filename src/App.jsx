@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { AgentPanel } from "./agent/AgentPanel.jsx";
 import { initializeMapApp } from "./mapApp.js";
 import { AddressTab } from "./workspace/AddressTab.jsx";
+import { AgentModulesTab } from "./workspace/AgentModulesTab.jsx";
 import { DetailsTab } from "./workspace/DetailsTab.jsx";
 import { FormulasTab } from "./workspace/FormulasTab.jsx";
 import { SourcesTab } from "./workspace/SourcesTab.jsx";
@@ -33,7 +34,8 @@ export default function App() {
         <ActivityButton tab="address" label="Address" icon="address" active={activeTab === "address"} onClick={setActiveTab} />
         <ActivityButton tab="details" label="Records" icon="record" active={activeTab === "details"} onClick={setActiveTab} />
         <ActivityButton tab="sources" label="Sources" icon="source" active={activeTab === "sources"} onClick={setActiveTab} />
-        <ActivityButton tab="formulas" label="Formulas" icon="formula" active={activeTab === "formulas"} onClick={setActiveTab} />
+        <ActivityButton tab="formulas" label="Agent Tools" icon="formula" active={activeTab === "formulas"} onClick={setActiveTab} />
+        <ActivityButton tab="agents" label="Agent Modules" icon="agents" active={activeTab === "agents"} onClick={setActiveTab} />
       </nav>
 
       <aside className="workspace-sidebar" aria-label="Primary Side Bar">
@@ -71,6 +73,14 @@ export default function App() {
             hidden={activeTab !== "sources"}
           />
           <button
+            className="section-tool-button browse-catalogs-button"
+            type="button"
+            id="browseCatalogsButton"
+            aria-label="Browse dataset catalogs"
+            title="Browse dataset catalogs"
+            hidden={activeTab !== "sources"}
+          />
+          <button
             className="section-tool-button edit-sources-button"
             type="button"
             id="editSourcesButton"
@@ -78,12 +88,21 @@ export default function App() {
             title="Edit sources"
             hidden={activeTab !== "sources"}
           />
+          <button
+            className="section-tool-button edit-agents-button"
+            type="button"
+            id="editAgentsButton"
+            aria-label="Edit agent modules"
+            title="Edit agent modules"
+            hidden={activeTab !== "agents"}
+          />
         </div>
 
         <AddressTab active={activeTab === "address"} />
         <DetailsTab active={activeTab === "details"} />
         <SourcesTab active={activeTab === "sources"} />
         <FormulasTab active={activeTab === "formulas"} />
+        <AgentModulesTab active={activeTab === "agents"} />
       </aside>
 
       <main className="editor-area" aria-label="Editor">
