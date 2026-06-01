@@ -1,11 +1,11 @@
 import { useEffect, useState } from "react";
-import { AgentPanel } from "./agent/AgentPanel.jsx";
-import { initializeMapApp } from "./mapApp.js";
-import { AddressTab } from "./workspace/AddressTab.jsx";
-import { AgentModulesTab } from "./workspace/AgentModulesTab.jsx";
-import { DetailsTab } from "./workspace/DetailsTab.jsx";
-import { FormulasTab } from "./workspace/FormulasTab.jsx";
-import { SourcesTab } from "./workspace/SourcesTab.jsx";
+import { AgentPanel } from "../features/agents/AgentPanel.jsx";
+import { initializeMapApp } from "./initializeMapApp.js";
+import { AddressTab } from "../features/address-search/AddressTab.jsx";
+import { AgentModulesTab } from "../features/agents/AgentModulesTab.jsx";
+import { DetailsTab } from "../features/records/DetailsTab.jsx";
+import { FormulasTab } from "../features/formulas/FormulasTab.jsx";
+import { SourcesTab } from "../features/sources/SourcesTab.jsx";
 
 function ActivityButton({ tab, label, icon, children, active = false, onClick }) {
   return (

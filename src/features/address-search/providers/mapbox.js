@@ -1,6 +1,6 @@
-import { getMapboxAccessToken, STATEN_ISLAND_BBOX, STATEN_ISLAND_CENTER } from "./config.js";
+import { getMapboxAccessToken, STATEN_ISLAND_BBOX, STATEN_ISLAND_CENTER } from "../../map/config.js";
 
-export function createPlaceSearchBox(map, onRetrieve) {
+export function createPlaceSearchBox(map, onRetrieve, initialValue = "") {
   const searchBox = new mapboxsearch.MapboxSearchBox();
 
   searchBox.accessToken = getMapboxAccessToken();
@@ -37,6 +37,13 @@ export function createPlaceSearchBox(map, onRetrieve) {
   if (map) searchBox.bindMap(map);
   searchBox.addEventListener("retrieve", (event) => {
     onRetrieve(event.detail);
+  });
+  searchBox.addEventListener("focusin", () => {
+    const text = searchBox.value.trim();
+    if (text) searchBox.search(text);
+  });
+  queueMicrotask(() => {
+    searchBox.value = initialValue;
   });
 
   return searchBox;

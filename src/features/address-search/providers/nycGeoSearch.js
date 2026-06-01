@@ -1,9 +1,9 @@
-import { STATEN_ISLAND_BBOX, STATEN_ISLAND_CENTER } from "./config.js";
+import { STATEN_ISLAND_BBOX, STATEN_ISLAND_CENTER } from "../../map/config.js";
 
 const AUTOCOMPLETE_URL = "https://geosearch.planninglabs.nyc/v2/autocomplete";
 const DEBOUNCE_MS = 300;
 
-export function createGeoSearchBox(map, onRetrieve) {
+export function createGeoSearchBox(map, onRetrieve, initialValue = "") {
   const container = document.createElement("div");
   container.className = "geosearch";
 
@@ -12,6 +12,7 @@ export function createGeoSearchBox(map, onRetrieve) {
   input.type = "text";
   input.placeholder = "Search address or place";
   input.autocomplete = "off";
+  input.value = initialValue;
 
   // Attach list to body so it escapes overflow:hidden on .search-box-shell
   // and overflow-y:auto on .workspace-tab — both would clip an in-flow dropdown.
@@ -25,6 +26,7 @@ export function createGeoSearchBox(map, onRetrieve) {
   let timer = null;
   let results = [];
   let marker = null;
+  let destroyed = false;
 
   input.addEventListener("input", () => {
     clearTimeout(timer);
@@ -33,13 +35,21 @@ export function createGeoSearchBox(map, onRetrieve) {
     timer = setTimeout(() => fetchSuggestions(text), DEBOUNCE_MS);
   });
 
+  input.addEventListener("focus", () => {
+    const text = input.value.trim();
+    if (text) fetchSuggestions(text);
+  });
+
+  input.addEventListener("blur", hide);
+
   input.addEventListener("keydown", (e) => {
     if (e.key === "Escape") hide();
   });
 
-  document.addEventListener("click", (e) => {
+  const onDocClick = (e) => {
     if (!container.contains(e.target) && !list.contains(e.target)) hide();
-  });
+  };
+  document.addEventListener("click", onDocClick);
 
   async function fetchSuggestions(text) {
     const url = new URL(AUTOCOMPLETE_URL);
@@ -55,6 +65,7 @@ export function createGeoSearchBox(map, onRetrieve) {
       const res = await fetch(url);
       if (!res.ok) return;
       const data = await res.json();
+      if (destroyed || document.activeElement !== input) return;
       results = data.features ?? [];
       render();
     } catch {}
@@ -81,6 +92,13 @@ export function createGeoSearchBox(map, onRetrieve) {
   }
 
   function hide() { list.hidden = true; results = []; }
+
+  container.destroy = () => {
+    destroyed = true;
+    clearTimeout(timer);
+    document.removeEventListener("click", onDocClick);
+    list.remove();
+  };
 
   function select(feature) {
     input.value = feature.properties.label || feature.properties.name;

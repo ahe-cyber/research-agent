@@ -1,18 +1,30 @@
-import { getMapboxAccessToken } from "./config.js";
-import { createPlaceSearchBox } from "./search.js";
-import { createGeoSearchBox } from "./geosearch.js";
+import { getMapboxAccessToken, getGoogleMapsApiKey } from "../map/config.js";
+import { createPlaceSearchBox } from "./providers/mapbox.js";
+import { createGeoSearchBox } from "./providers/nycGeoSearch.js";
+import { createGoogleSearchBox } from "./providers/googlePlaces.js";
 
 function getSources() {
   const sources = [{ id: "geosearch", label: "NYC GeoSearch" }];
   if (getMapboxAccessToken()) {
-    sources.push({ id: "mapbox", label: "Mapbox" });
+    sources.push({ id: "mapbox", label: "Mapbox", costly: true });
+  }
+  if (getGoogleMapsApiKey()) {
+    sources.push({ id: "google", label: "Google Places", costly: true });
   }
   return sources;
+}
+
+function appendLabel(element, source) {
+  if (source.costly) {
+    element.classList.add("has-money-icon");
+  }
+  element.append(source.label);
 }
 
 export function createSearchSourceControl(map, onRetrieve, searchBoxContainer) {
   const sources = getSources();
   let currentId = sources[0].id;
+  let currentBox = null;
   let open = false;
 
   const el = document.createElement("div");
@@ -28,10 +40,11 @@ export function createSearchSourceControl(map, onRetrieve, searchBoxContainer) {
     if (open) {
       const menu = document.createElement("div");
       menu.className = "search-source-menu";
-      sources.forEach(({ id, label }) => {
+      sources.forEach((source) => {
+        const { id } = source;
         const item = document.createElement("button");
         item.className = "search-source-item" + (id === currentId ? " is-active" : "");
-        item.textContent = label;
+        appendLabel(item, source);
         item.addEventListener("click", (e) => { e.stopPropagation(); select(id); });
         menu.appendChild(item);
       });
@@ -40,7 +53,7 @@ export function createSearchSourceControl(map, onRetrieve, searchBoxContainer) {
 
     const btn = document.createElement("button");
     btn.className = "section-tool-button";
-    btn.textContent = current.label;
+    appendLabel(btn, current);
     btn.addEventListener("click", (e) => { e.stopPropagation(); open ? close() : openMenu(); });
     el.appendChild(btn);
   }
@@ -58,17 +71,28 @@ export function createSearchSourceControl(map, onRetrieve, searchBoxContainer) {
   }
 
   function swapBox() {
+    const query = getSearchText(currentBox);
+    currentBox?.destroy?.();
     searchBoxContainer.replaceChildren();
     // Wrap onRetrieve to pass the active source ID so callers can adapt.
     const wrapped = (result) => onRetrieve(result, currentId);
     const box = currentId === "mapbox"
-      ? createPlaceSearchBox(map, wrapped)
-      : createGeoSearchBox(map, wrapped);
+      ? createPlaceSearchBox(map, wrapped, query)
+      : currentId === "google"
+        ? createGoogleSearchBox(map, wrapped, query)
+        : createGeoSearchBox(map, wrapped, query);
     searchBoxContainer.appendChild(box);
+    currentBox = box;
   }
 
   render();
   swapBox();
 
   return { element: el };
+}
+
+function getSearchText(box) {
+  if (!box) return "";
+  if (typeof box.value === "string") return box.value;
+  return box.querySelector("input")?.value ?? "";
 }

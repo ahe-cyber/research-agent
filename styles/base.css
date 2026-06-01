@@ -17,3 +17,19 @@ mapbox-search-box:focus-within {
   outline: 2px solid #2f6fed;
   outline-offset: 2px;
 }
+
+.has-money-icon {
+  position: relative;
+}
+
+.has-money-icon::before {
+  content: "";
+  position: absolute;
+  inset: 50% auto auto 50%;
+  width: 20px;
+  height: 20px;
+  background: center / contain no-repeat url("/resources/money.svg");
+  opacity: 0.16;
+  pointer-events: none;
+  transform: translate(-50%, -50%);
+}

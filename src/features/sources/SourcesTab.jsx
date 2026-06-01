@@ -1,4 +1,4 @@
-import { buildUrlWithParams, queryUrl } from "../map/pluto.js";
+import { buildUrlWithParams, queryUrl } from "../map/geojson.js";
 
 const DATASET_DRAFT_STORAGE_KEY = "research-agent.datasetSourcesDraft";
 const NEW_SOURCE_NAME = "New Source";

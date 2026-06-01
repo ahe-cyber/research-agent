@@ -41,8 +41,8 @@
       "id": "agent-mppw6hfj",
       "name": "Analyzer",
       "description": "You will review the research target, identify and query relevant data sources, analyze the results for key insights, and send these insights to the Reporter. You will also identify missing information and instruct the Explorer to search for it.",
-      "x": 401.6375162841887,
-      "y": 408.9243450791584,
+      "x": 382.6375162841887,
+      "y": 382.9243450791584,
       "attachments": [],
       "toolHints": [
         "list_sources",
@@ -70,8 +70,8 @@
       "id": "agent-mppwcgtr",
       "name": "Meta",
       "description": "You help user configure instructions for agent modules through suggested tools. You should prefer concise sentences instead of lists or markdown. You should use second person language.",
-      "x": 400.03857479264866,
-      "y": -70.01649372021626,
+      "x": 349.03857479264866,
+      "y": 130.98350627978368,
       "attachments": [],
       "toolHints": [
         "list_agents",

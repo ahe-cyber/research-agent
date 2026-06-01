@@ -102,6 +102,135 @@ The right agent panel supports:
 
 When context is attached, the agent can use the current query records alongside the user message for GIS and data analysis.
 
+## Client Source Organization
+
+The browser application is organized by feature so it can be migrated to Next.js gradually without combining file moves with framework changes.
+
+```text
+src/
+  app/
+    App.jsx
+    initializeMapApp.js
+  features/
+    address-search/
+      AddressTab.jsx
+      SearchSourceControl.js
+      providers/
+        googlePlaces.js
+        mapbox.js
+        nycGeoSearch.js
+    agents/
+    assets/
+    catalog/
+    editor/
+    formulas/
+    map/
+    postman/
+    records/
+    sources/
+  lib/
+    markdown.js
+  main.jsx
+```
+
+Keep shared logic in `src/lib`, map rendering and GeoJSON logic in `src/features/map`, and feature-specific UI or controllers in their matching `src/features/*` folder. Avoid adding new browser modules to the old `src/map`, `src/workspace`, `src/agent`, or `src/utils` locations.
+
+## Next.js Migration Plan
+
+Complete one TODO block at a time. Keep each increment buildable and avoid changing application behavior unless the block explicitly requires it.
+
+### TODO: Next.js Migration Increment 1 - Add TypeScript Checking
+
+Add `typescript`, `tsconfig.json`, and an `npm run typecheck` script while keeping Vite as the runtime and bundler. Add declarations for the CDN-provided `maplibregl` and `mapboxsearch` globals. Do not install Next.js yet.
+
+### TODO: Next.js Migration Increment 2 - Convert Framework-Neutral Modules
+
+Rename and type the low-risk utility modules first:
+
+```text
+src/lib/markdown.js                  -> markdown.ts
+src/features/map/config.js           -> config.ts
+src/features/map/geojson.js          -> geojson.ts
+src/features/map/basemaps.js         -> basemaps.ts
+src/features/map/createMap.js        -> createMap.ts
+```
+
+Keep runtime behavior unchanged and run both `npm run build` and `npm run typecheck`.
+
+### TODO: Next.js Migration Increment 3 - Convert Address Search Providers
+
+Rename and type the search modules:
+
+```text
+src/features/address-search/SearchSourceControl.js       -> SearchSourceControl.ts
+src/features/address-search/providers/mapbox.js          -> mapbox.ts
+src/features/address-search/providers/googlePlaces.js    -> googlePlaces.ts
+src/features/address-search/providers/nycGeoSearch.js    -> nycGeoSearch.ts
+```
+
+Define shared suggestion, retrieved-feature, provider, and destroyable-search-box interfaces. Preserve input text, focus behavior, and suggestion cleanup when switching providers.
+
+### TODO: Next.js Migration Increment 4 - Add a Next.js Client Shell
+
+Install `next` and add the App Router shell:
+
+```text
+src/app/layout.tsx
+src/app/page.tsx
+src/features/workspace/WorkspaceClient.tsx
+next.config.ts
+```
+
+Keep the GIS workspace client-rendered initially. Mark `WorkspaceClient.tsx` with `"use client"` and render the existing workspace from it. Load MapLibre and Mapbox Search browser scripts through `next/script` or client-only imports. Do not migrate Express endpoints yet.
+
+### TODO: Next.js Migration Increment 5 - Run Express Beside Next.js
+
+Keep `server.cjs` as the backend temporarily. Add Next.js rewrites for `/api/:path*` so the Next.js client can call the existing Express endpoints without changing browser fetch URLs. Document the development commands for running both processes.
+
+### TODO: Next.js Migration Increment 6 - Move Simple API Routes
+
+Move low-risk Express endpoints into App Router Route Handlers one domain at a time:
+
+```text
+src/app/api/datasets/route.ts
+src/app/api/hubs/route.ts
+src/app/api/instruction/route.ts
+src/app/api/tools/route.ts
+```
+
+Remove each matching Express handler only after verifying its Next.js replacement.
+
+### TODO: Next.js Migration Increment 7 - Move External API Proxies
+
+Migrate the query proxy and Postman routes:
+
+```text
+src/app/api/query/route.ts
+src/app/api/postman/collections/route.ts
+src/app/api/postman/collections/[id]/route.ts
+```
+
+Keep Postman credentials server-only. Verify JSON error responses and upstream failure handling.
+
+### TODO: Next.js Migration Increment 8 - Move Agent APIs
+
+Migrate the agent registry and chat endpoints last:
+
+```text
+src/app/api/agents/route.ts
+src/app/api/agent/chat/route.ts
+```
+
+Preserve Gemini credentials as server-only environment variables. Move shared backend helpers out of `server.cjs` into typed server modules as needed.
+
+### TODO: Next.js Migration Increment 9 - Remove the Legacy Server
+
+After every endpoint has a Route Handler, remove `server.cjs`, Express, and the temporary API rewrites. Replace Vite scripts with Next.js scripts and confirm development, production build, and production start behavior.
+
+### TODO: Next.js Migration Increment 10 - Adopt Next.js Features Selectively
+
+Once parity is established, evaluate route-based editor views, server-rendered non-map pages, `next/font`, `next/script`, and code splitting. Keep the interactive GIS map in a client component unless there is a concrete reason to change that boundary.
+
 ## Future Work
 
 Each item below should have its own TODO section so it can be picked up as an implementable Codex task from VS Code.

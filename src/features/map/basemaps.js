@@ -47,6 +47,7 @@ const BASEMAPS = [
     return token ? [{
       id: "mapbox",
       label: "Mapbox Streets",
+      costly: true,
       style: () => `https://api.mapbox.com/styles/v1/mapbox/streets-v12?access_token=${token}`,
       maxZoom: 22
     }] : [];
@@ -54,6 +55,13 @@ const BASEMAPS = [
 ];
 
 export const DEFAULT_BASEMAP = BASEMAPS[0];
+
+function appendLabel(element, basemap) {
+  if (basemap.costly) {
+    element.classList.add("has-money-icon");
+  }
+  element.append(basemap.label);
+}
 
 // Resolve a relative URL against a base, preserving {template} placeholders
 // which the URL constructor would percent-encode.
@@ -145,10 +153,11 @@ export class BasemapControl {
     if (this._open) {
       const menu = document.createElement("div");
       menu.className = "basemap-ctrl-menu";
-      BASEMAPS.forEach(({ id, label }) => {
+      BASEMAPS.forEach((basemap) => {
+        const { id } = basemap;
         const item = document.createElement("button");
         item.className = "basemap-ctrl-item" + (id === this._currentId ? " is-active" : "");
-        item.textContent = label;
+        appendLabel(item, basemap);
         item.addEventListener("click", (e) => { e.stopPropagation(); this._select(id); });
         menu.appendChild(item);
       });
@@ -157,7 +166,7 @@ export class BasemapControl {
 
     const btn = document.createElement("button");
     btn.className = "basemap-ctrl-btn";
-    btn.textContent = current.label;
+    appendLabel(btn, current);
     btn.addEventListener("click", (e) => { e.stopPropagation(); this._open ? this._close() : this._openMenu(); });
     this._container.appendChild(btn);
   }

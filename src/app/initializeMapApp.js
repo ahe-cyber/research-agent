@@ -1,14 +1,14 @@
-import { createAgentController } from "./agent/AgentPanel.jsx";
-import { createMap } from "./map/map.js";
-import { createSearchSourceControl } from "./map/searchSource.js";
-import { createAddressController } from "./workspace/AddressTab.jsx";
-import { createAgentModulesController } from "./workspace/AgentModulesTab.jsx";
-import { createCatalogController } from "./workspace/CatalogBrowser.js";
-import { createRecordController, createRecordStore } from "./workspace/DetailsTab.jsx";
-import { createEditorTabController } from "./workspace/EditorTabs.js";
-import { createFormulaController } from "./workspace/FormulasTab.jsx";
-import { createPostmanController } from "./workspace/PostmanTab.js";
-import { createSourceController } from "./workspace/SourcesTab.jsx";
+import { createAgentController } from "../features/agents/AgentPanel.jsx";
+import { createMap } from "../features/map/createMap.js";
+import { createSearchSourceControl } from "../features/address-search/SearchSourceControl.js";
+import { createAddressController } from "../features/address-search/AddressTab.jsx";
+import { createAgentModulesController } from "../features/agents/AgentModulesTab.jsx";
+import { createCatalogController } from "../features/catalog/CatalogBrowser.js";
+import { createRecordController, createRecordStore } from "../features/records/DetailsTab.jsx";
+import { createEditorTabController } from "../features/editor/EditorTabs.js";
+import { createFormulaController } from "../features/formulas/FormulasTab.jsx";
+import { createPostmanController } from "../features/postman/PostmanTab.js";
+import { createSourceController } from "../features/sources/SourcesTab.jsx";
 
 let sourceController;
 let catalogController;
@@ -20,7 +20,8 @@ async function handlePlaceRetrieved(searchResult, searchSourceId) {
   addressController.add(searchResult);
   const outputVariables = sourceController.assignMapboxSearchOutputs(searchResult);
 
-  const title = searchSourceId === "geosearch" ? "NYC GeoSearch result" : "Mapbox search result";
+  const titleMap = { geosearch: "NYC GeoSearch result", mapbox: "Mapbox search result", google: "Google Places result" };
+  const title = titleMap[searchSourceId] ?? "Search result";
   const record = recordController.add({
     kind: "Search",
     title,

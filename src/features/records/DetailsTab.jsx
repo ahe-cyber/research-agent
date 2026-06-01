@@ -1,4 +1,4 @@
-import { hideGeoJsonRecord, normalizeGeoJson, showGeoJsonRecord } from "../map/pluto.js";
+import { hideGeoJsonRecord, normalizeGeoJson, showGeoJsonRecord } from "../map/geojson.js";
 
 export function DetailsTab({ active }) {
   return (

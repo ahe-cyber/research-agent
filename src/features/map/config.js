@@ -9,3 +9,7 @@ export const STATEN_ISLAND_CENTER = [-74.1502, 40.5795];
 export function getMapboxAccessToken() {
   return import.meta.env.VITE_MAPBOX_ACCESS_TOKEN || "";
 }
+
+export function getGoogleMapsApiKey() {
+  return import.meta.env.VITE_GOOGLE_MAPS_API_KEY || "";
+}

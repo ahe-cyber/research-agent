@@ -3,6 +3,7 @@
     "dev": "node server.cjs",
     "client:dev": "vite --host 0.0.0.0",
     "build": "vite build",
+    "typecheck": "tsc --noEmit",
     "preview": "NODE_ENV=production node server.cjs"
   },
   "dependencies": {
@@ -12,5 +13,8 @@
     "react": "latest",
     "react-dom": "latest",
     "vite": "latest"
+  },
+  "devDependencies": {
+    "typescript": "^6.0.3"
   }
 }

@@ -1,5 +1,5 @@
 import { getMapboxAccessToken, STATEN_ISLAND_BOUNDS } from "./config.js";
-import { BasemapControl, DEFAULT_BASEMAP, getStyle } from "./basemap.js";
+import { BasemapControl, DEFAULT_BASEMAP, getStyle } from "./basemaps.js";
 
 export async function createMap() {
   const accessToken = getMapboxAccessToken();
