@@ -11,6 +11,7 @@ import { createPostmanController } from "../features/postman/PostmanTab.js";
 import { createSourceController } from "../features/sources/SourcesTab.jsx";
 import { createLayerSourcesController } from "../features/map/LayerSourcesPage";
 
+let initialized = false;
 let sourceController;
 let catalogController;
 let recordController;
@@ -38,6 +39,8 @@ async function handlePlaceRetrieved(searchResult, searchSourceId) {
 }
 
 export async function initializeMapApp() {
+  if (initialized) return;
+  initialized = true;
   const searchBoxContainer = document.getElementById("placeSearchBox");
   let map = null;
 

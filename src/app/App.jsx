@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { AgentPanel } from "../features/agents/AgentPanel.jsx";
 import { initializeMapApp } from "./initializeMapApp.js";
 import { AddressTab } from "../features/address-search/AddressTab.jsx";
@@ -6,36 +6,112 @@ import { AgentModulesTab } from "../features/agents/AgentModulesTab.jsx";
 import { DetailsTab } from "../features/records/DetailsTab.jsx";
 import { FormulasTab } from "../features/formulas/FormulasTab.jsx";
 import { SourcesTab } from "../features/sources/SourcesTab.jsx";
+import { loadWorkspaceState, saveWorkspaceState } from "../lib/workspaceState.js";
 
-function ActivityButton({ tab, label, icon, children, active = false, onClick }) {
+const DEFAULT_TABS = [
+  { id: "address", label: "Address", icon: "address" },
+  { id: "details", label: "Records", icon: "record" },
+  { id: "sources", label: "Sources", icon: "source" },
+  { id: "formulas", label: "Agent Tools", icon: "formula" },
+  { id: "agents", label: "Agent Modules", icon: "agents" },
+  { id: "map", label: "Map", icon: "map" },
+];
+
+function getInitialTabs() {
+  const { activityOrder } = loadWorkspaceState();
+  if (!Array.isArray(activityOrder)) return DEFAULT_TABS;
+  const ordered = activityOrder.map((id) => DEFAULT_TABS.find((t) => t.id === id)).filter(Boolean);
+  const remaining = DEFAULT_TABS.filter((t) => !activityOrder.includes(t.id));
+  return [...ordered, ...remaining];
+}
+
+function ActivityButton({ tab, label, icon, active, dragOver, onDragStart, onDragOver, onDrop, onDragEnd, onClick }) {
   return (
     <button
-      className={`activity-button${active ? " is-active" : ""}${icon ? ` activity-icon activity-icon-${icon}` : ""}`}
+      className={[
+        "activity-button",
+        active && "is-active",
+        icon && `activity-icon activity-icon-${icon}`,
+        dragOver && "is-drag-over",
+      ].filter(Boolean).join(" ")}
       type="button"
       aria-label={label}
+      draggable
       onClick={() => onClick(tab)}
-    >
-      {!icon && children}
-    </button>
+      onDragStart={onDragStart}
+      onDragOver={onDragOver}
+      onDrop={onDrop}
+      onDragEnd={onDragEnd}
+    />
   );
 }
 
 export default function App() {
-  const [activeTab, setActiveTab] = useState("address");
+  const [activeTab, setActiveTab] = useState(() => loadWorkspaceState().activeActivityTab ?? "address");
   const [isViewMenuOpen, setIsViewMenuOpen] = useState(true);
+  const [tabs, setTabs] = useState(getInitialTabs);
+  const [dragOverId, setDragOverId] = useState(null);
+  const draggedId = useRef(null);
 
   useEffect(() => {
     initializeMapApp();
   }, []);
 
+  useEffect(() => {
+    saveWorkspaceState({ activityOrder: tabs.map((t) => t.id) });
+  }, [tabs]);
+
+  useEffect(() => {
+    saveWorkspaceState({ activeActivityTab: activeTab });
+  }, [activeTab]);
+
+  function handleDragStart(id) {
+    draggedId.current = id;
+  }
+
+  function handleDragOver(e, id) {
+    e.preventDefault();
+    if (id !== draggedId.current) setDragOverId(id);
+  }
+
+  function handleDrop(e, targetId) {
+    e.preventDefault();
+    const fromId = draggedId.current;
+    draggedId.current = null;
+    setDragOverId(null);
+    if (!fromId || fromId === targetId) return;
+    setTabs((prev) => {
+      const next = [...prev];
+      const from = next.findIndex((t) => t.id === fromId);
+      const to = next.findIndex((t) => t.id === targetId);
+      next.splice(to, 0, next.splice(from, 1)[0]);
+      return next;
+    });
+  }
+
+  function handleDragEnd() {
+    draggedId.current = null;
+    setDragOverId(null);
+  }
+
   return (
     <div className="app-shell">
       <nav className="activity-bar" aria-label="Activity Bar">
-        <ActivityButton tab="address" label="Address" icon="address" active={activeTab === "address"} onClick={setActiveTab} />
-        <ActivityButton tab="details" label="Records" icon="record" active={activeTab === "details"} onClick={setActiveTab} />
-        <ActivityButton tab="sources" label="Sources" icon="source" active={activeTab === "sources"} onClick={setActiveTab} />
-        <ActivityButton tab="formulas" label="Agent Tools" icon="formula" active={activeTab === "formulas"} onClick={setActiveTab} />
-        <ActivityButton tab="agents" label="Agent Modules" icon="agents" active={activeTab === "agents"} onClick={setActiveTab} />
+        {tabs.map(({ id, label, icon }) => (
+          <ActivityButton
+            key={id}
+            tab={id}
+            label={label}
+            icon={icon}
+            active={activeTab === id}
+            dragOver={dragOverId === id}
+            onClick={setActiveTab}
+            onDragStart={() => handleDragStart(id)}
+            onDragOver={(e) => handleDragOver(e, id)}
+            onDrop={(e) => handleDrop(e, id)}
+            onDragEnd={handleDragEnd}
+          />
+        ))}
       </nav>
 
       <aside className="workspace-sidebar" aria-label="Primary Side Bar">
@@ -61,7 +137,7 @@ export default function App() {
             id="layerSourcesButton"
             aria-label="Layer sources"
             title="Layer sources"
-            hidden={activeTab !== "address"}
+            hidden={activeTab !== "map"}
           />
           <button
             className="section-tool-button wrap-text-button"
@@ -112,8 +188,7 @@ export default function App() {
         <FormulasTab active={activeTab === "formulas"} />
         <AgentModulesTab active={activeTab === "agents"} />
 
-        <section className="map-display-settings" aria-label="Map display settings">
-          <h2 className="section-title">Map</h2>
+        <section className="workspace-tab map-display-settings" aria-label="Map display settings" hidden={activeTab !== "map"}>
           <div className="map-display-group">
             <h3>Basemap</h3>
             <div id="mapBasemapOptions" />

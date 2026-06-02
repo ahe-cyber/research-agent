@@ -1,4 +1,5 @@
 import { markdownToHtml } from "../../lib/markdown";
+import { loadWorkspaceState, saveWorkspaceState } from "../../lib/workspaceState.js";
 
 export function createEditorTabController({ onMapActivated = () => {} } = {}) {
   const tabBar = document.getElementById("editorTabBar");
@@ -8,6 +9,13 @@ export function createEditorTabController({ onMapActivated = () => {} } = {}) {
   let activeTabId = "map";
   const tabs = [{ id: "map", label: "Map", closeable: false }];
   const panelMap = {};
+
+  function persistEditorState() {
+    saveWorkspaceState({
+      openEditorTabs: tabs.map(({ id, label }) => ({ id, label })),
+      activeEditorTab: activeTabId,
+    });
+  }
 
   function render() {
     tabBar.replaceChildren();
@@ -47,6 +55,7 @@ export function createEditorTabController({ onMapActivated = () => {} } = {}) {
   function activateTab(id) {
     activeTabId = id;
     render();
+    persistEditorState();
     if (id === "map") {
       onMapActivated();
     }
@@ -73,6 +82,7 @@ export function createEditorTabController({ onMapActivated = () => {} } = {}) {
     }
 
     render();
+    persistEditorState();
   }
 
   function openTableTab(record, variableName, element) {

@@ -3,6 +3,7 @@
     "dev": "node server.cjs",
     "client:dev": "vite --host 0.0.0.0",
     "build": "vite build",
+    "api:dev": "API_ONLY=true node server.cjs",
     "next:dev": "next dev",
     "next:build": "next build",
     "next:start": "next start",

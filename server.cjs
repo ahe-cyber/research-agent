@@ -25,7 +25,8 @@ try {
 
 const app = express();
 const httpServer = http.createServer(app);
-const port = Number(process.env.PORT || 5173);
+const API_ONLY = process.env.API_ONLY === "true";
+const port = Number(process.env.PORT || (API_ONLY ? 3001 : 5173));
 const rootDir = __dirname;
 const datasetsPath = path.join(rootDir, "public", "data", "datasets.json");
 const POSTMAN_API_BASE = "https://api.getpostman.com";
@@ -128,7 +129,14 @@ app.get("/api/terrain/nyc-topobathymetric-2017/:z/:x/:y.png", async (request, re
       .send(await encodeTerrainRgbTile(terrainRgb));
   } catch (error) {
     console.error("[Terrain] Failed to build NYC topobathymetric tile", error);
-    response.status(502).json({ error: "Failed to build terrain tile." });
+    try {
+      response
+        .set("Cache-Control", "public, max-age=300")
+        .type("png")
+        .send(await encodeTerrainRgbTile(createFlatTerrainRgbTile()));
+    } catch {
+      response.status(502).json({ error: "Failed to build terrain tile." });
+    }
   }
 });
 
@@ -282,12 +290,10 @@ app.get("/api/postman/collections/:id", async (request, response) => {
 
 // ── Agent instruction ─────────────────────────────────────────────────────────
 
-const instructionPath = path.join(rootDir, "public", "data", "instruction.json");
-
 app.get("/api/instruction", async (request, response) => {
   try {
-    const data = JSON.parse(await fs.readFile(instructionPath, "utf8"));
-    response.json(data);
+    const data = JSON.parse(await fs.readFile(agentsPath, "utf8"));
+    response.json({ instruction: data.globalInstruction || "" });
   } catch {
     response.json({ instruction: "" });
   }
@@ -300,7 +306,10 @@ app.put("/api/instruction", async (request, response) => {
     return;
   }
   try {
-    await fs.writeFile(instructionPath, `${JSON.stringify({ instruction }, null, 2)}\n`, "utf8");
+    let data = { globalInstruction: "", agents: [], connections: [] };
+    try { data = JSON.parse(await fs.readFile(agentsPath, "utf8")); } catch {}
+    data.globalInstruction = instruction;
+    await fs.writeFile(agentsPath, `${JSON.stringify(data, null, 2)}\n`, "utf8");
     response.json({ ok: true });
   } catch (error) {
     console.error(error);
@@ -343,7 +352,7 @@ const TOOL_DECLARATIONS = [
   },
   {
     name: "call_agent",
-    description: "Call an agent module directly by id or name. Use this to delegate a focused task to an attached or configured specialist agent and get its response.",
+    description: "Call an agent module directly by id or name. Use this to delegate a focused task to an attached or configured specialist agent and get its response. The result contains a `text` field with the agent's reply — always relay that text to the user verbatim or quoted.",
     parameters: {
       type: "OBJECT",
       properties: {
@@ -1112,7 +1121,7 @@ function buildEntryAgentInstruction(agent, globalInstruction = "", caller = null
   }
 
   if (caller) {
-    parts.push(`<caller_agent>\nname: ${caller.name || "Agent module"}\nid: ${caller.id}\nReturn your reply to this caller.\n</caller_agent>`);
+    parts.push(`<caller_agent>\nname: ${caller.name || "Agent module"}\nid: ${caller.id}\ndescription: ${caller.description || ""}\nReturn your reply to this caller.\n</caller_agent>`);
   }
 
   return parts.join("\n\n");
@@ -1199,7 +1208,7 @@ app.post("/api/agent/chat", async (request, response) => {
   } catch { /* no sources configured */ }
   try {
     const loadedAgents = JSON.parse(await fs.readFile(agentsPath, "utf8"));
-    if (loadedAgents && Array.isArray(loadedAgents.agents) && Array.isArray(loadedAgents.connections)) {
+    if (loadedAgents && Array.isArray(loadedAgents.agents)) {
       agentRegistry = loadedAgents;
     }
   } catch { /* no agent modules configured */ }
@@ -1417,7 +1426,9 @@ function isJsonContentType(contentType) {
 }
 
 async function start() {
-  if (process.env.NODE_ENV === "production") {
+  if (API_ONLY) {
+    // API-only mode: no frontend, used alongside Next.js dev server
+  } else if (process.env.NODE_ENV === "production") {
     app.use(express.static(path.join(rootDir, "dist")));
     app.get("*", (request, response) => {
       response.sendFile(path.join(rootDir, "dist", "index.html"));
@@ -1437,7 +1448,7 @@ async function start() {
   }
 
   httpServer.listen(port, "0.0.0.0", () => {
-    console.log(`Research agent server running at http://localhost:${port}`);
+    console.log(`Research agent server running at http://localhost:${port}${API_ONLY ? " (API only)" : ""}`);
   });
 }
 

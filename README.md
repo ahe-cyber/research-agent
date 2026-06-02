@@ -170,7 +170,7 @@ src/features/address-search/providers/nycGeoSearch.js    -> nycGeoSearch.ts
 
 Define shared suggestion, retrieved-feature, provider, and destroyable-search-box interfaces. Preserve input text, focus behavior, and suggestion cleanup when switching providers.
 
-### TODO: Next.js Migration Increment 4 - Add a Next.js Client Shell
+### TODO: Next.js Migration Increment 4 - Add a Next.js Client Shell - DONE
 
 Install `next` and add the App Router shell:
 
@@ -183,9 +183,26 @@ next.config.ts
 
 Keep the GIS workspace client-rendered initially. Mark `WorkspaceClient.tsx` with `"use client"` and render the existing workspace from it. Load MapLibre and Mapbox Search browser scripts through `next/script` or client-only imports. Do not migrate Express endpoints yet.
 
-### TODO: Next.js Migration Increment 5 - Run Express Beside Next.js
+### Next.js Migration Increment 5 - Run Express Beside Next.js
 
-Keep `server.cjs` as the backend temporarily. Add Next.js rewrites for `/api/:path*` so the Next.js client can call the existing Express endpoints without changing browser fetch URLs. Document the development commands for running both processes.
+`server.cjs` continues as the API backend. `next.config.ts` rewrites `/api/:path*` to `http://localhost:3001/api/:path*` so the Next.js client can call all existing Express endpoints without changing any browser fetch URLs.
+
+To run the full development stack, open two terminals:
+
+```bash
+# Terminal 1 — Express API on port 3001
+npm run api:dev
+
+# Terminal 2 — Next.js dev server on port 3000
+npm run next:dev
+```
+
+Set `EXPRESS_PORT` if you need a different Express port:
+
+```bash
+EXPRESS_PORT=4000 npm run next:dev
+PORT=4000 npm run api:dev
+```
 
 ### TODO: Next.js Migration Increment 6 - Move Simple API Routes
 
@@ -258,6 +275,20 @@ Allow the agent to answer from lightweight assumptions and general knowledge onl
 ### TODO: UI Convenience
 
 Add resizable panels, tileable tabs, and related workspace conveniences.
+
+### TODO: Restore Editor Tabs on Reload
+
+The workspace state (`localStorage["workspace-state"]`) already saves `openEditorTabs`, `activeEditorTab`, and `activeActivityTab` on every change. Restoration logic is not yet implemented.
+
+Three tiers of restorability:
+
+**Tier 1 — PDF tabs** (`pdf::{url}`): the URL is embedded in the saved tab ID. `EditorTabs.js` can restore these alone on init by iterating saved tabs and calling `openPdfTab` for any `pdf::*` entry.
+
+**Tier 2 — Singleton panels** (`sources-editor`, `postman-collections`, `agents-editor`, `catalog-results`, `layer-sources`): each panel is created once by its owning controller. Add a `registerPanel(id, label, panel)` method to `EditorTabs.js` that silently adds the tab and panel without activating, unless it matches the saved `activeEditorTab`. Each owning controller calls `registerPanel` unconditionally on init instead of waiting for user action.
+
+Files: `EditorTabs.js` + `SourcesTab.jsx`, `PostmanTab.js`, `AgentModulesTab.jsx`, `CatalogBrowser.js`, `LayerSourcesPage.ts`.
+
+**Tier 3 — Ephemeral tabs** (`table-*`, `report-*`, `catalog-dataset-*`): panel content does not survive a reload. Filter these out of `openEditorTabs` before saving. If `activeEditorTab` pointed at one of these, fall back to `"map"`.
 
 ### TODO: User-Configurable Agent Flow
 

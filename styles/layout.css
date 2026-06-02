@@ -38,6 +38,10 @@
   border-left-color: #2f6fed;
 }
 
+.activity-button.is-drag-over {
+  border-top: 2px solid #2f6fed;
+}
+
 .activity-icon {
   position: relative;
 }
@@ -72,6 +76,11 @@
 .activity-icon-agents::before {
   mask: center / contain no-repeat url("/assets/agent.svg");
   -webkit-mask: center / contain no-repeat url("/assets/agent.svg");
+}
+
+.activity-icon-map::before {
+  mask: center / contain no-repeat url("/assets/map.svg");
+  -webkit-mask: center / contain no-repeat url("/assets/map.svg");
 }
 
 .workspace-sidebar,
