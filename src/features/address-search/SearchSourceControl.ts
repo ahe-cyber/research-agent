@@ -1,36 +1,50 @@
-import { getMapboxAccessToken, getGoogleMapsApiKey } from "../map/config.js";
-import { createPlaceSearchBox } from "./providers/mapbox.js";
-import { createGeoSearchBox } from "./providers/nycGeoSearch.js";
-import { createGoogleSearchBox } from "./providers/googlePlaces.js";
+import { getMapboxAccessToken, getGoogleMapsApiKey } from "../map/config";
+import { createPlaceSearchBox } from "./providers/mapbox";
+import { createGeoSearchBox } from "./providers/nycGeoSearch";
+import { createGoogleSearchBox } from "./providers/googlePlaces";
+import type { DestroyableSearchBox, RetrieveHandler, SearchMap, SearchProvider } from "./types";
 
-function getSources() {
-  const sources = [{ id: "geosearch", label: "NYC GeoSearch" }];
+type SearchSourceId = "geosearch" | "mapbox" | "google";
+
+interface SearchSource {
+  id: SearchSourceId;
+  label: string;
+  costly?: boolean;
+  provider: SearchProvider;
+}
+
+function getSources(): SearchSource[] {
+  const sources: SearchSource[] = [{ id: "geosearch", label: "NYC GeoSearch", provider: createGeoSearchBox }];
   if (getMapboxAccessToken()) {
-    sources.push({ id: "mapbox", label: "Mapbox", costly: true });
+    sources.push({ id: "mapbox", label: "Mapbox", costly: true, provider: createPlaceSearchBox });
   }
   if (getGoogleMapsApiKey()) {
-    sources.push({ id: "google", label: "Google Places", costly: true });
+    sources.push({ id: "google", label: "Google Places", costly: true, provider: createGoogleSearchBox });
   }
   return sources;
 }
 
-function appendLabel(element, source) {
+function appendLabel(element: HTMLElement, source: SearchSource) {
   if (source.costly) {
     element.classList.add("has-money-icon");
   }
   element.append(source.label);
 }
 
-export function createSearchSourceControl(map, onRetrieve, searchBoxContainer) {
+export function createSearchSourceControl(
+  map: SearchMap | null,
+  onRetrieve: (result: Parameters<RetrieveHandler>[0], sourceId: SearchSourceId) => void,
+  searchBoxContainer: HTMLElement
+) {
   const sources = getSources();
   let currentId = sources[0].id;
-  let currentBox = null;
+  let currentBox: DestroyableSearchBox | null = null;
   let open = false;
 
   const el = document.createElement("div");
   el.className = "search-source-ctrl";
 
-  const onDocClick = (e) => { if (!el.contains(e.target)) close(); };
+  const onDocClick = (e: MouseEvent) => { if (!el.contains(e.target as Node)) close(); };
   document.addEventListener("click", onDocClick);
 
   function render() {
@@ -53,7 +67,7 @@ export function createSearchSourceControl(map, onRetrieve, searchBoxContainer) {
 
     const btn = document.createElement("button");
     btn.className = "section-tool-button";
-    appendLabel(btn, current);
+    appendLabel(btn, current!);
     btn.addEventListener("click", (e) => { e.stopPropagation(); open ? close() : openMenu(); });
     el.appendChild(btn);
   }
@@ -61,7 +75,7 @@ export function createSearchSourceControl(map, onRetrieve, searchBoxContainer) {
   function openMenu() { open = true; render(); }
   function close() { open = false; render(); }
 
-  function select(id) {
+  function select(id: SearchSourceId) {
     open = false;
     if (id !== currentId) {
       currentId = id;
@@ -75,12 +89,8 @@ export function createSearchSourceControl(map, onRetrieve, searchBoxContainer) {
     currentBox?.destroy?.();
     searchBoxContainer.replaceChildren();
     // Wrap onRetrieve to pass the active source ID so callers can adapt.
-    const wrapped = (result) => onRetrieve(result, currentId);
-    const box = currentId === "mapbox"
-      ? createPlaceSearchBox(map, wrapped, query)
-      : currentId === "google"
-        ? createGoogleSearchBox(map, wrapped, query)
-        : createGeoSearchBox(map, wrapped, query);
+    const wrapped: RetrieveHandler = (result) => onRetrieve(result, currentId);
+    const box = sources.find(source => source.id === currentId)!.provider(map, wrapped, query);
     searchBoxContainer.appendChild(box);
     currentBox = box;
   }
@@ -91,7 +101,7 @@ export function createSearchSourceControl(map, onRetrieve, searchBoxContainer) {
   return { element: el };
 }
 
-function getSearchText(box) {
+function getSearchText(box: DestroyableSearchBox | null) {
   if (!box) return "";
   if (typeof box.value === "string") return box.value;
   return box.querySelector("input")?.value ?? "";

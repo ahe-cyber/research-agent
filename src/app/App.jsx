@@ -56,6 +56,14 @@ export default function App() {
 
         <div className="view-menu-toolbar" hidden={!isViewMenuOpen}>
           <button
+            className="section-tool-button layer-sources-button"
+            type="button"
+            id="layerSourcesButton"
+            aria-label="Layer sources"
+            title="Layer sources"
+            hidden={activeTab !== "address"}
+          />
+          <button
             className="section-tool-button wrap-text-button"
             type="button"
             id="wrapJsonTextButton"
@@ -103,6 +111,18 @@ export default function App() {
         <SourcesTab active={activeTab === "sources"} />
         <FormulasTab active={activeTab === "formulas"} />
         <AgentModulesTab active={activeTab === "agents"} />
+
+        <section className="map-display-settings" aria-label="Map display settings">
+          <h2 className="section-title">Map</h2>
+          <div className="map-display-group">
+            <h3>Basemap</h3>
+            <div id="mapBasemapOptions" />
+          </div>
+          <div className="map-display-group">
+            <h3>Details</h3>
+            <div id="mapDetailOptions" />
+          </div>
+        </section>
       </aside>
 
       <main className="editor-area" aria-label="Editor">

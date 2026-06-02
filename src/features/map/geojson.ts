@@ -1,6 +1,39 @@
 const GEOJSON_LAYER_PREFIX = "record-geojson";
 
-export function getSearchResultCoordinates(searchResult) {
+type JsonObject = Record<string, any>;
+
+interface QueryError extends Error {
+  details?: JsonObject;
+}
+
+interface GeoJsonMap {
+  addLayer(layer: JsonObject): void;
+  addSource(id: string, source: JsonObject): void;
+  getLayer(id: string): unknown;
+  getSource(id: string): { setData(data: GeoJson): void } | undefined;
+  removeLayer(id: string): void;
+  removeSource(id: string): void;
+}
+
+interface GeoJsonGeometry {
+  type: "Point" | "MultiPoint" | "LineString" | "MultiLineString" | "Polygon" | "MultiPolygon";
+  coordinates: unknown[];
+}
+
+interface GeoJsonFeature {
+  type: "Feature";
+  properties?: JsonObject;
+  geometry: GeoJsonGeometry;
+}
+
+interface GeoJsonFeatureCollection {
+  type: "FeatureCollection";
+  features: GeoJsonFeature[];
+}
+
+type GeoJson = GeoJsonFeature | GeoJsonFeatureCollection;
+
+export function getSearchResultCoordinates(searchResult: JsonObject): unknown[] | null {
   const feature = searchResult.features && searchResult.features[0];
   const geometryCoordinates = feature && feature.geometry && feature.geometry.coordinates;
   const propertyCoordinates = feature && feature.properties && feature.properties.coordinates;
@@ -16,7 +49,7 @@ export function getSearchResultCoordinates(searchResult) {
   return null;
 }
 
-export function buildUrlWithParams(baseUrl, params) {
+export function buildUrlWithParams(baseUrl: string, params: Record<string, string>) {
   const url = new URL(baseUrl);
 
   Object.entries(params).forEach(([key, value]) => {
@@ -28,7 +61,7 @@ export function buildUrlWithParams(baseUrl, params) {
   return url.toString();
 }
 
-export async function queryUrl(url) {
+export async function queryUrl(url: string) {
   const startedAt = performance.now();
   let proxyResponse;
 
@@ -44,7 +77,7 @@ export async function queryUrl(url) {
     throw createQueryError("Query proxy request failed.", {
       url,
       durationMs: Math.round(performance.now() - startedAt),
-      originalError: error.message
+      originalError: (error as Error).message
     });
   }
 
@@ -103,13 +136,13 @@ export async function queryUrl(url) {
   };
 }
 
-function createQueryError(message, details) {
-  const error = new Error(message);
+function createQueryError(message: string, details: JsonObject) {
+  const error: QueryError = new Error(message);
   error.details = details;
   return error;
 }
 
-function getGeoJsonLayerIds(recordId) {
+function getGeoJsonLayerIds(recordId: string) {
   return {
     sourceId: `${GEOJSON_LAYER_PREFIX}-${recordId}`,
     circleLayerId: `${GEOJSON_LAYER_PREFIX}-${recordId}-circle`,
@@ -118,7 +151,7 @@ function getGeoJsonLayerIds(recordId) {
   };
 }
 
-function ensureGeoJsonLayers(map, recordId, geojson) {
+function ensureGeoJsonLayers(map: GeoJsonMap, recordId: string, geojson: GeoJson) {
   const { sourceId, circleLayerId, fillLayerId, lineLayerId } = getGeoJsonLayerIds(recordId);
 
   if (!map.getSource(sourceId)) {
@@ -176,12 +209,12 @@ function ensureGeoJsonLayers(map, recordId, geojson) {
   }
 }
 
-export function showGeoJsonRecord(map, recordId, geojson) {
+export function showGeoJsonRecord(map: GeoJsonMap, recordId: string, geojson: GeoJson) {
   ensureGeoJsonLayers(map, recordId, geojson);
-  map.getSource(getGeoJsonLayerIds(recordId).sourceId).setData(geojson);
+  map.getSource(getGeoJsonLayerIds(recordId).sourceId)!.setData(geojson);
 }
 
-export function hideGeoJsonRecord(map, recordId) {
+export function hideGeoJsonRecord(map: GeoJsonMap, recordId: string) {
   const { sourceId, circleLayerId, fillLayerId, lineLayerId } = getGeoJsonLayerIds(recordId);
 
   if (map.getLayer(fillLayerId)) {
@@ -201,7 +234,7 @@ export function hideGeoJsonRecord(map, recordId) {
   }
 }
 
-export function normalizeGeoJson(value) {
+export function normalizeGeoJson(value: any): GeoJson | null {
   if (!value) {
     return null;
   }
@@ -237,7 +270,7 @@ export function normalizeGeoJson(value) {
   return null;
 }
 
-function isGeoJsonFeature(feature) {
+function isGeoJsonFeature(feature: any): feature is GeoJsonFeature {
   return Boolean(
     feature &&
     feature.type === "Feature" &&
@@ -246,7 +279,7 @@ function isGeoJsonFeature(feature) {
   );
 }
 
-function isGeoJsonGeometry(geometry) {
+function isGeoJsonGeometry(geometry: any): geometry is GeoJsonGeometry {
   return Boolean(
     geometry &&
     (

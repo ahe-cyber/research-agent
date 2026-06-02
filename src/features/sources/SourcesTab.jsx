@@ -1,6 +1,6 @@
-import { buildUrlWithParams, queryUrl } from "../map/geojson.js";
+import { buildUrlWithParams, queryUrl } from "../map/geojson";
 
-const DATASET_DRAFT_STORAGE_KEY = "research-agent.datasetSourcesDraft";
+const LAYER_FIELDS_FOLDED_STORAGE_KEY = "research-agent.layerFieldsFolded";
 const NEW_SOURCE_NAME = "New Source";
 const NEW_SOURCE_DESCRIPTION = "New source description";
 const DEFAULT_SUPPORTED_INPUT_PARAMS_BY_TYPE = {
@@ -84,34 +84,21 @@ export function createSourceController(recordController, formulaController, edit
   addDatasetSourceButton.setAttribute("aria-label", "Add source");
   addDatasetSourceButton.title = "Add source";
 
-  const saveDatasetsButton = document.createElement("button");
-  saveDatasetsButton.className = "section-tool-button";
-  saveDatasetsButton.type = "button";
-  saveDatasetsButton.setAttribute("aria-label", "Save sources");
-  saveDatasetsButton.title = "Save sources";
-  saveDatasetsButton.textContent = "Save";
-
-  const discardDatasetsButton = document.createElement("button");
-  discardDatasetsButton.className = "section-tool-button";
-  discardDatasetsButton.type = "button";
-  discardDatasetsButton.setAttribute("aria-label", "Discard changes");
-  discardDatasetsButton.title = "Discard changes";
-  discardDatasetsButton.textContent = "Discard";
-
-  editorToolbar.append(addDatasetSourceButton, saveDatasetsButton, discardDatasetsButton);
+  editorToolbar.append(addDatasetSourceButton);
   editorPanel.append(editorToolbar, sourceList);
 
   let datasetSources = [];
   let sourceIdToOpen = "";
   let supportedInputParamsByType = { ...DEFAULT_SUPPORTED_INPUT_PARAMS_BY_TYPE };
+  let liveSaveTimer = null;
+  let liveSaveInFlight = false;
+  let liveSaveQueued = false;
 
   renderSources(BUILT_IN_SOURCES);
   renderCompactSources(BUILT_IN_SOURCES);
   loadDatasetSources();
   loadSupportedInputParams();
   addDatasetSourceButton.addEventListener("click", addDatasetSource);
-  saveDatasetsButton.addEventListener("click", saveDatasetSources);
-  discardDatasetsButton.addEventListener("click", discardDatasetSourceChanges);
   editSourcesButton.addEventListener("click", () => editorTabController.openSourcesTab(editorPanel));
   browseCatalogsButton.addEventListener("click", () => onBrowseCatalogs());
 
@@ -204,7 +191,7 @@ export function createSourceController(recordController, formulaController, edit
         throw new Error(`Dataset registry failed with status ${response.status}`);
       }
 
-      datasetSources = applyDatasetDraft(await response.json());
+      datasetSources = await response.json();
       renderSources(datasetSources);
       renderCompactSources(datasetSources);
       refreshAllParamColors();
@@ -216,13 +203,13 @@ export function createSourceController(recordController, formulaController, edit
 
   async function loadStaticDatasetSources() {
     try {
-      const response = await fetch("/resources/datasets.json");
+      const response = await fetch("/data/datasets.json");
 
       if (!response.ok) {
         throw new Error(`Static dataset registry failed with status ${response.status}`);
       }
 
-      datasetSources = applyDatasetDraft(await response.json());
+      datasetSources = await response.json();
       renderSources(datasetSources);
       renderCompactSources(datasetSources);
       refreshAllParamColors();
@@ -231,10 +218,17 @@ export function createSourceController(recordController, formulaController, edit
     }
   }
 
-  async function saveDatasetSources() {
+  function queueDatasetSync() {
+    liveSaveQueued = true;
+    clearTimeout(liveSaveTimer);
+    liveSaveTimer = setTimeout(syncDatasetsNow, 350);
+  }
+
+  async function syncDatasetsNow() {
+    if (liveSaveInFlight || !liveSaveQueued) return;
     const serializedSources = serializeDatasetSources();
-    saveDatasetsButton.disabled = true;
-    discardDatasetsButton.disabled = true;
+    liveSaveQueued = false;
+    liveSaveInFlight = true;
 
     try {
       const response = await fetch("/api/datasets", {
@@ -249,20 +243,16 @@ export function createSourceController(recordController, formulaController, edit
         throw new Error(`Dataset save failed with status ${response.status}`);
       }
 
-      datasetSources = serializedSources;
-      localStorage.removeItem(DATASET_DRAFT_STORAGE_KEY);
-      redrawDatasetSources();
     } catch (error) {
-      console.error(error);
+      console.error("[Sources] Live sync failed", error);
+      liveSaveQueued = true;
     } finally {
-      saveDatasetsButton.disabled = false;
-      discardDatasetsButton.disabled = false;
+      liveSaveInFlight = false;
+      if (liveSaveQueued) {
+        clearTimeout(liveSaveTimer);
+        liveSaveTimer = setTimeout(syncDatasetsNow, 1000);
+      }
     }
-  }
-
-  async function discardDatasetSourceChanges() {
-    localStorage.removeItem(DATASET_DRAFT_STORAGE_KEY);
-    await reloadDatasetSources();
   }
 
   async function reloadDatasetSources() {
@@ -276,31 +266,11 @@ export function createSourceController(recordController, formulaController, edit
     await loadDatasetSources();
   }
 
-  function applyDatasetDraft(sources) {
-    const draft = readDatasetDraft();
-    return draft || sources;
-  }
-
-  function readDatasetDraft() {
-    try {
-      const rawDraft = localStorage.getItem(DATASET_DRAFT_STORAGE_KEY);
-      const draft = rawDraft ? JSON.parse(rawDraft) : null;
-      return Array.isArray(draft) ? draft : null;
-    } catch (error) {
-      console.error(error);
-      return null;
-    }
-  }
-
-  function saveDatasetDraft() {
-    localStorage.setItem(DATASET_DRAFT_STORAGE_KEY, JSON.stringify(serializeDatasetDraftSources()));
-  }
-
   function addDatasetSource() {
     const source = createEmptyDatasetSource();
     datasetSources.push(source);
     sourceIdToOpen = source.id;
-    saveDatasetDraft();
+    queueDatasetSync();
     redrawDatasetSources();
   }
 
@@ -322,37 +292,26 @@ export function createSourceController(recordController, formulaController, edit
   function serializeDatasetSources() {
     return datasetSources.filter((source) => !source.isDeleted).map((source) => {
       const elements = sourceElements[source.id];
-
-      return {
-        ...source,
-        name: elements?.titleInput ? elements.titleInput.value.trim() : source.name,
-        description: elements?.descriptionInput ? elements.descriptionInput.value.trim() : source.description,
-        overviewUrl: elements?.overviewUrlInput ? elements.overviewUrlInput.value.trim() : source.overviewUrl,
-        defaultParams: elements?.paramsGrid ? collectSourceRowPairs(elements.paramsGrid, "key", "value") : source.defaultParams,
-        defaultOutputs: elements?.outputsGrid ? collectSourceRowPairs(elements.outputsGrid, "variable", "path") : source.defaultOutputs,
-        layerFields: source.layerFields || []
-      };
+      return serializeDatasetSource(source, elements);
     });
   }
 
-  function serializeDatasetDraftSources() {
-    return datasetSources.map((source) => {
-      if (source.isDeleted) {
-        return source;
-      }
+  function serializeDatasetSource(source, elements) {
+    const overviewUrl = elements?.overviewUrlInput ? elements.overviewUrlInput.value.trim() : source.overviewUrl;
+    const params = elements?.paramsGrid
+      ? collectSourceRowPairs(elements.paramsGrid, "key", "value")
+      : getEditableSourceParams(source);
 
-      const elements = sourceElements[source.id];
-
-      return {
-        ...source,
-        name: elements?.titleInput ? elements.titleInput.value.trim() : source.name,
-        description: elements?.descriptionInput ? elements.descriptionInput.value.trim() : source.description,
-        overviewUrl: elements?.overviewUrlInput ? elements.overviewUrlInput.value.trim() : source.overviewUrl,
-        defaultParams: elements?.paramsGrid ? collectSourceRowPairs(elements.paramsGrid, "key", "value") : source.defaultParams,
-        defaultOutputs: elements?.outputsGrid ? collectSourceRowPairs(elements.outputsGrid, "variable", "path") : source.defaultOutputs,
-        layerFields: source.layerFields || []
-      };
-    });
+    return {
+      ...source,
+      name: elements?.titleInput ? elements.titleInput.value.trim() : source.name,
+      description: elements?.descriptionInput ? elements.descriptionInput.value.trim() : source.description,
+      overviewUrl: stripQueryString(overviewUrl),
+      queryUrl: buildPersistedQueryUrl(source, overviewUrl, params),
+      defaultParams: params.filter((row) => hasVariableToken(row.value)),
+      defaultOutputs: elements?.outputsGrid ? collectSourceRowPairs(elements.outputsGrid, "variable", "path") : source.defaultOutputs,
+      layerFields: source.layerFields || []
+    };
   }
 
   function createDeletedSourceRow(source) {
@@ -382,7 +341,7 @@ export function createSourceController(recordController, formulaController, edit
 
   function markSourceDeleted(source) {
     source.isDeleted = true;
-    saveDatasetDraft();
+    queueDatasetSync();
     redrawDatasetSources();
   }
 
@@ -394,7 +353,7 @@ export function createSourceController(recordController, formulaController, edit
     }
 
     delete source.isDeleted;
-    saveDatasetDraft();
+    queueDatasetSync();
     redrawDatasetSources();
   }
 
@@ -429,7 +388,7 @@ export function createSourceController(recordController, formulaController, edit
     const attachButton = createAttachButton(`Attach ${getSourceDisplayName(source)} to chat`, () => {
       agentController?.attachRecord(createSourceAttachment(source));
     });
-    const saveSourceDraft = source.type === "mapbox-search" ? () => {} : saveDatasetDraft;
+    const saveSourceDraft = source.type === "mapbox-search" ? () => {} : queueDatasetSync;
     const refreshSourceFooter = () => updateSourceVariableFooter(variableFooter, source, paramsGrid && paramsGrid.rows, outputGrid.rows);
     const onSourceChange = () => {
       saveSourceDraft();
@@ -593,6 +552,7 @@ export function createSourceController(recordController, formulaController, edit
       overviewUrlInput.addEventListener("input", () => {
         source.overviewUrl = overviewUrlInput.value.trim();
         source.type = inferDatasetSourceType(source.overviewUrl, source.type);
+        mergeUrlParamsIntoGrid(paramsGrid?.rows, source.overviewUrl, onSourceChange, getLayerFields);
         onSourceChange();
       });
 
@@ -600,7 +560,7 @@ export function createSourceController(recordController, formulaController, edit
 
       paramsGrid = createGrid("Key", "Value");
       appendSection(body, "Input Settings", paramsGrid);
-      (source.defaultParams || []).forEach((row) => {
+      getEditableSourceParams(source).forEach((row) => {
         appendParamRow(paramsGrid.rows, row.key, row.value, onSourceChange, getLayerFields);
       });
 
@@ -627,9 +587,25 @@ export function createSourceController(recordController, formulaController, edit
     body.appendChild(createAddButton("Add output", outputGrid.rows, onSourceChange));
 
     if (source.type !== "mapbox-search") {
+      const layerFieldsToggle = document.createElement("button");
       layerFieldsContainer = document.createElement("div");
-      body.appendChild(layerFieldsContainer);
+      const setLayerFieldsCollapsed = (collapsed) => {
+        layerFieldsContainer.hidden = collapsed;
+        layerFieldsToggle.classList.toggle("is-collapsed", collapsed);
+        layerFieldsToggle.setAttribute("aria-expanded", String(!collapsed));
+        layerFieldsToggle.setAttribute("aria-label", `${collapsed ? "Expand" : "Collapse"} output field tags`);
+        layerFieldsToggle.title = `${collapsed ? "Expand" : "Collapse"} output field tags`;
+      };
+      layerFieldsToggle.className = "layer-fields-toggle";
+      layerFieldsToggle.type = "button";
+      layerFieldsToggle.addEventListener("click", () => {
+        const collapsed = !layerFieldsContainer.hidden;
+        setLayerFieldsCollapsed(collapsed);
+        saveLayerFieldsCollapsed(source.id, collapsed);
+      });
+      body.append(layerFieldsToggle, layerFieldsContainer);
       renderLayerFields(layerFieldsContainer, source.layerFields, onFieldClick);
+      setLayerFieldsCollapsed(getLayerFieldsCollapsed(source.id));
     }
 
     card.append(summary, body);
@@ -648,7 +624,7 @@ export function createSourceController(recordController, formulaController, edit
     try {
       let res = await fetch("/api/hubs");
       if (!res.ok) {
-        res = await fetch("/resources/hubs.json");
+        res = await fetch("/data/hubs.json");
       }
       if (!res.ok) return;
       const registry = await res.json();
@@ -679,7 +655,7 @@ export function createSourceController(recordController, formulaController, edit
           name: elements?.titleInput?.value?.trim() || source.name,
           description: elements?.descriptionInput?.value?.trim() || source.description,
           overviewUrl: elements?.overviewUrlInput?.value?.trim() || source.overviewUrl,
-          defaultParams: elements?.paramsGrid ? collectSourceRowPairs(elements.paramsGrid, "key", "value") : source.defaultParams,
+          defaultParams: elements?.paramsGrid ? collectSourceRowPairs(elements.paramsGrid, "key", "value") : getEditableSourceParams(source),
           defaultOutputs: elements?.outputsGrid ? collectSourceRowPairs(elements.outputsGrid, "variable", "path") : source.defaultOutputs,
           layerFields: source.layerFields || []
         }
@@ -691,8 +667,8 @@ export function createSourceController(recordController, formulaController, edit
     const elements = sourceElements[source.id];
 
     const params = collectSourceRows(elements.paramsGrid, resolveVariableValue);
-    const baseUrl = (elements.overviewUrlInput?.value?.trim() || source.overviewUrl || "").replace(/\/$/, "");
-    const url = buildUrlWithParams(getDatasetRequestUrl(source, baseUrl), params);
+    const overviewUrl = elements.overviewUrlInput?.value?.trim() || source.overviewUrl || "";
+    const url = buildUrlWithParams(buildPersistedQueryUrl(source, overviewUrl, []), params);
 
     try {
       updateSourceRunState(elements, "");
@@ -837,7 +813,7 @@ export function createSourceController(recordController, formulaController, edit
       };
     datasetSources.push(source);
     sourceIdToOpen = source.id;
-    saveDatasetDraft();
+    queueDatasetSync();
     redrawDatasetSources();
     editorTabController.openSourcesTab(editorPanel);
   }
@@ -1025,10 +1001,83 @@ function getSocrataUrlParts(url) {
 }
 
 function getDatasetRequestUrl(source, baseUrl) {
+  if (!baseUrl) return "";
   if (isSocrataSourceUrl(baseUrl)) {
     return normalizeSocrataResourceUrl(baseUrl) || baseUrl;
   }
-  return `${baseUrl}/query`;
+  return `${baseUrl.replace(/\/query\/?$/, "").replace(/\/$/, "")}/query`;
+}
+
+function buildPersistedQueryUrl(source, overviewUrl, rows) {
+  const cleanOverviewUrl = String(overviewUrl || source.overviewUrl || "").trim();
+  const requestUrl = getDatasetRequestUrl(source, stripQueryString(cleanOverviewUrl));
+  if (!requestUrl) return source.queryUrl || "";
+  const mergedParams = new URLSearchParams();
+
+  appendUrlParams(mergedParams, cleanOverviewUrl);
+  appendUrlParams(mergedParams, source.queryUrl);
+  rows.filter((row) => !hasVariableToken(row.value)).forEach((row) => {
+    if (row.key) mergedParams.set(row.key, row.value);
+  });
+
+  let url;
+  try {
+    url = new URL(requestUrl);
+  } catch {
+    return source.queryUrl || requestUrl;
+  }
+  mergedParams.forEach((value, key) => url.searchParams.set(key, value));
+  return url.toString();
+}
+
+function getEditableSourceParams(source) {
+  const rows = new Map();
+  appendUrlParamsToRows(rows, source.queryUrl);
+  appendUrlParamsToRows(rows, source.overviewUrl);
+  (source.defaultParams || []).forEach((row) => {
+    if (row.key) rows.set(row.key, { key: row.key, value: String(row.value ?? "") });
+  });
+  return Array.from(rows.values());
+}
+
+function appendUrlParams(target, value) {
+  if (!value) return;
+  try {
+    new URL(value).searchParams.forEach((paramValue, key) => target.set(key, paramValue));
+  } catch {}
+}
+
+function appendUrlParamsToRows(target, value) {
+  const params = new URLSearchParams();
+  appendUrlParams(params, value);
+  params.forEach((paramValue, key) => target.set(key, { key, value: paramValue }));
+}
+
+function mergeUrlParamsIntoGrid(grid, value, onChange, getLayerFields) {
+  if (!grid) return;
+  const existingRows = collectSourceRowPairs(grid, "key", "value");
+  const existingKeys = new Set(existingRows.map((row) => row.key));
+  const params = new URLSearchParams();
+  appendUrlParams(params, value);
+  params.forEach((paramValue, key) => {
+    if (!existingKeys.has(key)) appendParamRow(grid, key, paramValue, onChange, getLayerFields);
+  });
+}
+
+function stripQueryString(value) {
+  if (!value) return "";
+  try {
+    const url = new URL(value);
+    url.search = "";
+    url.hash = "";
+    return url.toString().replace(/\/$/, "");
+  } catch {
+    return String(value).split(/[?#]/, 1)[0].replace(/\/$/, "");
+  }
+}
+
+function hasVariableToken(value) {
+  return /\{\{\s*[^}]+\s*\}\}/.test(String(value ?? ""));
 }
 
 function defaultOutputPathForField(source, field) {
@@ -1230,6 +1279,23 @@ function renderLayerFields(container, fields, onFieldClick = null) {
   });
 
   container.appendChild(tags);
+}
+
+function getLayerFieldsCollapsed(sourceId) {
+  try {
+    const preferences = JSON.parse(localStorage.getItem(LAYER_FIELDS_FOLDED_STORAGE_KEY) || "{}");
+    return preferences[sourceId] ?? true;
+  } catch {
+    return true;
+  }
+}
+
+function saveLayerFieldsCollapsed(sourceId, collapsed) {
+  try {
+    const preferences = JSON.parse(localStorage.getItem(LAYER_FIELDS_FOLDED_STORAGE_KEY) || "{}");
+    preferences[sourceId] = collapsed;
+    localStorage.setItem(LAYER_FIELDS_FOLDED_STORAGE_KEY, JSON.stringify(preferences));
+  } catch {}
 }
 
 function formatEsriFieldType(esriType) {

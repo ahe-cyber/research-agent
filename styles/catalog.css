@@ -92,8 +92,8 @@
   position: absolute;
   inset: 3px;
   background: #8a9aaa;
-  mask: center / contain no-repeat url("/resources/close.svg");
-  -webkit-mask: center / contain no-repeat url("/resources/close.svg");
+  mask: center / contain no-repeat url("/assets/close.svg");
+  -webkit-mask: center / contain no-repeat url("/assets/close.svg");
 }
 
 .catalog-hub-remove:hover { background: #f0f2f4; }
@@ -174,8 +174,8 @@
   height: 13px;
   flex-shrink: 0;
   background: #526070;
-  mask: center / contain no-repeat url("/resources/internet.svg");
-  -webkit-mask: center / contain no-repeat url("/resources/internet.svg");
+  mask: center / contain no-repeat url("/assets/internet.svg");
+  -webkit-mask: center / contain no-repeat url("/assets/internet.svg");
 }
 
 /* Inline result chips inside the assistant bubble */

@@ -1,4 +1,4 @@
-import { markdownToHtml } from "../../lib/markdown.js";
+import { markdownToHtml } from "../../lib/markdown";
 
 export function createEditorTabController({ onMapActivated = () => {} } = {}) {
   const tabBar = document.getElementById("editorTabBar");
@@ -131,6 +131,21 @@ export function createEditorTabController({ onMapActivated = () => {} } = {}) {
       panelMap[tabId] = postmanPanel;
     }
 
+    activateTab(tabId);
+  }
+
+  function openLayerSourcesTab(layerSourcesPanel) {
+    const tabId = "layer-sources";
+
+    if (tabs.find((t) => t.id === tabId)) {
+      activateTab(tabId);
+      return;
+    }
+
+    tabs.push({ id: tabId, label: "Layer Sources", closeable: true });
+    layerSourcesPanel.hidden = true;
+    viewport.appendChild(layerSourcesPanel);
+    panelMap[tabId] = layerSourcesPanel;
     activateTab(tabId);
   }
 
@@ -313,7 +328,7 @@ export function createEditorTabController({ onMapActivated = () => {} } = {}) {
   }
 
   render();
-  return { openTableTab, openPdfTab, openSourcesTab, openPostmanTab, openCatalogResultsTab, openCatalogDatasetTab, openReportTab, openAgentsTab };
+  return { openTableTab, openPdfTab, openSourcesTab, openPostmanTab, openLayerSourcesTab, openCatalogResultsTab, openCatalogDatasetTab, openReportTab, openAgentsTab };
 }
 
 function renderHtmlElement(element) {

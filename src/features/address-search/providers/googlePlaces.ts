@@ -1,14 +1,22 @@
-import { STATEN_ISLAND_BBOX, STATEN_ISLAND_CENTER } from "../../map/config.js";
-import { getGoogleMapsApiKey } from "../../map/config.js";
+import { STATEN_ISLAND_BBOX, STATEN_ISLAND_CENTER } from "../../map/config";
+import { getGoogleMapsApiKey } from "../../map/config";
+import type { Coordinates, DestroyableSearchBox, RetrievedFeature, RetrieveHandler, SearchMap, SearchSuggestion } from "../types";
 
 const AUTOCOMPLETE_URL = "https://places.googleapis.com/v1/places:autocomplete";
 const PLACE_DETAILS_URL = "https://places.googleapis.com/v1/places";
 const DEBOUNCE_MS = 300;
 
-export function createGoogleSearchBox(map, onRetrieve, initialValue = "") {
+interface GooglePlaceDetails {
+  location?: {
+    latitude: number;
+    longitude: number;
+  };
+}
+
+export function createGoogleSearchBox(map: SearchMap | null, onRetrieve: RetrieveHandler, initialValue = "") {
   const apiKey = getGoogleMapsApiKey();
 
-  const container = document.createElement("div");
+  const container = document.createElement("div") as DestroyableSearchBox;
   container.className = "geosearch";
 
   const input = document.createElement("input");
@@ -25,13 +33,13 @@ export function createGoogleSearchBox(map, onRetrieve, initialValue = "") {
 
   container.appendChild(input);
 
-  let timer = null;
-  let suggestions = [];
-  let marker = null;
+  let timer: ReturnType<typeof setTimeout> | null = null;
+  let suggestions: SearchSuggestion[] = [];
+  let marker: { remove(): void } | null = null;
   let destroyed = false;
 
   input.addEventListener("input", () => {
-    clearTimeout(timer);
+    clearTimeout(timer as ReturnType<typeof setTimeout>);
     const text = input.value.trim();
     if (!text) { hide(); return; }
     timer = setTimeout(() => fetchSuggestions(text), DEBOUNCE_MS);
@@ -48,12 +56,12 @@ export function createGoogleSearchBox(map, onRetrieve, initialValue = "") {
     if (e.key === "Escape") hide();
   });
 
-  const onDocClick = (e) => {
-    if (!container.contains(e.target) && !list.contains(e.target)) hide();
+  const onDocClick = (e: MouseEvent) => {
+    if (!container.contains(e.target as Node) && !list.contains(e.target as Node)) hide();
   };
   document.addEventListener("click", onDocClick);
 
-  async function fetchSuggestions(text) {
+  async function fetchSuggestions(text: string) {
     try {
       const res = await fetch(AUTOCOMPLETE_URL, {
         method: "POST",
@@ -76,13 +84,13 @@ export function createGoogleSearchBox(map, onRetrieve, initialValue = "") {
       const data = await res.json();
       if (destroyed || document.activeElement !== input) return;
       suggestions = (data.suggestions ?? [])
-        .map(s => s.placePrediction)
+        .map((s: { placePrediction?: SearchSuggestion }) => s.placePrediction)
         .filter(Boolean);
       render();
     } catch {}
   }
 
-  async function fetchPlaceDetails(placeId) {
+  async function fetchPlaceDetails(placeId: string): Promise<GooglePlaceDetails> {
     const res = await fetch(
       `${PLACE_DETAILS_URL}/${placeId}?fields=location,displayName,formattedAddress&key=${apiKey}`
     );
@@ -113,25 +121,25 @@ export function createGoogleSearchBox(map, onRetrieve, initialValue = "") {
 
   container.destroy = () => {
     destroyed = true;
-    clearTimeout(timer);
+    clearTimeout(timer as ReturnType<typeof setTimeout>);
     document.removeEventListener("click", onDocClick);
     list.remove();
   };
 
-  async function select(pred) {
+  async function select(pred: SearchSuggestion) {
     const label = pred.text?.text ?? pred.structuredFormat?.mainText?.text ?? "";
     input.value = label;
     hide();
 
-    let coords = null;
+    let coords: Coordinates | null = null;
     try {
-      const details = await fetchPlaceDetails(pred.placeId);
+      const details = await fetchPlaceDetails(pred.placeId!);
       if (details.location) {
         coords = [details.location.longitude, details.location.latitude];
       }
     } catch {}
 
-    const normalized = {
+    const normalized: RetrievedFeature = {
       type: "Feature",
       geometry: coords ? { type: "Point", coordinates: coords } : null,
       properties: {

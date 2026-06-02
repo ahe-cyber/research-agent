@@ -1,10 +1,16 @@
-import { STATEN_ISLAND_BBOX, STATEN_ISLAND_CENTER } from "../../map/config.js";
+import { STATEN_ISLAND_BBOX, STATEN_ISLAND_CENTER } from "../../map/config";
+import type { Coordinates, DestroyableSearchBox, RetrievedFeature, RetrieveHandler, SearchMap, SearchSuggestion } from "../types";
 
 const AUTOCOMPLETE_URL = "https://geosearch.planninglabs.nyc/v2/autocomplete";
 const DEBOUNCE_MS = 300;
 
-export function createGeoSearchBox(map, onRetrieve, initialValue = "") {
-  const container = document.createElement("div");
+interface GeoSearchFeature extends RetrievedFeature {
+  geometry: RetrievedFeature["geometry"] & { coordinates: Coordinates };
+  properties: SearchSuggestion & Record<string, any>;
+}
+
+export function createGeoSearchBox(map: SearchMap | null, onRetrieve: RetrieveHandler, initialValue = "") {
+  const container = document.createElement("div") as DestroyableSearchBox;
   container.className = "geosearch";
 
   const input = document.createElement("input");
@@ -23,13 +29,13 @@ export function createGeoSearchBox(map, onRetrieve, initialValue = "") {
 
   container.appendChild(input);
 
-  let timer = null;
-  let results = [];
-  let marker = null;
+  let timer: ReturnType<typeof setTimeout> | null = null;
+  let results: GeoSearchFeature[] = [];
+  let marker: { remove(): void } | null = null;
   let destroyed = false;
 
   input.addEventListener("input", () => {
-    clearTimeout(timer);
+    clearTimeout(timer as ReturnType<typeof setTimeout>);
     const text = input.value.trim();
     if (!text) { hide(); return; }
     timer = setTimeout(() => fetchSuggestions(text), DEBOUNCE_MS);
@@ -46,20 +52,20 @@ export function createGeoSearchBox(map, onRetrieve, initialValue = "") {
     if (e.key === "Escape") hide();
   });
 
-  const onDocClick = (e) => {
-    if (!container.contains(e.target) && !list.contains(e.target)) hide();
+  const onDocClick = (e: MouseEvent) => {
+    if (!container.contains(e.target as Node) && !list.contains(e.target as Node)) hide();
   };
   document.addEventListener("click", onDocClick);
 
-  async function fetchSuggestions(text) {
+  async function fetchSuggestions(text: string) {
     const url = new URL(AUTOCOMPLETE_URL);
     url.searchParams.set("text", text);
-    url.searchParams.set("focus.point.lat", STATEN_ISLAND_CENTER[1]);
-    url.searchParams.set("focus.point.lon", STATEN_ISLAND_CENTER[0]);
-    url.searchParams.set("boundary.rect.min_lon", STATEN_ISLAND_BBOX[0]);
-    url.searchParams.set("boundary.rect.min_lat", STATEN_ISLAND_BBOX[1]);
-    url.searchParams.set("boundary.rect.max_lon", STATEN_ISLAND_BBOX[2]);
-    url.searchParams.set("boundary.rect.max_lat", STATEN_ISLAND_BBOX[3]);
+    url.searchParams.set("focus.point.lat", String(STATEN_ISLAND_CENTER[1]));
+    url.searchParams.set("focus.point.lon", String(STATEN_ISLAND_CENTER[0]));
+    url.searchParams.set("boundary.rect.min_lon", String(STATEN_ISLAND_BBOX[0]));
+    url.searchParams.set("boundary.rect.min_lat", String(STATEN_ISLAND_BBOX[1]));
+    url.searchParams.set("boundary.rect.max_lon", String(STATEN_ISLAND_BBOX[2]));
+    url.searchParams.set("boundary.rect.max_lat", String(STATEN_ISLAND_BBOX[3]));
     url.searchParams.set("size", "6");
     try {
       const res = await fetch(url);
@@ -78,7 +84,7 @@ export function createGeoSearchBox(map, onRetrieve, initialValue = "") {
     results.forEach((feature) => {
       const li = document.createElement("li");
       li.className = "geosearch-item";
-      li.textContent = feature.properties.label || feature.properties.name;
+      li.textContent = (feature.properties.label || feature.properties.name)!;
       li.addEventListener("mousedown", (e) => { e.preventDefault(); select(feature); });
       list.appendChild(li);
     });
@@ -95,13 +101,13 @@ export function createGeoSearchBox(map, onRetrieve, initialValue = "") {
 
   container.destroy = () => {
     destroyed = true;
-    clearTimeout(timer);
+    clearTimeout(timer as ReturnType<typeof setTimeout>);
     document.removeEventListener("click", onDocClick);
     list.remove();
   };
 
-  function select(feature) {
-    input.value = feature.properties.label || feature.properties.name;
+  function select(feature: GeoSearchFeature) {
+    input.value = (feature.properties.label || feature.properties.name)!;
     hide();
 
     const normalized = {

@@ -1,8 +1,8 @@
 // ── Shared Markdown renderer ───────────────────────────────────────────────
 
-export function markdownToHtml(text) {
+export function markdownToHtml(text: unknown) {
   // 1. Extract fenced code blocks so inner text is never further processed
-  const codeBlocks = [];
+  const codeBlocks: string[] = [];
   let out = String(text || "").replace(/```([^\n]*)\n([\s\S]*?)```/g, (_, lang, code) => {
     const i = codeBlocks.length;
     const cls = lang ? ` class="language-${escapeAttr(lang.trim())}"` : "";
@@ -13,8 +13,8 @@ export function markdownToHtml(text) {
   // 2. Process line-by-line for block elements
   const lines = out.split("\n");
   let html = "";
-  let paraLines = [];
-  let listItems = [];
+  let paraLines: string[] = [];
+  let listItems: string[] = [];
   let listOrdered = false;
 
   function flushPara() {
@@ -36,7 +36,7 @@ export function markdownToHtml(text) {
     if (/^\x00CB\d+\x00$/.test(t)) {
       flushPara();
       flushList();
-      html += codeBlocks[parseInt(t.match(/\d+/)[0], 10)];
+      html += codeBlocks[parseInt(t.match(/\d+/)![0], 10)];
       continue;
     }
 
@@ -89,7 +89,7 @@ export function markdownToHtml(text) {
   return html;
 }
 
-function inlineFormat(text) {
+function inlineFormat(text: string) {
   return text
     .replace(/`([^`]+)`/g, (_, c) => `<code class="pm-code">${escapeHtml(c)}</code>`)
     .replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>")
@@ -99,10 +99,10 @@ function inlineFormat(text) {
     .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank" rel="noopener">$1</a>');
 }
 
-function escapeHtml(s) {
+function escapeHtml(s: string) {
   return s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 }
 
-function escapeAttr(s) {
+function escapeAttr(s: string) {
   return s.replace(/"/g, "&quot;");
 }

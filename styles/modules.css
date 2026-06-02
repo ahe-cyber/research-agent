@@ -353,8 +353,8 @@
   height: 12px;
   flex-shrink: 0;
   background: currentColor;
-  mask: center / contain no-repeat url("/resources/link.svg");
-  -webkit-mask: center / contain no-repeat url("/resources/link.svg");
+  mask: center / contain no-repeat url("/assets/link.svg");
+  -webkit-mask: center / contain no-repeat url("/assets/link.svg");
 }
 
 .agent-module-attach-btn:hover {

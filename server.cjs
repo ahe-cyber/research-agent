@@ -3,6 +3,8 @@ const fs = require("node:fs/promises");
 const fssync = require("node:fs");
 const http = require("node:http");
 const path = require("node:path");
+const Lerc = require("lerc");
+const sharp = require("sharp");
 
 // Load .env file variables into process.env (if not already set)
 try {
@@ -25,13 +27,130 @@ const app = express();
 const httpServer = http.createServer(app);
 const port = Number(process.env.PORT || 5173);
 const rootDir = __dirname;
-const datasetsPath = path.join(rootDir, "public", "resources", "datasets.json");
+const datasetsPath = path.join(rootDir, "public", "data", "datasets.json");
 const POSTMAN_API_BASE = "https://api.getpostman.com";
 const DEFAULT_AGENT_SYSTEM_INSTRUCTION = "You are a GIS research assistant.";
 const AGENT_ATTACHMENT_CONTEXT_MAX_CHARS = 8_000;
 const GEMINI_MODEL = process.env.GEMINI_MODEL || "gemini-2.5-flash";
+const NYC_TOPOBATHYMETRIC_DEM_URL = "https://elevation.its.ny.gov/arcgis/rest/services/NYC_TopoBathymetric_2017_1_meter/ImageServer/exportImage";
+const WEB_MERCATOR_HALF_WORLD = 20037508.342789244;
+const NYC_TOPOBATHYMETRIC_DEM_BOUNDS = {
+  xmin: -8266307.1821361203,
+  ymin: 4937589.791525625,
+  xmax: -8204027.307190664,
+  ymax: 5000028.37647827
+};
+const TERRAIN_TILE_SIZE = 256;
+const TERRAIN_RGB_ZERO_ELEVATION = 100000;
 
 app.use(express.json({ limit: "1mb" }));
+
+app.get("/api/terrain/nyc-topobathymetric-2017/:z/:x/:y.png", async (request, response) => {
+  const z = Number(request.params.z);
+  const x = Number(request.params.x);
+  const y = Number(request.params.y);
+
+  if (![z, x, y].every(Number.isInteger) || z < 0 || z > 18) {
+    response.status(400).json({ error: "Invalid terrain tile coordinates." });
+    return;
+  }
+
+  const tileCount = 2 ** z;
+  if (x < 0 || x >= tileCount || y < 0 || y >= tileCount) {
+    response.status(404).end();
+    return;
+  }
+
+  try {
+    const tileWidth = (WEB_MERCATOR_HALF_WORLD * 2) / tileCount;
+    const xmin = -WEB_MERCATOR_HALF_WORLD + x * tileWidth;
+    const xmax = xmin + tileWidth;
+    const ymax = WEB_MERCATOR_HALF_WORLD - y * tileWidth;
+    const ymin = ymax - tileWidth;
+    const clippedBounds = {
+      xmin: Math.max(xmin, NYC_TOPOBATHYMETRIC_DEM_BOUNDS.xmin),
+      ymin: Math.max(ymin, NYC_TOPOBATHYMETRIC_DEM_BOUNDS.ymin),
+      xmax: Math.min(xmax, NYC_TOPOBATHYMETRIC_DEM_BOUNDS.xmax),
+      ymax: Math.min(ymax, NYC_TOPOBATHYMETRIC_DEM_BOUNDS.ymax)
+    };
+    const terrainRgb = createFlatTerrainRgbTile();
+    if (clippedBounds.xmin >= clippedBounds.xmax || clippedBounds.ymin >= clippedBounds.ymax) {
+      response
+        .set("Cache-Control", "public, max-age=86400")
+        .type("png")
+        .send(await encodeTerrainRgbTile(terrainRgb));
+      return;
+    }
+
+    const pixelWidth = tileWidth / TERRAIN_TILE_SIZE;
+    const left = Math.max(0, Math.floor((clippedBounds.xmin - xmin) / pixelWidth));
+    const right = Math.min(TERRAIN_TILE_SIZE, Math.ceil((clippedBounds.xmax - xmin) / pixelWidth));
+    const top = Math.max(0, Math.floor((ymax - clippedBounds.ymax) / pixelWidth));
+    const bottom = Math.min(TERRAIN_TILE_SIZE, Math.ceil((ymax - clippedBounds.ymin) / pixelWidth));
+    const exportBounds = {
+      xmin: xmin + left * pixelWidth,
+      ymin: ymax - bottom * pixelWidth,
+      xmax: xmin + right * pixelWidth,
+      ymax: ymax - top * pixelWidth
+    };
+    const params = new URLSearchParams({
+      bbox: `${exportBounds.xmin},${exportBounds.ymin},${exportBounds.xmax},${exportBounds.ymax}`,
+      bboxSR: "3857",
+      imageSR: "3857",
+      size: `${right - left},${bottom - top}`,
+      format: "lerc",
+      pixelType: "F32",
+      interpolation: "RSP_BilinearInterpolation",
+      f: "image"
+    });
+    const upstream = await fetch(`${NYC_TOPOBATHYMETRIC_DEM_URL}?${params}`);
+    if (!upstream.ok) {
+      throw new Error(`ImageServer responded with ${upstream.status}`);
+    }
+
+    await Lerc.load();
+    const { width, height, pixels, mask } = Lerc.decode(await upstream.arrayBuffer());
+    const elevations = pixels[0];
+
+    for (let pixel = 0; pixel < width * height; pixel++) {
+      const elevation = elevations[pixel];
+      const encoded = (!mask || mask[pixel]) && Number.isFinite(elevation)
+        ? Math.max(0, Math.min(16777215, Math.round((elevation + 10000) * 10)))
+        : TERRAIN_RGB_ZERO_ELEVATION;
+      const sourceX = pixel % width;
+      const sourceY = Math.floor(pixel / width);
+      writeTerrainRgbPixel(terrainRgb, (top + sourceY) * TERRAIN_TILE_SIZE + left + sourceX, encoded);
+    }
+
+    response
+      .set("Cache-Control", "public, max-age=86400")
+      .type("png")
+      .send(await encodeTerrainRgbTile(terrainRgb));
+  } catch (error) {
+    console.error("[Terrain] Failed to build NYC topobathymetric tile", error);
+    response.status(502).json({ error: "Failed to build terrain tile." });
+  }
+});
+
+function createFlatTerrainRgbTile() {
+  const tile = Buffer.alloc(TERRAIN_TILE_SIZE * TERRAIN_TILE_SIZE * 3);
+  for (let pixel = 0; pixel < TERRAIN_TILE_SIZE * TERRAIN_TILE_SIZE; pixel++) {
+    writeTerrainRgbPixel(tile, pixel, TERRAIN_RGB_ZERO_ELEVATION);
+  }
+  return tile;
+}
+
+function writeTerrainRgbPixel(tile, pixel, encoded) {
+  tile[pixel * 3] = Math.floor(encoded / 65536);
+  tile[pixel * 3 + 1] = Math.floor((encoded % 65536) / 256);
+  tile[pixel * 3 + 2] = encoded % 256;
+}
+
+function encodeTerrainRgbTile(tile) {
+  return sharp(tile, {
+    raw: { width: TERRAIN_TILE_SIZE, height: TERRAIN_TILE_SIZE, channels: 3 }
+  }).png().toBuffer();
+}
 
 app.get("/api/datasets", async (request, response) => {
   try {
@@ -163,7 +282,7 @@ app.get("/api/postman/collections/:id", async (request, response) => {
 
 // ── Agent instruction ─────────────────────────────────────────────────────────
 
-const instructionPath = path.join(rootDir, "public", "resources", "instruction.json");
+const instructionPath = path.join(rootDir, "public", "data", "instruction.json");
 
 app.get("/api/instruction", async (request, response) => {
   try {
@@ -311,7 +430,7 @@ app.get("/api/tools", (_request, response) => {
 
 // ── Agent modules registry ────────────────────────────────────────────────────
 
-const agentsPath = path.join(rootDir, "public", "resources", "agents.json");
+const agentsPath = path.join(rootDir, "public", "data", "agents.json");
 
 app.get("/api/agents", async (request, response) => {
   try {
@@ -338,7 +457,7 @@ app.put("/api/agents", async (request, response) => {
 
 // ── Hub catalog registry ──────────────────────────────────────────────────────
 
-const hubsPath = path.join(rootDir, "public", "resources", "hubs.json");
+const hubsPath = path.join(rootDir, "public", "data", "hubs.json");
 
 app.get("/api/hubs", async (request, response) => {
   try {

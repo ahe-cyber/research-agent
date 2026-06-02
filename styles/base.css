@@ -19,17 +19,19 @@ mapbox-search-box:focus-within {
 }
 
 .has-money-icon {
-  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
 }
 
-.has-money-icon::before {
+.has-money-icon::after {
   content: "";
-  position: absolute;
-  inset: 50% auto auto 50%;
-  width: 20px;
-  height: 20px;
-  background: center / contain no-repeat url("/resources/money.svg");
-  opacity: 0.16;
+  display: inline-block;
+  flex: 0 0 auto;
+  width: 16px;
+  height: 16px;
+  background: #d4a000;
+  mask: center / contain no-repeat url("/assets/money.svg");
+  -webkit-mask: center / contain no-repeat url("/assets/money.svg");
   pointer-events: none;
-  transform: translate(-50%, -50%);
 }

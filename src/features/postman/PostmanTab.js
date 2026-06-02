@@ -1,4 +1,4 @@
-import { markdownToHtml } from "../../lib/markdown.js";
+import { markdownToHtml } from "../../lib/markdown";
 
 export function createPostmanController(editorTabController) {
   const postmanButton = document.getElementById("postmanCollectionsButton");

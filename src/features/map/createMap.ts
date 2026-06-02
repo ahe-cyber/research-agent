@@ -1,32 +1,53 @@
-import { getMapboxAccessToken, STATEN_ISLAND_BOUNDS } from "./config.js";
-import { BasemapControl, DEFAULT_BASEMAP, getStyle } from "./basemaps.js";
+import { getMapboxAccessToken, STATEN_ISLAND_BOUNDS } from "./config";
+import { BasemapControl, getBasemaps, getSceneLayers, getStyle, getTerrain } from "./basemaps";
+import { SceneLayersControl } from "./sceneLayers";
+import { TerrainControl } from "./terrain";
 
 export async function createMap() {
   const accessToken = getMapboxAccessToken();
-  const initialStyle = await getStyle(DEFAULT_BASEMAP);
+  const basemaps = await getBasemaps();
+  const sceneLayers = await getSceneLayers();
+  const terrain = await getTerrain();
+  const defaultBasemap = basemaps[0];
+  const initialStyle = await getStyle(defaultBasemap);
 
   const map = new maplibregl.Map({
     container: "map",
     style: initialStyle,
     bounds: STATEN_ISLAND_BOUNDS,
     fitBoundsOptions: { padding: 36 },
-    maxZoom: DEFAULT_BASEMAP.maxZoom,
+    maxZoom: defaultBasemap.maxZoom,
     ...(accessToken && { transformRequest: buildMapboxTransform(accessToken) })
   });
 
   map.addControl(new maplibregl.NavigationControl());
-  map.addControl(new BasemapControl(), "bottom-left");
-  map.on("error", (event) => {
+  const basemapOptions = document.getElementById("mapBasemapOptions");
+  if (basemapOptions) {
+    basemapOptions.appendChild(new BasemapControl(basemaps).onAdd(map));
+  }
+  if (sceneLayers[0]) {
+    const detailOptions = document.getElementById("mapDetailOptions");
+    if (detailOptions) {
+      detailOptions.appendChild(new SceneLayersControl(sceneLayers[0]).onAdd(map));
+    }
+  }
+  map.on("error", (event: any) => {
     console.error("[Map App] MapLibre error", event.error || event);
   });
+  if (terrain) {
+    const detailOptions = document.getElementById("mapDetailOptions");
+    if (detailOptions) {
+      detailOptions.prepend(new TerrainControl(terrain).onAdd(map));
+    }
+  }
 
   return map;
 }
 
 // Converts mapbox:// protocol URLs to Mapbox REST API HTTPS URLs and appends
 // the access token to all api.mapbox.com requests.
-function buildMapboxTransform(accessToken) {
-  return (url) => {
+function buildMapboxTransform(accessToken: string) {
+  return (url: string) => {
     if (url.startsWith("mapbox://")) {
       return { url: resolveMapboxUrl(url, accessToken) };
     }
@@ -38,7 +59,7 @@ function buildMapboxTransform(accessToken) {
   };
 }
 
-function resolveMapboxUrl(url, accessToken) {
+function resolveMapboxUrl(url: string, accessToken: string) {
   const path = url.slice(9); // strip 'mapbox://'
   let apiUrl;
   if (path.startsWith("fonts/")) {

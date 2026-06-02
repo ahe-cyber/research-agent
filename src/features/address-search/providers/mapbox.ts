@@ -1,7 +1,22 @@
-import { getMapboxAccessToken, STATEN_ISLAND_BBOX, STATEN_ISLAND_CENTER } from "../../map/config.js";
+import { getMapboxAccessToken, STATEN_ISLAND_BBOX, STATEN_ISLAND_CENTER } from "../../map/config";
+import type { DestroyableSearchBox, RetrieveHandler, SearchMap } from "../types";
 
-export function createPlaceSearchBox(map, onRetrieve, initialValue = "") {
-  const searchBox = new mapboxsearch.MapboxSearchBox();
+interface MapboxSearchBox extends DestroyableSearchBox {
+  accessToken: string;
+  addEventListener(type: string, listener: (event: any) => void): void;
+  bindMap(map: SearchMap): void;
+  componentOptions: Record<string, any>;
+  mapboxgl: any;
+  marker: boolean;
+  options: Record<string, any>;
+  placeholder: string;
+  search(text: string): void;
+  theme: Record<string, any>;
+  value: string;
+}
+
+export function createPlaceSearchBox(map: SearchMap | null, onRetrieve: RetrieveHandler, initialValue = "") {
+  const searchBox = new mapboxsearch.MapboxSearchBox() as MapboxSearchBox;
 
   searchBox.accessToken = getMapboxAccessToken();
   searchBox.placeholder = "Search address or place";

@@ -6,39 +6,11 @@
     "type": "arcgis-feature-layer",
     "method": "GET",
     "overviewUrl": "https://services5.arcgis.com/GfwWNkhOj9bNBqoJ/arcgis/rest/services/MAPPLUTO/FeatureServer/0",
-    "queryUrl": "https://services5.arcgis.com/GfwWNkhOj9bNBqoJ/arcgis/rest/services/MAPPLUTO/FeatureServer/0/query",
+    "queryUrl": "https://services5.arcgis.com/GfwWNkhOj9bNBqoJ/arcgis/rest/services/MAPPLUTO/FeatureServer/0/query?geometryType=esriGeometryPoint&inSR=4326&spatialRel=esriSpatialRelIntersects&outFields=*&returnGeometry=true&outSR=4326&f=geojson",
     "defaultParams": [
       {
         "key": "geometry",
         "value": "{{selectedCoordinates}}"
-      },
-      {
-        "key": "geometryType",
-        "value": "esriGeometryPoint"
-      },
-      {
-        "key": "inSR",
-        "value": "4326"
-      },
-      {
-        "key": "spatialRel",
-        "value": "esriSpatialRelIntersects"
-      },
-      {
-        "key": "outFields",
-        "value": "*"
-      },
-      {
-        "key": "returnGeometry",
-        "value": "true"
-      },
-      {
-        "key": "outSR",
-        "value": "4326"
-      },
-      {
-        "key": "f",
-        "value": "geojson"
       }
     ],
     "defaultOutputs": [
@@ -1394,7 +1366,8 @@
         "type": "number",
         "description": ""
       }
-    ]
+    ],
+    "queryUrl": "https://data.cityofnewyork.us/resource/5zhs-2jue.json"
   },
   {
     "id": "source-mpokj6su",
@@ -1405,7 +1378,8 @@
     "overviewUrl": "https://data.cityofnewyork.us/resource/mm69-vrje.json",
     "defaultParams": [],
     "defaultOutputs": [],
-    "layerFields": []
+    "layerFields": [],
+    "queryUrl": "https://data.cityofnewyork.us/resource/mm69-vrje.json"
   },
   {
     "id": "source-mpokms3m",
@@ -1458,102 +1432,8 @@
         "domain": null,
         "defaultValue": null
       }
-    ]
-  },
-  {
-    "id": "source-mpoljs80",
-    "name": "Broadway Curb Cut Survey Data",
-    "description": "",
-    "type": "socrata-dataset",
-    "method": "GET",
-    "overviewUrl": "https://data.cityofnewyork.us/resource/4y9q-t4wb.json",
-    "defaultParams": [],
-    "defaultOutputs": [
-      {
-        "variable": "slope",
-        "path": "0.slope_inch"
-      }
     ],
-    "layerFields": [
-      {
-        "name": "street_1",
-        "alias": "Street 1",
-        "type": "text",
-        "description": ""
-      },
-      {
-        "name": "street_2",
-        "alias": "Street 2",
-        "type": "text",
-        "description": ""
-      },
-      {
-        "name": "curb_cut",
-        "alias": "Curb Cut",
-        "type": "text",
-        "description": ""
-      },
-      {
-        "name": "slope_inch",
-        "alias": "Slope (inch)",
-        "type": "text",
-        "description": ""
-      },
-      {
-        "name": "ramp_width",
-        "alias": "Ramp Width",
-        "type": "number",
-        "description": ""
-      },
-      {
-        "name": "no_curb_cut",
-        "alias": "No Curb Cut",
-        "type": "text",
-        "description": ""
-      },
-      {
-        "name": "center_cut",
-        "alias": "Center Cut",
-        "type": "text",
-        "description": ""
-      },
-      {
-        "name": "lip_bump_measurement_in_inches",
-        "alias": "Lip/bump (measurement in inches)",
-        "type": "text",
-        "description": ""
-      },
-      {
-        "name": "crumbling_concrete",
-        "alias": "Crumbling concrete?",
-        "type": "text",
-        "description": ""
-      },
-      {
-        "name": "led_to_pot_hole",
-        "alias": "Led to pot hole?",
-        "type": "text",
-        "description": ""
-      },
-      {
-        "name": "detectable_warnings",
-        "alias": "Detectable warnings ?",
-        "type": "text",
-        "description": ""
-      },
-      {
-        "name": "object_barriers",
-        "alias": "Object barriers ?",
-        "type": "text",
-        "description": ""
-      },
-      {
-        "name": "barriers_above",
-        "alias": "Barriers above?",
-        "type": "text",
-        "description": ""
-      }
-    ]
+    "queryUrl": "https://services5.arcgis.com/GfwWNkhOj9bNBqoJ/arcgis/rest/services/nyzd/FeatureServer/0/query"
   },
   {
     "id": "source-mpr3pl3k",
@@ -1563,10 +1443,6 @@
     "method": "GET",
     "overviewUrl": "https://data.cityofnewyork.us/resource/3h2n-5cm9.json",
     "defaultParams": [
-      {
-        "key": "boro",
-        "value": "5"
-      },
       {
         "key": "block",
         "value": "{{plutoBlock}}"
@@ -1686,7 +1562,8 @@
         "type": "text",
         "description": ""
       }
-    ]
+    ],
+    "queryUrl": "https://data.cityofnewyork.us/resource/3h2n-5cm9.json?boro=5"
   },
   {
     "id": "source-mpr3pqjc",
@@ -1696,10 +1573,6 @@
     "method": "GET",
     "overviewUrl": "https://data.cityofnewyork.us/resource/6bgk-3dad.json",
     "defaultParams": [
-      {
-        "key": "boro",
-        "value": "5"
-      },
       {
         "key": "block",
         "value": "{{plutoBlock}}"
@@ -1987,6 +1860,7 @@
         "type": "text",
         "description": ""
       }
-    ]
+    ],
+    "queryUrl": "https://data.cityofnewyork.us/resource/6bgk-3dad.json?boro=5"
   }
 ]

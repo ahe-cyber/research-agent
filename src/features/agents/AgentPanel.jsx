@@ -1,4 +1,4 @@
-import { markdownToHtml } from "../../lib/markdown.js";
+import { markdownToHtml } from "../../lib/markdown";
 
 const DEFAULT_SYSTEM_INSTRUCTION =
   `You are a GIS research assistant. Help the user analyze geographic data, property records, and datasets. Be conversational in chat — talk like a colleague, not a report. Avoid bullet lists and headers in chat responses; save those for the report.

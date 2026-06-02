@@ -1,0 +1,189 @@
+{
+  "sceneLayers": [
+    {
+      "id": "buildings-new-york-3d",
+      "label": "3D Buildings",
+      "url": "https://tiles.arcgis.com/tiles/P3ePLMYs2RVChkJx/arcgis/rest/services/Buildings_New_York_3D/SceneServer/layers/0",
+      "itemUrl": "https://www.arcgis.com/home/item.html?id=3653d502714248f8b81a34faba956bdb",
+      "attribution": "NYC DoITT, City of New York",
+      "metadata": {
+        "provider": "NYC DoITT, City of New York; hosted by Esri",
+        "description": "3D models for every NYC building present in the 2014 aerial survey of the city.",
+        "format": "ArcGIS Scene Service, I3S 3D objects",
+        "coordinateSystem": "WGS 84 geographic coordinates (EPSG:4326); gravity-related EGM96 geoid heights in meters",
+        "surveyYear": "2014",
+        "created": "2020-10-19",
+        "updated": "2021-02-26",
+        "serviceUrl": "https://tiles.arcgis.com/tiles/P3ePLMYs2RVChkJx/arcgis/rest/services/Buildings_New_York_3D/SceneServer/layers/0",
+        "itemUrl": "https://www.arcgis.com/home/item.html?id=3653d502714248f8b81a34faba956bdb",
+        "attribution": "NYC DoITT, City of New York"
+      }
+    }
+  ],
+  "terrain": {
+    "id": "nyc-topobathymetric-2017",
+    "label": "NYC Topobathymetric 2017 DEM",
+    "tiles": [
+      "/api/terrain/nyc-topobathymetric-2017/{z}/{x}/{y}.png"
+    ],
+    "tileSize": 256,
+    "maxZoom": 16,
+    "encoding": "mapbox",
+    "exaggeration": 1,
+    "attribution": "<a href=\"https://elevation.its.ny.gov/arcgis/rest/services/NYC_TopoBathymetric_2017_1_meter/ImageServer\" target=\"_blank\" rel=\"noopener noreferrer\">NYS ITS Geospatial Services</a>",
+    "itemUrl": "https://elevation.its.ny.gov/arcgis/rest/services/NYC_TopoBathymetric_2017_1_meter/ImageServer",
+    "metadata": {
+      "provider": "NYS ITS Geospatial Services; collected for the City of New York by Quantum Spatial",
+      "description": "Bare-earth topobathymetric digital elevation model derived from green and near-infrared LiDAR. Vegetation and anthropogenic features are removed. Water bodies are flattened where appropriate.",
+      "format": "ArcGIS Image Service, single-band F32 DEM; adapted locally to Terrain-RGB PNG tiles",
+      "coordinateSystem": "NAD83 / New York Long Island (EPSG:2263); vertical datum NAVD88, Geoid 12B; local adapter requests Web Mercator tiles",
+      "resolution": "1 meter",
+      "surveyYear": "2017",
+      "collected": "2017-05-03 to 2017-07-26",
+      "created": "placeholder",
+      "updated": "placeholder",
+      "serviceUrl": "https://elevation.its.ny.gov/arcgis/rest/services/NYC_TopoBathymetric_2017_1_meter/ImageServer",
+      "attribution": "NYS ITS Geospatial Services"
+    }
+  },
+  "basemaps": [
+    {
+      "id": "vector",
+      "label": "NYC Vector",
+      "maxZoom": 22,
+      "metadata": {
+        "provider": "NYC Office of Technology & Innovation",
+        "description": "Authoritative NYC street centerline and planimetric datasets maintained by NYC OTI. Released 2025-06-23 as v3 Q1 2025.",
+        "format": "ArcGIS Vector Tile Service, PBF",
+        "coordinateSystem": "WGS 84 / Pseudo-Mercator (EPSG:3857)",
+        "created": "2022-05-17",
+        "updated": "2026-03-06",
+        "serviceUrl": "https://tiles.arcgis.com/tiles/yG5s3afENB5iO9fj/arcgis/rest/services/NYC_Basemap_v3/VectorTileServer",
+        "itemUrl": "https://nyc.maps.arcgis.com/home/item.html?id=df7862bfd7984baab51ff9df8e214278",
+        "attribution": "NYC OTI"
+      },
+      "style": {
+        "type": "remote",
+        "url": "https://tiles.arcgis.com/tiles/yG5s3afENB5iO9fj/arcgis/rest/services/NYC_Basemap_v3/VectorTileServer/resources/styles/root.json",
+        "attributionLinks": [
+          {
+            "text": "NYC OTI",
+            "url": "https://nyc.maps.arcgis.com/home/item.html?id=df7862bfd7984baab51ff9df8e214278"
+          }
+        ]
+      }
+    },
+    {
+      "id": "raster",
+      "label": "NYC Raster",
+      "maxZoom": 19,
+      "metadata": {
+        "provider": "City of New York",
+        "description": "placeholder",
+        "format": "XYZ raster tiles: JPEG basemap and PNG8 labels",
+        "coordinateSystem": "placeholder",
+        "created": "placeholder",
+        "updated": "placeholder",
+        "serviceUrl": "https://maps1.nyc.gov/xyz/1.0.0/carto/",
+        "attribution": "City of New York (CC BY 4.0)"
+      },
+      "style": {
+        "type": "inline",
+        "value": {
+          "version": 8,
+          "sources": {
+            "nyc-basemap": {
+              "type": "raster",
+              "tiles": [
+                "https://maps1.nyc.gov/xyz/1.0.0/carto/basemap/{z}/{x}/{y}.jpg",
+                "https://maps2.nyc.gov/xyz/1.0.0/carto/basemap/{z}/{x}/{y}.jpg",
+                "https://maps3.nyc.gov/xyz/1.0.0/carto/basemap/{z}/{x}/{y}.jpg",
+                "https://maps4.nyc.gov/xyz/1.0.0/carto/basemap/{z}/{x}/{y}.jpg"
+              ],
+              "tileSize": 256,
+              "minzoom": 8,
+              "maxzoom": 19,
+              "attribution": "© City of New York (CC BY 4.0)"
+            },
+            "nyc-labels": {
+              "type": "raster",
+              "tiles": [
+                "https://maps1.nyc.gov/xyz/1.0.0/carto/label/{z}/{x}/{y}.png8",
+                "https://maps2.nyc.gov/xyz/1.0.0/carto/label/{z}/{x}/{y}.png8",
+                "https://maps3.nyc.gov/xyz/1.0.0/carto/label/{z}/{x}/{y}.png8",
+                "https://maps4.nyc.gov/xyz/1.0.0/carto/label/{z}/{x}/{y}.png8"
+              ],
+              "tileSize": 256,
+              "minzoom": 8,
+              "maxzoom": 19
+            }
+          },
+          "layers": [
+            { "id": "nyc-basemap", "type": "raster", "source": "nyc-basemap" },
+            { "id": "nyc-labels", "type": "raster", "source": "nyc-labels" }
+          ]
+        }
+      }
+    },
+    {
+      "id": "orthos-2024",
+      "label": "NYC Orthos 2024",
+      "maxZoom": 23,
+      "metadata": {
+        "provider": "NYC Office of Technology & Innovation",
+        "description": "Final citywide orthoimagery for all of NYC, collected in 2024.",
+        "format": "ArcGIS Map Service, raster tile cache",
+        "coordinateSystem": "WGS 1984 Web Mercator (Auxiliary Sphere), EPSG:3857",
+        "surveyYear": "2024",
+        "nativeMaxZoom": "20; the map may overzoom cached imagery to 23",
+        "created": "2025-06-17",
+        "updated": "2026-03-06",
+        "serviceUrl": "https://tiles.arcgis.com/tiles/yG5s3afENB5iO9fj/arcgis/rest/services/NYC_Orthos_2024/MapServer",
+        "itemUrl": "https://nyc.maps.arcgis.com/home/item.html?id=423f15185bd04f8dad8d99fba736772f",
+        "attribution": "NYC OTI"
+      },
+      "style": {
+        "type": "inline",
+        "value": {
+          "version": 8,
+          "sources": {
+            "nyc-orthos-2024": {
+              "type": "raster",
+              "tiles": [
+                "https://tiles.arcgis.com/tiles/yG5s3afENB5iO9fj/arcgis/rest/services/NYC_Orthos_2024/MapServer/tile/{z}/{y}/{x}"
+              ],
+              "tileSize": 256,
+              "minzoom": 0,
+              "maxzoom": 20,
+              "attribution": "<a href=\"https://nyc.maps.arcgis.com/home/item.html?id=423f15185bd04f8dad8d99fba736772f\" target=\"_blank\" rel=\"noopener noreferrer\">NYC OTI</a>"
+            }
+          },
+          "layers": [
+            { "id": "nyc-orthos-2024", "type": "raster", "source": "nyc-orthos-2024" }
+          ]
+        }
+      }
+    },
+    {
+      "id": "mapbox",
+      "label": "Mapbox Streets",
+      "maxZoom": 22,
+      "costly": true,
+      "requiresMapboxAccessToken": true,
+      "metadata": {
+        "provider": "Mapbox",
+        "description": "placeholder",
+        "format": "Mapbox Style API",
+        "coordinateSystem": "WGS 84 / Pseudo-Mercator (EPSG:3857)",
+        "created": "placeholder",
+        "updated": "placeholder",
+        "serviceUrl": "https://api.mapbox.com/styles/v1/mapbox/streets-v12",
+        "attribution": "placeholder"
+      },
+      "style": {
+        "type": "direct",
+        "url": "https://api.mapbox.com/styles/v1/mapbox/streets-v12?access_token={{mapboxAccessToken}}"
+      }
+    }
+  ]
+}

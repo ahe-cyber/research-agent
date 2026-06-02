@@ -87,7 +87,7 @@
   left: 5px;
   width: 18px;
   height: 18px;
-  background: center / contain no-repeat url("/resources/polygon.svg");
+  background: center / contain no-repeat url("/assets/polygon.svg");
   z-index: 1;
 }
 
@@ -256,8 +256,8 @@
   position: absolute;
   inset: 3px;
   background: #000000;
-  mask: center / contain no-repeat url("/resources/document.svg");
-  -webkit-mask: center / contain no-repeat url("/resources/document.svg");
+  mask: center / contain no-repeat url("/assets/document.svg");
+  -webkit-mask: center / contain no-repeat url("/assets/document.svg");
 }
 
 .json-file-action::after {
@@ -293,8 +293,8 @@
   position: absolute;
   inset: 3px;
   background: #1f2933;
-  mask: center / contain no-repeat url("/resources/table.svg");
-  -webkit-mask: center / contain no-repeat url("/resources/table.svg");
+  mask: center / contain no-repeat url("/assets/table.svg");
+  -webkit-mask: center / contain no-repeat url("/assets/table.svg");
 }
 
 .json-table-action.is-active {

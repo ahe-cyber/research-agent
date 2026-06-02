@@ -224,8 +224,8 @@
   position: absolute;
   inset: 3px;
   background: #526070;
-  mask: center / contain no-repeat url("/resources/close.svg");
-  -webkit-mask: center / contain no-repeat url("/resources/close.svg");
+  mask: center / contain no-repeat url("/assets/close.svg");
+  -webkit-mask: center / contain no-repeat url("/assets/close.svg");
 }
 
 .agent-attachment-remove:hover {

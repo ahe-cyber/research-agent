@@ -1,4 +1,4 @@
-import { hideGeoJsonRecord, normalizeGeoJson, showGeoJsonRecord } from "../map/geojson.js";
+import { hideGeoJsonRecord, normalizeGeoJson, showGeoJsonRecord } from "../map/geojson";
 
 export function DetailsTab({ active }) {
   return (

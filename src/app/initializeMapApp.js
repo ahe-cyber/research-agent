@@ -1,6 +1,6 @@
 import { createAgentController } from "../features/agents/AgentPanel.jsx";
-import { createMap } from "../features/map/createMap.js";
-import { createSearchSourceControl } from "../features/address-search/SearchSourceControl.js";
+import { createMap } from "../features/map/createMap";
+import { createSearchSourceControl } from "../features/address-search/SearchSourceControl";
 import { createAddressController } from "../features/address-search/AddressTab.jsx";
 import { createAgentModulesController } from "../features/agents/AgentModulesTab.jsx";
 import { createCatalogController } from "../features/catalog/CatalogBrowser.js";
@@ -9,6 +9,7 @@ import { createEditorTabController } from "../features/editor/EditorTabs.js";
 import { createFormulaController } from "../features/formulas/FormulasTab.jsx";
 import { createPostmanController } from "../features/postman/PostmanTab.js";
 import { createSourceController } from "../features/sources/SourcesTab.jsx";
+import { createLayerSourcesController } from "../features/map/LayerSourcesPage";
 
 let sourceController;
 let catalogController;
@@ -53,6 +54,7 @@ export async function initializeMapApp() {
       requestAnimationFrame(() => map?.resize?.());
     }
   });
+  createLayerSourcesController(editorTabController);
   recordController = createRecordController(recordStore, map, editorTabController, () => agentController);
   addressController = createAddressController({
     onAddressClick: (address) => {
