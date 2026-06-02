@@ -34,21 +34,13 @@ export class TerrainControl {
 
   _render() {
     const button = document.createElement("button");
-    const infoLink = document.createElement("a");
     button.className = "map-display-option map-display-check" + (this._enabled ? " is-active" : "");
     button.type = "button";
     button.textContent = this._config.label;
     button.title = `${this._enabled ? "Hide" : "Show"} ${this._config.label}`;
     button.setAttribute("aria-pressed", String(this._enabled));
     button.addEventListener("click", () => this._toggle());
-    infoLink.className = "map-display-info-link";
-    infoLink.href = this._config.itemUrl;
-    infoLink.target = "_blank";
-    infoLink.rel = "noopener noreferrer";
-    infoLink.textContent = "i";
-    infoLink.title = `${this._config.label} source`;
-    infoLink.setAttribute("aria-label", `${this._config.label} source`);
-    this._container!.replaceChildren(button, infoLink);
+    this._container!.replaceChildren(button);
   }
 
   _toggle() {

@@ -1,4 +1,5 @@
 import { markdownToHtml } from "../../lib/markdown";
+import { createPageMenu } from "../editor/PageMenu";
 
 export function createPostmanController(editorTabController) {
   const postmanButton = document.getElementById("postmanCollectionsButton");
@@ -6,9 +7,6 @@ export function createPostmanController(editorTabController) {
   // Build the panel — reuses editor-sources-panel layout
   const panel = document.createElement("div");
   panel.className = "editor-sources-panel";
-
-  const toolbar = document.createElement("div");
-  toolbar.className = "editor-sources-toolbar";
 
   const refreshButton = document.createElement("button");
   refreshButton.className = "section-tool-button";
@@ -20,12 +18,12 @@ export function createPostmanController(editorTabController) {
   const statusEl = document.createElement("span");
   statusEl.className = "postman-status";
 
-  toolbar.append(refreshButton, statusEl);
+  const { element: pageMenu } = createPageMenu({ left: [refreshButton, statusEl] });
 
   const collectionList = document.createElement("div");
   collectionList.id = "postmanCollectionList";
 
-  panel.append(toolbar, collectionList);
+  panel.append(pageMenu, collectionList);
 
   // Open tab + load on button click
   postmanButton.addEventListener("click", () => {

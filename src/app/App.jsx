@@ -173,6 +173,14 @@ export default function App() {
             hidden={activeTab !== "sources"}
           />
           <button
+            className="section-tool-button edit-search-sources-button"
+            type="button"
+            id="editSearchSourcesButton"
+            aria-label="Edit search sources"
+            title="Edit search sources"
+            hidden={activeTab !== "address"}
+          />
+          <button
             className="section-tool-button edit-agents-button"
             type="button"
             id="editAgentsButton"

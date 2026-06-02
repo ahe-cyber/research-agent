@@ -4,40 +4,52 @@ import { createGeoSearchBox } from "./providers/nycGeoSearch";
 import { createGoogleSearchBox } from "./providers/googlePlaces";
 import type { DestroyableSearchBox, RetrieveHandler, SearchMap, SearchProvider } from "./types";
 
-type SearchSourceId = "geosearch" | "mapbox" | "google";
+export type SearchSourceType = "geosearch" | "mapbox" | "google";
 
-interface SearchSource {
-  id: SearchSourceId;
+export interface SearchSourceConfig {
+  id: string;
   label: string;
+  type: SearchSourceType;
   costly?: boolean;
+  description?: string;
+  outputs?: Array<{ variable: string; path: string }>;
+}
+
+interface SearchSource extends SearchSourceConfig {
   provider: SearchProvider;
 }
 
-function getSources(): SearchSource[] {
-  const sources: SearchSource[] = [{ id: "geosearch", label: "NYC GeoSearch", provider: createGeoSearchBox }];
-  if (getMapboxAccessToken()) {
-    sources.push({ id: "mapbox", label: "Mapbox", costly: true, provider: createPlaceSearchBox });
+const PROVIDER_MAP: Record<SearchSourceType, { provider: SearchProvider; hasKey: () => boolean }> = {
+  geosearch: { provider: createGeoSearchBox, hasKey: () => true },
+  mapbox:    { provider: createPlaceSearchBox, hasKey: () => !!getMapboxAccessToken() },
+  google:    { provider: createGoogleSearchBox, hasKey: () => !!getGoogleMapsApiKey() }
+};
+
+async function loadSources(): Promise<SearchSource[]> {
+  try {
+    const res = await fetch("/api/searchsources");
+    if (!res.ok) throw new Error("Failed to load");
+    const { sources }: { sources: SearchSourceConfig[] } = await res.json();
+    return sources
+      .filter(s => PROVIDER_MAP[s.type]?.hasKey())
+      .map(s => ({ ...s, provider: PROVIDER_MAP[s.type].provider }));
+  } catch {
+    return [{ id: "src-geosearch", label: "NYC GeoSearch", type: "geosearch", provider: createGeoSearchBox }];
   }
-  if (getGoogleMapsApiKey()) {
-    sources.push({ id: "google", label: "Google Places", costly: true, provider: createGoogleSearchBox });
-  }
-  return sources;
 }
 
-function appendLabel(element: HTMLElement, source: SearchSource) {
-  if (source.costly) {
-    element.classList.add("has-money-icon");
-  }
+function appendLabel(element: HTMLElement, source: SearchSourceConfig) {
+  if (source.costly) element.classList.add("has-money-icon");
   element.append(source.label);
 }
 
 export function createSearchSourceControl(
   map: SearchMap | null,
-  onRetrieve: (result: Parameters<RetrieveHandler>[0], sourceId: SearchSourceId) => void,
+  onRetrieve: (result: Parameters<RetrieveHandler>[0], sourceId: string, sourceLabel: string) => void,
   searchBoxContainer: HTMLElement
 ) {
-  const sources = getSources();
-  let currentId = sources[0].id;
+  let sources: SearchSource[] = [];
+  let currentId = "";
   let currentBox: DestroyableSearchBox | null = null;
   let open = false;
 
@@ -50,16 +62,16 @@ export function createSearchSourceControl(
   function render() {
     const current = sources.find(s => s.id === currentId);
     el.innerHTML = "";
+    if (!current) return;
 
     if (open) {
       const menu = document.createElement("div");
       menu.className = "search-source-menu";
       sources.forEach((source) => {
-        const { id } = source;
         const item = document.createElement("button");
-        item.className = "search-source-item" + (id === currentId ? " is-active" : "");
+        item.className = "search-source-item" + (source.id === currentId ? " is-active" : "");
         appendLabel(item, source);
-        item.addEventListener("click", (e) => { e.stopPropagation(); select(id); });
+        item.addEventListener("click", (e) => { e.stopPropagation(); select(source.id); });
         menu.appendChild(item);
       });
       el.appendChild(menu);
@@ -67,7 +79,7 @@ export function createSearchSourceControl(
 
     const btn = document.createElement("button");
     btn.className = "section-tool-button";
-    appendLabel(btn, current!);
+    appendLabel(btn, current);
     btn.addEventListener("click", (e) => { e.stopPropagation(); open ? close() : openMenu(); });
     el.appendChild(btn);
   }
@@ -75,12 +87,9 @@ export function createSearchSourceControl(
   function openMenu() { open = true; render(); }
   function close() { open = false; render(); }
 
-  function select(id: SearchSourceId) {
+  function select(id: string) {
     open = false;
-    if (id !== currentId) {
-      currentId = id;
-      swapBox();
-    }
+    if (id !== currentId) { currentId = id; swapBox(); }
     render();
   }
 
@@ -88,17 +97,25 @@ export function createSearchSourceControl(
     const query = getSearchText(currentBox);
     currentBox?.destroy?.();
     searchBoxContainer.replaceChildren();
-    // Wrap onRetrieve to pass the active source ID so callers can adapt.
-    const wrapped: RetrieveHandler = (result) => onRetrieve(result, currentId);
-    const box = sources.find(source => source.id === currentId)!.provider(map, wrapped, query);
+    const source = sources.find(s => s.id === currentId);
+    if (!source) return;
+    const wrapped: RetrieveHandler = (result) => onRetrieve(result, currentId, source.label);
+    const box = source.provider(map, wrapped, query);
     searchBoxContainer.appendChild(box);
     currentBox = box;
   }
 
-  render();
-  swapBox();
+  async function reload() {
+    const prev = currentId;
+    sources = await loadSources();
+    currentId = sources.some(s => s.id === prev) ? prev : (sources[0]?.id ?? "");
+    swapBox();
+    render();
+  }
 
-  return { element: el };
+  reload();
+
+  return { element: el, reload };
 }
 
 function getSearchText(box: DestroyableSearchBox | null) {

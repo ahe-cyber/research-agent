@@ -210,6 +210,25 @@ export function createEditorTabController({ onMapActivated = () => {} } = {}) {
     activateTab(tabId);
   }
 
+  function openSearchSourcesTab(searchSourcesPanel) {
+    const tabId = "search-sources-editor";
+
+    if (tabs.find((t) => t.id === tabId)) {
+      activateTab(tabId);
+      return;
+    }
+
+    tabs.push({ id: tabId, label: "Search Sources", closeable: true });
+
+    if (!panelMap[tabId]) {
+      searchSourcesPanel.hidden = true;
+      viewport.appendChild(searchSourcesPanel);
+      panelMap[tabId] = searchSourcesPanel;
+    }
+
+    activateTab(tabId);
+  }
+
   function openCatalogResultsTab(resultsPanel) {
     const tabId = "catalog-results";
 
@@ -338,7 +357,7 @@ export function createEditorTabController({ onMapActivated = () => {} } = {}) {
   }
 
   render();
-  return { openTableTab, openPdfTab, openSourcesTab, openPostmanTab, openLayerSourcesTab, openCatalogResultsTab, openCatalogDatasetTab, openReportTab, openAgentsTab };
+  return { openTableTab, openPdfTab, openSourcesTab, openPostmanTab, openLayerSourcesTab, openCatalogResultsTab, openCatalogDatasetTab, openReportTab, openAgentsTab, openSearchSourcesTab };
 }
 
 function renderHtmlElement(element) {

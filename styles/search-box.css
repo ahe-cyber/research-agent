@@ -49,6 +49,73 @@ mapbox-search-box {
 
 .search-source-item:hover { background: #f0f4f8; }
 .search-source-item.is-active { color: #2f6fed; font-weight: 600; }
+.search-source-item--edit { color: #526070; }
+.search-source-item--edit:hover { color: #1f2933; }
+
+.search-source-divider {
+  height: 1px;
+  background: #e8eaed;
+  margin: 4px 0;
+}
+
+
+/* Search sources editor panel (opens as an editor tab) */
+.search-sources-editor-panel {
+  background: #ffffff;
+}
+
+.search-sources-save-status {
+  font-size: 12px;
+  color: #526070;
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+
+.search-sources-save-status.is-saved {
+  opacity: 1;
+  color: #2a9a5e;
+}
+
+.search-sources-list {
+  flex: 1;
+  overflow-y: auto;
+  box-sizing: border-box;
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.search-source-type-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.search-source-row-select {
+  flex: 0 0 auto;
+  padding: 4px 6px;
+  border: 1px solid #c9ced6;
+  border-radius: 4px;
+  font: inherit;
+  font-size: 12px;
+  color: #1f2933;
+  background: #ffffff;
+}
+
+.search-source-row-costly {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 12px;
+  color: #526070;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.search-source-variable-footer {
+  grid-template-columns: minmax(0, 1fr);
+}
 
 /* NYC GeoSearch autocomplete */
 .geosearch {

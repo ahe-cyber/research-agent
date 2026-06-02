@@ -464,6 +464,32 @@ app.put("/api/agents", async (request, response) => {
   }
 });
 
+// ── Search sources registry ───────────────────────────────────────────────────
+
+const searchSourcesPath = path.join(rootDir, "public", "data", "searchsource.json");
+
+app.get("/api/searchsources", async (_request, response) => {
+  try {
+    response.type("json").send(await fs.readFile(searchSourcesPath, "utf8"));
+  } catch {
+    response.json({ sources: [] });
+  }
+});
+
+app.put("/api/searchsources", async (request, response) => {
+  const body = request.body;
+  if (!body || !Array.isArray(body.sources)) {
+    response.status(400).json({ error: "sources must be an array." });
+    return;
+  }
+  try {
+    await fs.writeFile(searchSourcesPath, `${JSON.stringify(body, null, 2)}\n`, "utf8");
+    response.json({ ok: true });
+  } catch (error) {
+    response.status(500).json({ error: error.message });
+  }
+});
+
 // ── Hub catalog registry ──────────────────────────────────────────────────────
 
 const hubsPath = path.join(rootDir, "public", "data", "hubs.json");

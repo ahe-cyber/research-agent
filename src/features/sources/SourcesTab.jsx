@@ -1,4 +1,5 @@
 import { buildUrlWithParams, queryUrl } from "../map/geojson";
+import { createPageMenu } from "../editor/PageMenu";
 
 const LAYER_FIELDS_FOLDED_STORAGE_KEY = "research-agent.layerFieldsFolded";
 const NEW_SOURCE_NAME = "New Source";
@@ -75,17 +76,14 @@ export function createSourceController(recordController, formulaController, edit
   const editorPanel = document.createElement("div");
   editorPanel.className = "editor-sources-panel";
 
-  const editorToolbar = document.createElement("div");
-  editorToolbar.className = "editor-sources-toolbar";
-
   const addDatasetSourceButton = document.createElement("button");
   addDatasetSourceButton.className = "section-tool-button add-source-button";
   addDatasetSourceButton.type = "button";
   addDatasetSourceButton.setAttribute("aria-label", "Add source");
   addDatasetSourceButton.title = "Add source";
 
-  editorToolbar.append(addDatasetSourceButton);
-  editorPanel.append(editorToolbar, sourceList);
+  const { element: pageMenu } = createPageMenu({ left: [addDatasetSourceButton] });
+  editorPanel.append(pageMenu, sourceList);
 
   let datasetSources = [];
   let sourceIdToOpen = "";

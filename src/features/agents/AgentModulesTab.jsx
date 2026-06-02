@@ -1,3 +1,5 @@
+import { createPageMenu } from "../editor/PageMenu";
+
 const CARD_WIDTH = 220;
 const SVG_NS = "http://www.w3.org/2000/svg";
 const ATTACHMENT_CONTEXT_MAX_CHARS = 30_000;
@@ -27,9 +29,6 @@ export function createAgentModulesController(editorTabController, agentControlle
   const editorPanel = document.createElement("div");
   editorPanel.className = "agents-editor-panel";
 
-  const toolbar = document.createElement("div");
-  toolbar.className = "agents-editor-toolbar";
-
   const addBtn = document.createElement("button");
   addBtn.className = "section-tool-button add-source-button";
   addBtn.type = "button";
@@ -41,7 +40,7 @@ export function createAgentModulesController(editorTabController, agentControlle
   exportBtn.type = "button";
   exportBtn.textContent = "Export";
 
-  toolbar.append(addBtn, exportBtn);
+  const { element: pageMenu } = createPageMenu({ left: [addBtn, exportBtn] });
 
   const wrapper = document.createElement("div");
   wrapper.className = "agents-canvas-wrapper";
@@ -73,7 +72,7 @@ export function createAgentModulesController(editorTabController, agentControlle
   wrapper.appendChild(canvas);
   wrapper.appendChild(selectionBox);
   wrapper.appendChild(fitBtn);
-  editorPanel.append(toolbar, wrapper);
+  editorPanel.append(pageMenu, wrapper);
 
   // ── State ─────────────────────────────────────────────────────────────────
 

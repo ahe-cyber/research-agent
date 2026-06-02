@@ -111,24 +111,6 @@
   box-shadow: inset 0 0 0 2px #ffffff;
 }
 
-.map-display-info-link {
-  display: flex;
-  flex: 0 0 auto;
-  width: 27px;
-  align-items: center;
-  justify-content: center;
-  border-radius: 4px;
-  color: #526070;
-  font-family: Georgia, serif;
-  font-size: 15px;
-  font-weight: 700;
-  text-decoration: none;
-}
-
-.map-display-info-link:hover {
-  background: #f0f4f8;
-  color: #1f2933;
-}
 
 .section-title-row {
   display: flex;
@@ -173,6 +155,7 @@
 .layer-sources-button,
 .add-source-button,
 .edit-sources-button,
+.edit-search-sources-button,
 .edit-agents-button,
 .wrap-text-button,
 .cloud-collections-button,
@@ -188,6 +171,7 @@
 .layer-sources-button::before,
 .add-source-button::before,
 .edit-sources-button::before,
+.edit-search-sources-button::before,
 .edit-agents-button::before,
 .wrap-text-button::before,
 .cloud-collections-button::before,
@@ -205,8 +189,8 @@
 }
 
 .layer-sources-button::before {
-  mask: center / contain no-repeat url("/assets/info.svg");
-  -webkit-mask: center / contain no-repeat url("/assets/info.svg");
+  mask: center / contain no-repeat url("/assets/edit.svg");
+  -webkit-mask: center / contain no-repeat url("/assets/edit.svg");
 }
 
 .add-source-button::before {
@@ -219,6 +203,7 @@
   -webkit-mask: center / contain no-repeat url("/assets/edit.svg");
 }
 
+.edit-search-sources-button::before,
 .edit-agents-button::before {
   mask: center / contain no-repeat url("/assets/edit.svg");
   -webkit-mask: center / contain no-repeat url("/assets/edit.svg");
@@ -239,6 +224,7 @@
   -webkit-mask: center / contain no-repeat url("/assets/more.svg");
 }
 
+
 .section-tool-button:hover,
 .section-tool-button.is-active {
   background: #f7f8fa;
@@ -252,6 +238,7 @@
 .layer-sources-button.is-active,
 .add-source-button.is-active,
 .edit-sources-button.is-active,
+.edit-search-sources-button.is-active,
 .edit-agents-button.is-active,
 .wrap-text-button.is-active,
 .cloud-collections-button.is-active,
@@ -264,6 +251,7 @@
 .layer-sources-button.is-active::before,
 .add-source-button.is-active::before,
 .edit-sources-button.is-active::before,
+.edit-search-sources-button.is-active::before,
 .edit-agents-button.is-active::before,
 .wrap-text-button.is-active::before,
 .cloud-collections-button.is-active::before,

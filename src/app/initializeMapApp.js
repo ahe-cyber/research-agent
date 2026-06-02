@@ -1,7 +1,7 @@
 import { createAgentController } from "../features/agents/AgentPanel.jsx";
 import { createMap } from "../features/map/createMap";
 import { createSearchSourceControl } from "../features/address-search/SearchSourceControl";
-import { createAddressController } from "../features/address-search/AddressTab.jsx";
+import { createAddressController, createSearchSourceEditorPanel } from "../features/address-search/AddressTab.jsx";
 import { createAgentModulesController } from "../features/agents/AgentModulesTab.jsx";
 import { createCatalogController } from "../features/catalog/CatalogBrowser.js";
 import { createRecordController, createRecordStore } from "../features/records/DetailsTab.jsx";
@@ -18,12 +18,11 @@ let recordController;
 let addressController;
 let agentController;
 
-async function handlePlaceRetrieved(searchResult, searchSourceId) {
+async function handlePlaceRetrieved(searchResult, _sourceId, sourceLabel) {
   addressController.add(searchResult);
   const outputVariables = sourceController.assignMapboxSearchOutputs(searchResult);
 
-  const titleMap = { geosearch: "NYC GeoSearch result", mapbox: "Mapbox search result", google: "Google Places result" };
-  const title = titleMap[searchSourceId] ?? "Search result";
+  const title = sourceLabel ? `${sourceLabel} result` : "Search result";
   const record = recordController.add({
     kind: "Search",
     title,
@@ -81,6 +80,10 @@ export async function initializeMapApp() {
   agentController.setAttachmentTargetProvider(() => agentModulesController.getAttachmentTarget());
   agentController.setModulesRefresher(() => agentModulesController.reload());
 
-  const { element: selectorElement } = createSearchSourceControl(map, handlePlaceRetrieved, searchBoxContainer);
+  let reloadSources;
+  const { panel: searchSourcesPanel } = createSearchSourceEditorPanel(() => reloadSources?.());
+  const { element: selectorElement, reload } = createSearchSourceControl(map, handlePlaceRetrieved, searchBoxContainer);
+  reloadSources = reload;
   document.getElementById("searchSourceSelector").appendChild(selectorElement);
+  document.getElementById("editSearchSourcesButton")?.addEventListener("click", () => editorTabController.openSearchSourcesTab(searchSourcesPanel));
 }
