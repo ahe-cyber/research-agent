@@ -223,21 +223,24 @@
 .editor-layer-sources-panel {
   position: absolute;
   inset: 0;
-  overflow-y: auto;
-  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
   background: #ffffff;
-  padding: 24px 28px;
 }
 
 .editor-layer-sources-panel[hidden] {
   display: none;
 }
 
+.layer-sources-page {
+  flex: 1;
+  overflow-y: auto;
+  box-sizing: border-box;
+  padding: 24px 28px;
+}
+
 .editor-layer-sources-panel header {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 16px;
   margin-bottom: 24px;
 }
 
@@ -305,14 +308,8 @@
   color: #0b5cad;
 }
 
-.layer-sources-view-toolbar {
-  display: flex;
-  gap: 4px;
-}
-
 .layer-sources-copy-button {
   height: 28px;
-  margin-left: 4px;
   border: 1px solid #d6d9de;
   border-radius: 4px;
   background: #ffffff;
@@ -325,10 +322,6 @@
 
 .layer-sources-copy-button:hover {
   background: #f7f8fa;
-}
-
-.layer-sources-copy-button[hidden] {
-  display: none;
 }
 
 .layer-sources-view-button {
@@ -399,14 +392,50 @@
   color: #0b5cad;
 }
 
-.editor-sources-toolbar {
+.page-menu {
   display: flex;
   align-items: center;
-  gap: 8px;
+  justify-content: space-between;
+  gap: 12px;
   flex: 0 0 auto;
   padding: 8px 14px;
   border-bottom: 1px solid #e5e8ec;
   background: #fcfdfe;
+}
+
+.page-menu-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.page-menu-actions-right {
+  margin-left: auto;
+}
+
+.page-view,
+.page-view-content {
+  min-width: 0;
+}
+
+.page-view-action-bar,
+.page-view-actions {
+  display: flex;
+  align-items: center;
+}
+
+.page-view-action-bar {
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 10px;
+}
+
+.page-view-actions {
+  gap: 8px;
+}
+
+.page-view-actions-right {
+  margin-left: auto;
 }
 
 .editor-sources-panel #sourceList {

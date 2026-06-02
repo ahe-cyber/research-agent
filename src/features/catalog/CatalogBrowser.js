@@ -1,69 +1,43 @@
+import { createPageListView } from "../editor/PageListView";
+import { createPageMenu } from "../editor/PageMenu";
+
 export function createCatalogController(editorTabController, agentController, getVariables, onAddSource) {
   let hubs = [];
   let hubRegistry = createEmptyHubRegistry();
-  let sessionResults = [];
+  let liveSaveTimer = null;
+  let liveSaveInFlight = false;
+  let liveSaveQueued = false;
   const inlineResultsByBubble = new WeakMap();
 
-  // ── Results panel ──────────────────────────────────────────────────────────
+  // ── Catalog registry panel ─────────────────────────────────────────────────
 
   const resultsPanel = document.createElement("div");
   resultsPanel.className = "catalog-results-panel";
-
-  const hubsBar = document.createElement("div");
-  hubsBar.className = "catalog-hubs-bar";
-
-  const hubsHeader = document.createElement("div");
-  hubsHeader.className = "catalog-hubs-header";
 
   const hubsTitle = document.createElement("span");
   hubsTitle.className = "catalog-hubs-title";
   hubsTitle.textContent = "Catalogs";
 
-  const saveHubsBtn = document.createElement("button");
-  saveHubsBtn.className = "catalog-hubs-save";
-  saveHubsBtn.type = "button";
-  saveHubsBtn.textContent = "Save";
-  saveHubsBtn.addEventListener("click", saveHubs);
-
-  hubsHeader.append(hubsTitle, saveHubsBtn);
-
-  const hubRowsEl = document.createElement("div");
-  hubRowsEl.className = "catalog-hub-rows";
+  const saveStatusEl = document.createElement("span");
+  saveStatusEl.className = "catalog-save-status";
 
   const addHubBtn = document.createElement("button");
   addHubBtn.className = "catalog-add-hub-btn";
   addHubBtn.type = "button";
   addHubBtn.textContent = "+ Add catalog";
-  addHubBtn.addEventListener("click", () =>
-    addHubRow({ id: `hub-${Date.now()}`, name: "", url: "", type: "arcgis" })
-  );
+  addHubBtn.addEventListener("click", addHub);
 
-  hubsBar.append(hubsHeader, hubRowsEl, addHubBtn);
+  const pageMenuLeft = document.createElement("div");
+  pageMenuLeft.className = "catalog-menu-title";
+  pageMenuLeft.append(hubsTitle, saveStatusEl);
 
-  const resultsToolbar = document.createElement("div");
-  resultsToolbar.className = "catalog-results-toolbar";
+  const { element: pageMenu } = createPageMenu({ left: [pageMenuLeft], right: [addHubBtn] });
 
-  const resultsCountEl = document.createElement("span");
-  resultsCountEl.className = "catalog-results-count";
-  resultsCountEl.textContent = "No results yet";
+  const hubListEl = document.createElement("div");
+  hubListEl.className = "catalog-hub-card-list";
 
-  const clearBtn = document.createElement("button");
-  clearBtn.className = "catalog-clear-btn";
-  clearBtn.type = "button";
-  clearBtn.textContent = "Clear all";
-  clearBtn.addEventListener("click", clearResults);
-
-  resultsToolbar.append(resultsCountEl, clearBtn);
-
-  const resultsGrid = document.createElement("div");
-  resultsGrid.className = "catalog-results-grid";
-
-  const emptyState = document.createElement("p");
-  emptyState.className = "catalog-empty-state";
-  emptyState.textContent = "Search results will appear here after a catalog search.";
-  resultsGrid.appendChild(emptyState);
-
-  resultsPanel.append(hubsBar, resultsToolbar, resultsGrid);
+  const { element: pageListView } = createPageListView({ children: [hubListEl] });
+  resultsPanel.append(pageMenu, pageListView);
 
   // ── Hub loading ────────────────────────────────────────────────────────────
 
@@ -73,49 +47,100 @@ export function createCatalogController(editorTabController, agentController, ge
       if (res.ok) {
         hubRegistry = normalizeHubRegistry(await res.json());
         hubs = flattenHubRegistry(hubRegistry);
-        renderHubRows();
+        renderHubCards();
       }
     } catch (error) {
       console.error("[Catalog] Failed to load hubs", error);
     }
   }
 
-  async function saveHubs() {
-    hubs = readCurrentHubs();
-    hubRegistry = mergeHubsIntoRegistry(hubRegistry, hubs);
+  function queueHubSync() {
+    liveSaveQueued = true;
+    saveStatusEl.textContent = "Saving...";
+    clearTimeout(liveSaveTimer);
+    liveSaveTimer = setTimeout(syncHubsNow, 350);
+  }
+
+  async function syncHubsNow() {
+    if (liveSaveInFlight || !liveSaveQueued) return;
+    const serializedRegistry = mergeHubsIntoRegistry(hubRegistry, serializeHubs());
+    liveSaveQueued = false;
+    liveSaveInFlight = true;
 
     try {
       const res = await fetch("/api/hubs", {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(hubRegistry)
+        body: JSON.stringify(serializedRegistry)
       });
-      if (res.ok) {
-        saveHubsBtn.textContent = "Saved";
-        setTimeout(() => { saveHubsBtn.textContent = "Save"; }, 2000);
+
+      if (!res.ok) {
+        throw new Error(`Hub save failed with status ${res.status}`);
       }
+
+      hubRegistry = serializedRegistry;
+      saveStatusEl.textContent = "Saved";
+      saveStatusEl.classList.add("is-saved");
+      setTimeout(() => {
+        saveStatusEl.textContent = "";
+        saveStatusEl.classList.remove("is-saved");
+      }, 2000);
     } catch (error) {
-      console.error("[Catalog] Failed to save hubs", error);
+      console.error("[Catalog] Live sync failed", error);
+      saveStatusEl.textContent = "Save failed";
+      liveSaveQueued = true;
+    } finally {
+      liveSaveInFlight = false;
+      if (liveSaveQueued) {
+        clearTimeout(liveSaveTimer);
+        liveSaveTimer = setTimeout(syncHubsNow, 1000);
+      }
     }
   }
 
-  function renderHubRows() {
-    hubRowsEl.replaceChildren();
-    hubs.forEach((hub) => addHubRow(hub));
+  function renderHubCards() {
+    hubListEl.replaceChildren();
+    hubs.forEach((hub, index) => hubListEl.appendChild(createHubCard(hub, index)));
   }
 
-  function addHubRow(hub) {
-    const row = document.createElement("div");
-    row.className = "catalog-hub-row";
-    row.dataset.hubId = hub.id || `hub-${Date.now()}`;
+  function createHubCard(hub, index) {
+    const card = document.createElement("article");
+    card.className = "catalog-hub-card";
+    card.dataset.hubId = hub.id || `hub-${Date.now()}`;
+
+    if (!hub.id) hub.id = card.dataset.hubId;
+
+    const header = document.createElement("div");
+    header.className = "catalog-hub-card-header";
+
+    const title = document.createElement("strong");
+    title.textContent = hub.name || "New catalog";
+
+    const removeBtn = document.createElement("button");
+    removeBtn.className = "catalog-hub-remove";
+    removeBtn.type = "button";
+    removeBtn.setAttribute("aria-label", "Remove catalog");
+    removeBtn.title = "Remove catalog";
+    removeBtn.addEventListener("click", () => {
+      hubs.splice(index, 1);
+      renderHubCards();
+      queueHubSync();
+    });
+
+    header.append(title, removeBtn);
+
+    const fields = document.createElement("div");
+    fields.className = "catalog-hub-card-fields";
 
     const nameInput = document.createElement("input");
     nameInput.type = "text";
+    nameInput.className = "catalog-hub-name-input";
     nameInput.placeholder = "Name";
     nameInput.value = hub.name || "";
 
     const urlInput = document.createElement("input");
     urlInput.type = "text";
+    urlInput.className = "catalog-hub-url-input";
     urlInput.placeholder = "https://...";
     urlInput.value = hub.url || "";
 
@@ -128,29 +153,57 @@ export function createCatalogController(editorTabController, agentController, ge
       typeSelect.appendChild(opt);
     }
 
-    const removeBtn = document.createElement("button");
-    removeBtn.className = "catalog-hub-remove";
-    removeBtn.type = "button";
-    removeBtn.setAttribute("aria-label", "Remove catalog");
-    removeBtn.addEventListener("click", () => row.remove());
+    nameInput.addEventListener("input", () => {
+      hub.name = nameInput.value;
+      title.textContent = hub.name.trim() || "New catalog";
+      queueHubSync();
+    });
+    urlInput.addEventListener("input", () => {
+      hub.url = urlInput.value;
+      queueHubSync();
+    });
+    typeSelect.addEventListener("change", () => {
+      hub.type = typeSelect.value;
+      queueHubSync();
+    });
 
-    row.append(nameInput, urlInput, typeSelect, removeBtn);
-    hubRowsEl.appendChild(row);
+    fields.append(
+      createField("Name", nameInput),
+      createField("URL", urlInput),
+      createField("Type", typeSelect)
+    );
+    card.append(header, fields);
+    return card;
   }
 
-  function readCurrentHubs() {
-    return Array.from(hubRowsEl.querySelectorAll(".catalog-hub-row"))
-      .map((row) => {
-        const inputs = row.querySelectorAll("input");
-        const select = row.querySelector("select");
-        return {
-          id: row.dataset.hubId,
-          name: inputs[0].value.trim(),
-          url: inputs[1].value.trim().replace(/\/$/, ""),
-          type: select?.value || "arcgis"
-        };
-      })
-      .filter((h) => h.name && h.url);
+  function createField(label, control) {
+    const field = document.createElement("label");
+    const fieldLabel = document.createElement("span");
+    field.className = "catalog-hub-field";
+    fieldLabel.textContent = label;
+    field.append(fieldLabel, control);
+    return field;
+  }
+
+  function addHub() {
+    const hub = { id: `hub-${Date.now()}`, name: "New catalog", url: "", type: "arcgis" };
+    hubs.push(hub);
+    renderHubCards();
+    hubListEl.lastElementChild?.querySelector(".catalog-hub-name-input")?.focus();
+    queueHubSync();
+  }
+
+  function serializeHubs({ onlyValid = false } = {}) {
+    const serializedHubs = hubs
+      .map((hub) => ({
+        ...hub,
+        id: hub.id || `hub-${Date.now()}`,
+        name: (hub.name || "").trim(),
+        url: (hub.url || "").trim().replace(/\/$/, ""),
+        type: hub.type === "socrata" ? "socrata" : "arcgis"
+      }));
+
+    return onlyValid ? serializedHubs.filter((h) => h.name && h.url) : serializedHubs;
   }
 
   // ── Search context and agent events ────────────────────────────────────────
@@ -158,7 +211,7 @@ export function createCatalogController(editorTabController, agentController, ge
   function getCatalogContext() {
     const vars = getVariables?.() || {};
     return {
-      hubs: readCurrentHubs(),
+      hubs: serializeHubs({ onlyValid: true }),
       supportedInputParams: Object.fromEntries(
         Object.entries(hubRegistry).map(([type, group]) => [type, group.supportedInputParams || []])
       ),
@@ -176,7 +229,6 @@ export function createCatalogController(editorTabController, agentController, ge
     } else if (event.type === "search_error") {
       appendSearchError(bubble, event.query, event.hubName, event.message);
     } else if (event.type === "result") {
-      addResult(event.item);
       let inlineResultsEl = inlineResultsByBubble.get(bubble);
       if (!inlineResultsEl) {
         inlineResultsEl = document.createElement("div");
@@ -186,68 +238,6 @@ export function createCatalogController(editorTabController, agentController, ge
       }
       appendInlineResult(thread, inlineResultsEl, event.item);
     }
-  }
-
-  // ── Results management ─────────────────────────────────────────────────────
-
-  function addResult(item) {
-    if (sessionResults.some((r) => r.id === item.id)) return;
-    sessionResults.push(item);
-    emptyState.remove();
-    resultsGrid.appendChild(buildResultCard(item));
-    updateResultsCount();
-  }
-
-  function clearResults() {
-    sessionResults = [];
-    resultsGrid.replaceChildren(emptyState);
-    updateResultsCount();
-  }
-
-  function buildResultCard(item) {
-    const card = document.createElement("div");
-    card.className = "catalog-result-card";
-    card.dataset.resultId = item.id;
-
-    const header = document.createElement("div");
-    header.className = "catalog-result-header";
-
-    const title = document.createElement("strong");
-    title.className = "catalog-result-title";
-    title.textContent = item.title;
-
-    const viewBtn = document.createElement("button");
-    viewBtn.className = "catalog-result-view-btn";
-    viewBtn.type = "button";
-    viewBtn.textContent = "View";
-    viewBtn.addEventListener("click", () => openDatasetTab(item));
-
-    header.append(title, viewBtn);
-
-    const meta = document.createElement("div");
-    meta.className = "catalog-result-meta";
-    const typeTag = document.createElement("span");
-    typeTag.className = `catalog-result-type ${item.portalType === "socrata" ? "is-socrata" : "is-arcgis"}`;
-    typeTag.textContent = item.type || "Dataset";
-    meta.append(document.createTextNode(`${item.hubName || ""} `), typeTag);
-
-    const snippet = document.createElement("p");
-    snippet.className = "catalog-result-snippet";
-    snippet.textContent = item.snippet || "";
-
-    const urlRow = document.createElement("div");
-    urlRow.className = "catalog-result-url";
-    if (item.url) {
-      const a = document.createElement("a");
-      a.href = item.url;
-      a.target = "_blank";
-      a.rel = "noopener noreferrer";
-      a.textContent = item.url;
-      urlRow.appendChild(a);
-    }
-
-    card.append(header, meta, snippet, urlRow);
-    return card;
   }
 
   function appendInlineResult(thread, container, item) {
@@ -373,13 +363,6 @@ export function createCatalogController(editorTabController, agentController, ge
 
   function clearThinkingText(bubble) {
     if (bubble.textContent === "Thinking…") bubble.textContent = "";
-  }
-
-  function updateResultsCount() {
-    const n = sessionResults.length;
-    resultsCountEl.textContent = n === 0
-      ? "No results yet"
-      : `${n} dataset${n === 1 ? "" : "s"} found`;
   }
 
   // ── Public API ─────────────────────────────────────────────────────────────

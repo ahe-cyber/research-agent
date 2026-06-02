@@ -1,15 +1,14 @@
-# Research Agent
+# Agentic AEC IDE
 
-Research Agent is an agent-powered GIS and data research workspace for searching addresses and places, inspecting property and building-code records, running manual GIS source queries, viewing GeoJSON results on a map, and using query records for AI-assisted analysis.
+The project is an **Agentic AEC IDE**: a visual, extensible environment where AI agents, tools, skills, MCP servers, project data, and human workflows come together to support architectural work across research, schematic design, filing, reporting, presentations, estimating, and project management.
 
 ## Overview
 
-The app is designed to feel closer to an agent-powered code editor than a simple map page. It uses a fixed editor layout with a narrow activity rail, a left workspace sidebar, a central map editor, and a right agent sidebar.
+The current implementation is intentionally simple. It is an early GIS and data-research workspace for searching addresses and places, inspecting records, running source queries, viewing map results, and using attached records for AI-assisted analysis. The interface is designed to feel closer to an editor than a single-purpose map page, with a narrow activity rail, a left workspace sidebar, a central editor, and a right agent sidebar.
 
-Core capabilities include:
+Current capabilities include:
 
-* Mapbox-powered address, place, landmark, and POI search for the configured working area.
-* A development mode with canned search results for offline or token-free testing.
+* Configurable address and place search sources, including NYC GeoSearch, Mapbox Search, and Google Places.
 * Registry-backed dataset source editors.
 * Manual dataset queries through an Express proxy API.
 * In-memory query records with request, response, timing, and extracted output variables.
@@ -17,6 +16,17 @@ Core capabilities include:
 * GeoJSON polygon visibility toggles on the map.
 * PDF and image link extraction into an Assets tab.
 * An AI agent panel that can use attached query records as context for analysis.
+
+## Engineering Conventions
+
+The project is migrating incrementally to Next.js. New code should follow the intended architecture even while legacy modules remain in place:
+
+* Favor Next.js App Router structure and React components for new UI work.
+* Prefer `.tsx` for components and `.ts` for application logic. Add new `.js` or `.jsx` files only when touching a legacy boundary makes that unavoidable.
+* Keep feature-specific code under `src/features/*`, reusable UI components under an appropriate shared feature folder, and route handlers under `src/app/api/*`.
+* Prefer data-driven behavior over hard-coded configuration. The current registries are JSON files under `public/data`.
+* Extract reusable components when multiple editor pages share layout or interaction patterns, especially menus, list views, table views, graph views, cards, and action rows.
+* Keep each migration increment buildable. Avoid combining broad file moves, visual redesigns, and behavior changes unless they belong to the same focused task.
 
 ## UI Style Guidance
 
@@ -44,7 +54,7 @@ Activity rail → Workspace sidebar → Map editor → Agent sidebar
 
 The Address tab always contains the search input. There is no add popup.
 
-The search input is powered by Mapbox Search JS Web's `MapboxSearchBox`, which supports:
+The active search provider is selected from the search-source registry. Available providers currently include NYC GeoSearch, Mapbox Search JS Web's `MapboxSearchBox`, and Google Places. Configured sources can support:
 
 * Addresses
 * Place names
@@ -71,7 +81,7 @@ If a record contains PDF or image links, the record should expose a way to colle
 
 ### Sources
 
-The Sources tab lists Mapbox Search plus registry-backed dataset sources as expandable source editors.
+The Sources tab lists registry-backed dataset sources as expandable source editors. Search sources have a separate editor opened from the Address workspace.
 
 Dataset endpoint editors are loaded from:
 
@@ -86,6 +96,8 @@ public/data/datasets.json
 ```
 
 Dataset source settings can be saved from the Sources tab. The Express API writes edits back to `public/data/datasets.json`.
+
+Search source settings are loaded from `/api/searchsources` and currently backed by `public/data/searchsource.json`.
 
 Dataset overview buttons open the configured ArcGIS REST layer overview in a new tab. Those pages include dataset descriptions, supported query formats, extents, and field lists.
 
@@ -104,21 +116,23 @@ When context is attached, the agent can use the current query records alongside 
 
 ## Client Source Organization
 
-The browser application is organized by feature so it can be migrated to Next.js gradually without combining file moves with framework changes.
+The application is organized by feature while the Next.js migration is in progress. Some browser controllers still use imperative DOM code and some files remain JavaScript or JSX. Treat those as migration boundaries, not patterns for new work.
 
 ```text
 src/
   app/
     App.jsx
     initializeMapApp.js
+    layout.tsx
+    page.tsx
   features/
     address-search/
       AddressTab.jsx
-      SearchSourceControl.js
+      SearchSourceControl.ts
       providers/
-        googlePlaces.js
-        mapbox.js
-        nycGeoSearch.js
+        googlePlaces.ts
+        mapbox.ts
+        nycGeoSearch.ts
     agents/
     assets/
     catalog/
@@ -128,83 +142,55 @@ src/
     postman/
     records/
     sources/
+    workspace/
+      WorkspaceClient.tsx
   lib/
-    markdown.js
+    markdown.ts
   main.jsx
 ```
 
-Keep shared logic in `src/lib`, map rendering and GeoJSON logic in `src/features/map`, and feature-specific UI or controllers in their matching `src/features/*` folder. Avoid adding new browser modules to the old `src/map`, `src/workspace`, `src/agent`, or `src/utils` locations.
+Keep shared logic in `src/lib`, map rendering and GeoJSON logic in `src/features/map`, reusable editor components in `src/features/editor`, and feature-specific UI or controllers in their matching `src/features/*` folder. Follow Next.js naming and routing conventions for new modules. Avoid adding new browser modules to old or ad hoc locations.
 
-## Next.js Migration Plan
+## Development
 
-Complete one TODO block at a time. Keep each increment buildable and avoid changing application behavior unless the block explicitly requires it.
-
-### TODO: Next.js Migration Increment 1 - Add TypeScript Checking - DONE
-
-Add `typescript`, `tsconfig.json`, and an `npm run typecheck` script while keeping Vite as the runtime and bundler. Add declarations for the CDN-provided `maplibregl` and `mapboxsearch` globals. Do not install Next.js yet.
-
-### TODO: Next.js Migration Increment 2 - Convert Framework-Neutral Modules - DONE
-
-Rename and type the low-risk utility modules first:
-
-```text
-src/lib/markdown.js                  -> markdown.ts
-src/features/map/config.js           -> config.ts
-src/features/map/geojson.js          -> geojson.ts
-src/features/map/basemaps.js         -> basemaps.ts
-src/features/map/createMap.js        -> createMap.ts
-```
-
-Keep runtime behavior unchanged and run both `npm run build` and `npm run typecheck`.
-
-### TODO: Next.js Migration Increment 3 - Convert Address Search Providers - DONE
-
-Rename and type the search modules:
-
-```text
-src/features/address-search/SearchSourceControl.js       -> SearchSourceControl.ts
-src/features/address-search/providers/mapbox.js          -> mapbox.ts
-src/features/address-search/providers/googlePlaces.js    -> googlePlaces.ts
-src/features/address-search/providers/nycGeoSearch.js    -> nycGeoSearch.ts
-```
-
-Define shared suggestion, retrieved-feature, provider, and destroyable-search-box interfaces. Preserve input text, focus behavior, and suggestion cleanup when switching providers.
-
-### TODO: Next.js Migration Increment 4 - Add a Next.js Client Shell - DONE
-
-Install `next` and add the App Router shell:
-
-```text
-src/app/layout.tsx
-src/app/page.tsx
-src/features/workspace/WorkspaceClient.tsx
-next.config.ts
-```
-
-Keep the GIS workspace client-rendered initially. Mark `WorkspaceClient.tsx` with `"use client"` and render the existing workspace from it. Load MapLibre and Mapbox Search browser scripts through `next/script` or client-only imports. Do not migrate Express endpoints yet.
-
-### Next.js Migration Increment 5 - Run Express Beside Next.js
-
-`server.cjs` continues as the API backend. `next.config.ts` rewrites `/api/:path*` to `http://localhost:3001/api/:path*` so the Next.js client can call all existing Express endpoints without changing any browser fetch URLs.
-
-To run the full development stack, open two terminals:
+The current migration state runs Express beside Next.js. Start both processes:
 
 ```bash
-# Terminal 1 — Express API on port 3001
+# Terminal 1 - Express API on port 3001
 npm run api:dev
 
-# Terminal 2 — Next.js dev server on port 3000
+# Terminal 2 - Next.js dev server on port 3000
 npm run next:dev
 ```
 
-Set `EXPRESS_PORT` if you need a different Express port:
+Set matching ports when overriding the API port:
 
 ```bash
 EXPRESS_PORT=4000 npm run next:dev
 PORT=4000 npm run api:dev
 ```
 
-### TODO: Next.js Migration Increment 6 - Move Simple API Routes
+## Current Progress
+
+The project has TypeScript checking, typed framework-neutral map utilities, typed address-search providers, a Next.js App Router client shell, and an Express API running beside Next.js through rewrites. The workspace already includes registry-backed datasets, hubs, agents, basemaps, and search sources; configurable search-source editing; source cards; map layer source inspection with list and table modes; agent modules; editor tabs; Postman collections; catalog browsing; and shared editor menu groundwork. Migration is incomplete: several UI controllers remain imperative DOM modules, several files still use JavaScript or JSX, API routes still live in `server.cjs`, and styles remain plain CSS.
+
+## TODO
+
+Complete one TODO block at a time. Before implementing a block, create a Git commit with a message that describes in one or two simple sentences what you are about to do. Keep each increment buildable, prefer typed Next.js components, and preserve existing behavior unless a task explicitly changes it. When a block is complete, change `TODO` to `DONE` and replace its instruction block with a brief summary of what was implemented. Then review the remaining TODO blocks for changed assumptions or dependencies and revise their instructions when the current state has made them outdated.
+
+### DONE: Continue the Next.js Component Migration
+
+Added typed React `PageMenu`, `PageListView`, `PageTableView`, and `PageGraphView` primitives. Migrated the layer-sources editor page to React as the first working page: its list/table toggles live in `PageMenu`, and its `Copy as TSV` action lives in `PageTableView`. A typed `PageMenu` DOM adapter keeps the remaining legacy panels buildable while they migrate incrementally.
+
+### TODO: Migrate Remaining Editor Panels to React
+
+Move the remaining imperative editor panels to the typed page primitives one working page at a time. Catalog now uses the shared menu and list-view primitives, but still uses a DOM adapter. Retire the temporary `createPageMenu` and `createPageListView` DOM adapters after the sources editor, search-sources editor, Postman collections editor, catalog editor, and agent-modules editor no longer depend on them.
+
+### TODO: Normalize Catalog Page Menu and Cards
+
+Bring the Catalog editor fully in line with the other shared page-menu panels. Remove the visible `CATALOGS` menu label, put the add-catalog action on the left using the same compact icon-button style as the other add actions, and keep save status subtle. Make catalog cards expandable and collapsible, with read-only collapsed summaries and editing controls available only while a card is expanded.
+
+### TODO: Move Simple API Routes
 
 Move low-risk Express endpoints into App Router Route Handlers one domain at a time:
 
@@ -213,11 +199,12 @@ src/app/api/datasets/route.ts
 src/app/api/hubs/route.ts
 src/app/api/instruction/route.ts
 src/app/api/tools/route.ts
+src/app/api/searchsources/route.ts
 ```
 
-Remove each matching Express handler only after verifying its Next.js replacement.
+Keep the JSON registries as the current data source. Remove each matching Express handler only after verifying its typed Next.js replacement.
 
-### TODO: Next.js Migration Increment 7 - Move External API Proxies
+### TODO: Move External API Proxies
 
 Migrate the query proxy and Postman routes:
 
@@ -229,7 +216,7 @@ src/app/api/postman/collections/[id]/route.ts
 
 Keep Postman credentials server-only. Verify JSON error responses and upstream failure handling.
 
-### TODO: Next.js Migration Increment 8 - Move Agent APIs
+### TODO: Move Agent APIs
 
 Migrate the agent registry and chat endpoints last:
 
@@ -240,62 +227,30 @@ src/app/api/agent/chat/route.ts
 
 Preserve Gemini credentials as server-only environment variables. Move shared backend helpers out of `server.cjs` into typed server modules as needed.
 
-### TODO: Next.js Migration Increment 9 - Remove the Legacy Server
+### TODO: Remove the Legacy Server
 
 After every endpoint has a Route Handler, remove `server.cjs`, Express, and the temporary API rewrites. Replace Vite scripts with Next.js scripts and confirm development, production build, and production start behavior.
 
-### TODO: Next.js Migration Increment 10 - Adopt Next.js Features Selectively
+### TODO: Adopt Next.js Features Selectively
 
 Once parity is established, evaluate route-based editor views, server-rendered non-map pages, `next/font`, `next/script`, and code splitting. Keep the interactive GIS map in a client component unless there is a concrete reason to change that boundary.
 
+### TODO: Migrate CSS to SCSS
+
+Adopt SCSS incrementally after the component boundaries are clearer. Start with shared variables for colors, spacing, borders, and editor surfaces, then migrate styles by feature without mixing visual redesign into the stylesheet conversion.
+
 ## Future Work
 
-Each item below should have its own TODO section so it can be picked up as an implementable Codex task from VS Code.
+- JSON Crack or another Graph View for records
 
-### TODO: JSON Crack Graph View Tab
+- Blind Mode use case
 
-Add a `jsoncrack-react` graph-view tab in the central editor panel, opened like a VS Code-style tab, for visualizing JSON records as an interactive graph.
+- resizable panels
 
-### TODO: Dataset Output Variable Inspector
+- Restore Editor Tabs on Reload
 
-Decide whether dataset output variables should be persisted in a shared visible variable inspector.
+- reconsider prompt for search dataset make it output less
 
-### TODO: Googly Eyes AI Attention
+- agent doesnt have understanding of caller agent role.
 
-Implement draggable, placeable AI googly eyes on screen that can direct the AI’s attention.
-
-### TODO: Migrate to MapLibre
-
-Evaluate replacing Mapbox GL JS with MapLibre where feasible.
-
-### TODO: Blind Mode Response Policy
-
-Allow the agent to answer from lightweight assumptions and general knowledge only, without tool use or chat history, while asking a brief clarification when the request depends on missing selected context.
-
-### TODO: UI Convenience
-
-Add resizable panels, tileable tabs, and related workspace conveniences.
-
-### TODO: Restore Editor Tabs on Reload
-
-The workspace state (`localStorage["workspace-state"]`) already saves `openEditorTabs`, `activeEditorTab`, and `activeActivityTab` on every change. Restoration logic is not yet implemented.
-
-Three tiers of restorability:
-
-**Tier 1 — PDF tabs** (`pdf::{url}`): the URL is embedded in the saved tab ID. `EditorTabs.js` can restore these alone on init by iterating saved tabs and calling `openPdfTab` for any `pdf::*` entry.
-
-**Tier 2 — Singleton panels** (`sources-editor`, `postman-collections`, `agents-editor`, `catalog-results`, `layer-sources`): each panel is created once by its owning controller. Add a `registerPanel(id, label, panel)` method to `EditorTabs.js` that silently adds the tab and panel without activating, unless it matches the saved `activeEditorTab`. Each owning controller calls `registerPanel` unconditionally on init instead of waiting for user action.
-
-Files: `EditorTabs.js` + `SourcesTab.jsx`, `PostmanTab.js`, `AgentModulesTab.jsx`, `CatalogBrowser.js`, `LayerSourcesPage.ts`.
-
-**Tier 3 — Ephemeral tabs** (`table-*`, `report-*`, `catalog-dataset-*`): panel content does not survive a reload. Filter these out of `openEditorTabs` before saving. If `activeEditorTab` pointed at one of these, fall back to `"map"`.
-
-### TODO: User-Configurable Agent Flow
-
-Allow users to define, save, inspect, and reuse bounded GIS agent workflows.
-
-### TODO: reconsider prompt for search dataset make it output less
-
-### TODO: agent doesnt have understanding of caller agent role.
-
-### TODO: allow agent to see map viewport
+- allow agent to see map viewport
