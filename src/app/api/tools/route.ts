@@ -1,6 +1,6 @@
 import { jsonResponse } from "../_shared/files";
 
-const TOOL_DECLARATIONS = [
+export const TOOL_DECLARATIONS = [
   {
     name: "list_catalogs",
     description: "List all configured GIS data catalogs. Call this before search_catalog to see which catalogs and URLs are available."

@@ -172,42 +172,11 @@ PORT=4000 npm run api:dev
 
 ## Current Progress
 
-The project has TypeScript checking, typed framework-neutral map utilities, typed address-search providers, a Next.js App Router client shell, and an Express API running beside Next.js through rewrites. The workspace already includes registry-backed datasets, hubs, agents, basemaps, and search sources; configurable search-source editing; source cards; map layer source inspection with list and table modes; agent modules; editor tabs; Postman collections; catalog browsing; and shared editor menu groundwork. Migration is incomplete: several UI controllers remain imperative DOM modules, several files still use JavaScript or JSX, API routes still live in `server.cjs`, and styles remain plain CSS.
+The project has TypeScript checking, typed framework-neutral map utilities, typed address-search providers, a Next.js App Router client shell, and typed App Router route handlers for datasets, hubs, global instruction, tool declarations, search sources, query proxying, Postman collections, agent registry, and Gemini agent chat. The workspace already includes registry-backed datasets, hubs, agents, basemaps, and search sources; configurable search-source editing; source cards; map layer source inspection with list and table modes; agent modules; editor tabs; Postman collections; catalog browsing; and shared editor page primitives. The editor shell now uses typed React `PageMenu`, `PageListView`, `PageTableView`, and `PageGraphView` primitives, with remaining imperative panel controls bridged through React roots. Catalog editor cards are expandable with read-only summaries and expanded edit controls. Migration is incomplete: the default dev and preview scripts still use the legacy Express/Vite server with compatibility handlers, several UI controllers remain imperative DOM modules, several files still use JavaScript or JSX, and styles remain plain CSS.
 
 ## TODO
 
-Complete one TODO block at a time. Before implementing a block, stage all changes and create a Git commit with a message that describes in one or two simple sentences what you are about to do. Keep each increment buildable, prefer typed Next.js components, and preserve existing behavior unless a task explicitly changes it. When a block is complete, change `TODO` to `DONE` and replace its instruction block with a brief summary of what was implemented. Then review the remaining TODO blocks for changed assumptions or dependencies and revise their instructions when the current state has made them outdated. Stage the related changes, but do not commit after completing a TODO.
-
-### DONE: Continue the Next.js Component Migration
-
-Added typed React `PageMenu`, `PageListView`, `PageTableView`, and `PageGraphView` primitives. Migrated the layer-sources editor page to React as the first working page: its list/table toggles live in `PageMenu`, and its `Copy as TSV` action lives in `PageTableView`. A typed `PageMenu` DOM adapter keeps the remaining legacy panels buildable while they migrate incrementally.
-
-### DONE: Migrate Remaining Editor Panels to React
-
-Removed the temporary `createPageMenu` and `createPageListView` DOM adapters. Sources, search-source editing, Postman collections, Catalog, and agent-modules panels now render the shared `PageMenu` and `PageListView` primitives through React roots, with a small `DomSlot` bridge preserving their existing imperative controls while panel bodies continue migrating incrementally.
-
-### DONE: Normalize Catalog Page Menu and Cards
-
-Aligned the Catalog editor with the shared page-menu pattern by removing the visible menu label, moving the add-catalog action to the left as the compact add icon button, and making save status appear only when active. Catalog entries now use expandable cards with read-only collapsed summaries for name, type, and URL; editing controls are only shown inside the expanded card body.
-
-### DONE: Move Simple API Routes
-
-Moved the low-risk JSON registry endpoints into typed App Router route handlers for datasets, hubs, global instruction, tool declarations, and search sources. The new handlers keep the existing JSON files as their data source, preserve validation and fallback behavior, and the matching Express handlers were removed after Next smoke tests verified the replacements.
-
-### DONE: Move External API Proxies
-
-Moved the server-side query proxy and Postman collection endpoints into typed App Router route handlers. The query handler preserves the structured upstream response envelope and JSON/HTML parsing behavior, while Postman handlers keep credentials in server-only environment variables and proxy upstream JSON statuses. Legacy Express compatibility handlers remain until the default dev server is retired, and live Next smoke tests covered query success, validation errors, upstream fetch failure, and Postman upstream JSON responses.
-
-### TODO: Move Agent APIs
-
-Migrate the agent registry and chat endpoints last:
-
-```text
-src/app/api/agents/route.ts
-src/app/api/agent/chat/route.ts
-```
-
-Preserve Gemini credentials as server-only environment variables. Move shared backend helpers out of `server.cjs` into typed server modules as needed.
+Complete one TODO block at a time. Before implementing a block, stage all changes and create a Git commit with a message that describes in one or two simple sentences what you are about to do. Keep each increment buildable, prefer typed Next.js components, and preserve existing behavior unless a task explicitly changes it. When a block is complete, change `TODO` to `DONE` and replace its instruction block with a brief summary of what was implemented. Then review the remaining TODO blocks for changed assumptions or dependencies and revise their instructions when the current state has made them outdated. Stage the related changes, but do not commit after completing a TODO. If there are too many DONE items, compact them. If there are TODO items without instruction or detail, populate them based on the title line.
 
 ### TODO: Remove the Legacy Server
 
@@ -221,6 +190,8 @@ Once parity is established, evaluate route-based editor views, server-rendered n
 
 Adopt SCSS incrementally after the component boundaries are clearer. Start with shared variables for colors, spacing, borders, and editor surfaces, then migrate styles by feature without mixing visual redesign into the stylesheet conversion.
 
+### TODO: Consider DXF IFC support for importing exporting to CAD/BIM systems
+
 ## Future Work
 
 - JSON Crack or another Graph View for records
@@ -233,6 +204,6 @@ Adopt SCSS incrementally after the component boundaries are clearer. Start with 
 
 - reconsider prompt for search dataset make it output less
 
-- agent doesnt have understanding of caller agent role.
-
 - allow agent to see map viewport
+
+- Fix collections clipping off card issue
