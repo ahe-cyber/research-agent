@@ -24,9 +24,15 @@ export function createAddressController({ onAddressClick } = {}) {
     const properties = feature && feature.properties ? feature.properties : {};
     const title = properties.full_address || properties.name || properties.address || "Selected place";
     const subtitle = properties.place_formatted || properties.context?.place?.name || "Search result";
+    const address = { title, subtitle };
 
-    addresses.unshift({ title, subtitle });
+    addresses.unshift(address);
     render();
+    return address;
+  }
+
+  function getCurrentAddress() {
+    return addresses[0] || null;
   }
 
   function render() {
@@ -54,7 +60,7 @@ export function createAddressController({ onAddressClick } = {}) {
 
   render();
 
-  return { add };
+  return { add, getCurrentAddress };
 }
 
 export function createSearchSourceEditorPanel(onSaved) {
@@ -89,8 +95,8 @@ export function createSearchSourceEditorPanel(onSaved) {
       const res = await fetch("/api/searchsources");
       if (res.ok) {
         const data = await res.json();
-        sources = Array.isArray(data.sources)
-          ? data.sources.map(s => ({ ...s, outputs: Array.isArray(s.outputs) ? s.outputs.map(o => ({ ...o })) : [] }))
+        sources = Array.isArray(data)
+          ? data.map(s => ({ ...s, outputs: Array.isArray(s.outputs) ? s.outputs.map(o => ({ ...o })) : [] }))
           : [];
         render();
       }
@@ -326,7 +332,7 @@ export function createSearchSourceEditorPanel(onSaved) {
       const res = await fetch("/api/searchsources", {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ sources })
+        body: JSON.stringify(sources)
       });
       if (res.ok) {
         statusEl.textContent = "Saved";

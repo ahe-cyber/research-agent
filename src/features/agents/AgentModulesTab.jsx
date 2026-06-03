@@ -11,11 +11,11 @@ export function AgentModulesTab({ active }) {
   return (
     <section
       className={`workspace-tab${active ? " is-active" : ""}`}
-      id="agentsTab"
+      id="agentTab"
       data-tab-panel
       hidden={!active}
     >
-      <h2 className="section-title">Agent Modules</h2>
+      <h2 className="section-title">Agent</h2>
       <div id="agentsCompact" />
     </section>
   );
@@ -23,7 +23,7 @@ export function AgentModulesTab({ active }) {
 
 export function createAgentModulesController(editorTabController, agentController = null) {
   const compactList = document.getElementById("agentsCompact");
-  const editButton = document.getElementById("editAgentsButton");
+  const editButton = document.getElementById("editAgentButton");
   const attachmentTargetOwner = Symbol("agent-module-controller");
 
   // ── Build editor panel ────────────────────────────────────────────────────
@@ -172,11 +172,13 @@ export function createAgentModulesController(editorTabController, agentControlle
       const res = await fetch("/api/agents");
       if (res.ok) {
         const loaded = await res.json();
+        const loadedAgents = Array.isArray(loaded) ? loaded : (loaded.agents || []);
+        const legacyConnections = Array.isArray(loaded?.connections) ? loaded.connections : [];
         // Migrate old top-level connections array to agentPeers
-        if (Array.isArray(loaded.connections) && loaded.connections.length > 0) {
-          for (const conn of loaded.connections) {
-            const fromAgent = (loaded.agents || []).find((a) => a.id === conn.from);
-            const toAgent = (loaded.agents || []).find((a) => a.id === conn.to);
+        if (legacyConnections.length > 0) {
+          for (const conn of legacyConnections) {
+            const fromAgent = loadedAgents.find((a) => a.id === conn.from);
+            const toAgent = loadedAgents.find((a) => a.id === conn.to);
             if (!fromAgent || !toAgent) continue;
             if (!Array.isArray(fromAgent.agentPeers)) fromAgent.agentPeers = [];
             if (!Array.isArray(toAgent.agentPeers)) toAgent.agentPeers = [];
@@ -189,7 +191,7 @@ export function createAgentModulesController(editorTabController, agentControlle
           }
           needsSave = true;
         }
-        data = { agents: loaded.agents || [] };
+        data = { agents: loadedAgents };
       }
     } catch {
       data = { agents: [] };
@@ -214,7 +216,7 @@ export function createAgentModulesController(editorTabController, agentControlle
       const res = await fetch("/api/agents", {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data)
+        body: JSON.stringify(data.agents)
       });
       if (!res.ok) throw new Error("Sync failed");
       agentController?.refreshAgentTargets?.();
@@ -1351,8 +1353,8 @@ export function createAgentModulesController(editorTabController, agentControlle
       const attachBtn = document.createElement("button");
       attachBtn.className = "card-attach-button agent-module-card-attach-button";
       attachBtn.type = "button";
-      attachBtn.title = `Attach ${agent.name || "agent module"}`;
-      attachBtn.setAttribute("aria-label", `Attach ${agent.name || "agent module"}`);
+      attachBtn.title = `Attach ${agent.name || "agent"}`;
+      attachBtn.setAttribute("aria-label", `Attach ${agent.name || "agent"}`);
       attachBtn.addEventListener("click", (event) => {
         event.preventDefault();
         event.stopPropagation();

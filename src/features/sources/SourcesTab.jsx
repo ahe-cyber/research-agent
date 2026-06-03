@@ -58,19 +58,18 @@ const BUILT_IN_SOURCES = [
 
 export function SourcesTab({ active }) {
   return (
-    <section className={`workspace-tab${active ? " is-active" : ""}`} id="sourcesTab" data-tab-panel hidden={!active}>
-      <h2 className="section-title">Sources</h2>
+    <section className={`workspace-tab${active ? " is-active" : ""}`} id="datasetTab" data-tab-panel hidden={!active}>
+      <h2 className="section-title">Dataset</h2>
       <div id="sourcesCompact" />
     </section>
   );
 }
 
-export function createSourceController(recordController, formulaController, editorTabController, agentController, onBrowseCatalogs = () => {}) {
+export function createSourceController(recordController, formulaController, editorTabController, agentController) {
   const variables = {};
   const sourceElements = {};
   const compactSourceList = document.getElementById("sourcesCompact");
-  const editSourcesButton = document.getElementById("editSourcesButton");
-  const browseCatalogsButton = document.getElementById("browseCatalogsButton");
+  const editSourcesButton = document.getElementById("editDatasetButton");
 
   const sourceList = document.createElement("div");
   sourceList.id = "sourceList";
@@ -101,7 +100,6 @@ export function createSourceController(recordController, formulaController, edit
   loadSupportedInputParams();
   addDatasetSourceButton.addEventListener("click", addDatasetSource);
   editSourcesButton.addEventListener("click", () => editorTabController.openSourcesTab(editorPanel));
-  browseCatalogsButton.addEventListener("click", () => onBrowseCatalogs());
 
   function renderSources(sources) {
     sources.forEach((source) => {
@@ -204,7 +202,7 @@ export function createSourceController(recordController, formulaController, edit
 
   async function loadStaticDatasetSources() {
     try {
-      const response = await fetch("/data/datasets.json");
+      const response = await fetch("/data/dataset.json");
 
       if (!response.ok) {
         throw new Error(`Static dataset registry failed with status ${response.status}`);
@@ -625,12 +623,13 @@ export function createSourceController(recordController, formulaController, edit
     try {
       let res = await fetch("/api/hubs");
       if (!res.ok) {
-        res = await fetch("/data/hubs.json");
+        res = await fetch("/data/search.json");
       }
       if (!res.ok) return;
-      const registry = await res.json();
+      const searchItems = await res.json();
+      const hubs = (Array.isArray(searchItems) ? searchItems : []).filter((item) => item.activity === "dataset");
       supportedInputParamsByType = Object.fromEntries(
-        Object.entries(registry).map(([type, group]) => [normalizeSourceType(type), group.supportedInputParams || []])
+        (Array.isArray(hubs) ? hubs : []).map((hub) => [normalizeSourceType(hub.type), hub.supportedInputParams || []])
       );
       redrawDatasetSources();
     } catch (error) {

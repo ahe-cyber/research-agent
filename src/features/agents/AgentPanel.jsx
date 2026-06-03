@@ -1,4 +1,5 @@
 import { markdownToHtml } from "../../lib/markdown";
+import { SidebarHeader } from "../workspace/SidebarHeader.jsx";
 
 const DEFAULT_SYSTEM_INSTRUCTION =
   `You are a GIS research assistant. Help the user analyze geographic data, property records, and datasets. Be conversational in chat — talk like a colleague, not a report. Avoid bullet lists and headers in chat responses; save those for the report.
@@ -7,26 +8,25 @@ When record data is provided in <context> tags, use it to answer the question.
 
 You can search configured GIS data catalogs when the user asks for datasets, layers, spatial data, infrastructure, environmental, zoning, land use, utilities, flood, soil, or similar sources. Use the search_datasets tool for catalog discovery. Make 2-5 targeted searches when useful, prefer Feature Service results for ArcGIS portals. After searching, analyze all results and present only the 3 most relevant datasets, each with a one-sentence explanation of why it matches the user's question.
 
-Use update_report to add structured findings, property details, and key data to the research report. When you have data worth saving — field values, zoning info, ownership, key findings — write it to the report rather than pasting it into chat.`;
+Use update_report to add structured findings, property details, and key data to the research report. When you have data worth saving — field values, zoning info, ownership, key findings — write it to the report rather than pasting it into chat. Never say that you added, saved, updated, or wrote content to the report unless you actually called update_report in the current turn.`;
 
 export function AgentPanel() {
   return (
     <aside className="agent-panel" aria-label="Secondary Side Bar">
-      <header className="panel-header">
-        <div>
-          <span className="panel-kicker">Agent</span>
-          <select className="panel-title agent-target-select" id="agentTargetSelect" aria-label="Agent">
-          </select>
-        </div>
-        <button
-          className="section-tool-button agent-more-button"
-          type="button"
-          id="agentMoreButton"
-          aria-pressed="false"
-          aria-label="System instruction"
-          title="System instruction"
-        />
-      </header>
+      <SidebarHeader
+        kicker="Agent"
+        dropdown={<select className="agent-target-select" id="agentTargetSelect" aria-label="Agent" />}
+        action={
+          <button
+            className="section-tool-button agent-more-button"
+            type="button"
+            id="agentMoreButton"
+            aria-pressed="false"
+            aria-label="System instruction"
+            title="System instruction"
+          />
+        }
+      />
 
       <div className="agent-instruction-toolbar" id="agentInstructionToolbar" hidden>
         <div className="agent-instruction-header">
@@ -89,11 +89,12 @@ export function createAgentController() {
   // Each entry: { name, chip }
   const toolHints = [];
 
-  // App-level conversation state, scoped per selected agent module.
+  // App-level conversation state, scoped per selected agent.
   const conversations = new Map();
   let catalogContextProvider = null;
   let catalogEventHandler = null;
   let reportController = null;
+  let reportOpener = null;
   let attachmentTargetProvider = null;
   let modulesRefresher = null;
   let lastStreamReportAppends = 0;
@@ -405,7 +406,12 @@ export function createAgentController() {
             }
 
             if (chunk.type === "report_append") {
-              reportController?.append(chunk.heading, chunk.content);
+              const activeReportController = openActiveReport();
+              if (!activeReportController?.append) {
+                setBubbleError(bubble, "No active report is open. Open a report tab before asking the agent to add report content.");
+                continue;
+              }
+              activeReportController.append(chunk.heading, chunk.content);
               lastStreamReportAppends++;
               continue;
             }
@@ -535,6 +541,16 @@ export function createAgentController() {
     reportController = controller;
   }
 
+  function setReportOpener(opener) {
+    reportOpener = typeof opener === "function" ? opener : null;
+  }
+
+  function openActiveReport() {
+    const opened = reportOpener?.();
+    if (opened) reportController = opened;
+    return reportController;
+  }
+
   function setAttachmentTargetProvider(provider) {
     attachmentTargetProvider = typeof provider === "function" ? provider : null;
   }
@@ -549,7 +565,7 @@ export function createAgentController() {
       const res = await fetch("/api/agents");
       if (!res.ok) return;
       const registry = await res.json();
-      const agents = Array.isArray(registry.agents) ? registry.agents : [];
+      const agents = Array.isArray(registry) ? registry : [];
       agentSelect.replaceChildren();
       agents.forEach((agent) => {
         agentSelect.appendChild(new Option(agent.name || "Agent module", agent.id));
@@ -575,6 +591,7 @@ export function createAgentController() {
     setCatalogEventHandler,
     focusComposer,
     setReportController,
+    setReportOpener,
     setAttachmentTargetProvider,
     setModulesRefresher,
     refreshAgentTargets

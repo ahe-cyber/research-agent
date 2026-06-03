@@ -8,9 +8,6 @@
     "noEmit": true,
     "skipLibCheck": true,
     "target": "ES2020",
-    "types": [
-      "vite/client"
-    ],
     "lib": [
       "dom",
       "dom.iterable",

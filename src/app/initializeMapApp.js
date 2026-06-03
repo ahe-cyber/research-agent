@@ -10,6 +10,7 @@ import { createFormulaController } from "../features/formulas/FormulasTab.jsx";
 import { createPostmanController } from "../features/postman/PostmanTab.jsx";
 import { createSourceController } from "../features/sources/SourcesTab.jsx";
 import { createLayerSourcesController } from "../features/map/LayerSourcesPage";
+import { loadWorkspaceState } from "../lib/workspaceState.js";
 
 let initialized = false;
 let sourceController;
@@ -65,16 +66,21 @@ export async function initializeMapApp() {
     }
   });
   agentController = createAgentController();
-  sourceController = createSourceController(
-    recordController, formulaController, editorTabController, agentController,
-    () => catalogController?.open()
-  );
+  agentController.setReportOpener(() => {
+    const address = addressController.getCurrentAddress() || { title: "Research Report", subtitle: "" };
+    return editorTabController.openReportTab(address);
+  });
+  sourceController = createSourceController(recordController, formulaController, editorTabController, agentController);
   catalogController = createCatalogController(
     editorTabController,
     agentController,
     () => sourceController.getVariables(),
     (item) => sourceController.addSourceFromCatalog(item)
   );
+  window.addEventListener("research-agent:open-browser", () => catalogController?.open());
+  if (loadWorkspaceState().activeActivityTab === "browser") {
+    catalogController.open();
+  }
   createPostmanController(editorTabController);
   const agentModulesController = createAgentModulesController(editorTabController, agentController);
   agentController.setAttachmentTargetProvider(() => agentModulesController.getAttachmentTarget());
@@ -86,4 +92,10 @@ export async function initializeMapApp() {
   reloadSources = reload;
   document.getElementById("searchSourceSelector").appendChild(selectorElement);
   document.getElementById("editSearchSourcesButton")?.addEventListener("click", () => editorTabController.openSearchSourcesTab(searchSourcesPanel));
+  document.getElementById("editActivityButton")?.addEventListener("click", (event) => {
+    const button = event.currentTarget;
+    const tabId = button.dataset.activeTab || "project";
+    const label = button.dataset.activeLabel || tabId;
+    editorTabController.openEmptyPageTab(`activity-${tabId}-editor`, label);
+  });
 }

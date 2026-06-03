@@ -9,17 +9,9 @@ export const STATEN_ISLAND_BBOX: readonly [number, number, number, number] = [-7
 export const STATEN_ISLAND_CENTER: LngLat = [-74.1502, 40.5795];
 
 export function getMapboxAccessToken() {
-  return (
-    process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN ||
-    (import.meta as any).env?.VITE_MAPBOX_ACCESS_TOKEN ||
-    ""
-  );
+  return process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN || "";
 }
 
 export function getGoogleMapsApiKey() {
-  return (
-    process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY ||
-    (import.meta as any).env?.VITE_GOOGLE_MAPS_API_KEY ||
-    ""
-  );
+  return process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || "";
 }

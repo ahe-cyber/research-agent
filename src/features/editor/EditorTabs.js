@@ -1,5 +1,6 @@
 import { markdownToHtml } from "../../lib/markdown";
 import { loadWorkspaceState, saveWorkspaceState } from "../../lib/workspaceState.js";
+import { createEmptyPagePanel } from "./EmptyPagePanel.jsx";
 
 export function createEditorTabController({ onMapActivated = () => {} } = {}) {
   const tabBar = document.getElementById("editorTabBar");
@@ -69,7 +70,7 @@ export function createEditorTabController({ onMapActivated = () => {} } = {}) {
     updateTabButtons(id, false);
 
     if (panelMap[id]) {
-      if (id === "sources-editor" || id === "postman-collections" || id === "catalog-results" || id === "agents-editor") {
+      if (id === "dataset-editor" || id === "postman-collections" || id === "catalog-results" || id === "agent-editor") {
         panelMap[id].hidden = true;
       } else {
         panelMap[id].remove();
@@ -107,14 +108,14 @@ export function createEditorTabController({ onMapActivated = () => {} } = {}) {
   }
 
   function openSourcesTab(editorPanel) {
-    const tabId = "sources-editor";
+    const tabId = "dataset-editor";
 
     if (tabs.find((t) => t.id === tabId)) {
       activateTab(tabId);
       return;
     }
 
-    tabs.push({ id: tabId, label: "Sources", closeable: true });
+    tabs.push({ id: tabId, label: "Dataset", closeable: true });
 
     if (!panelMap[tabId]) {
       editorPanel.hidden = true;
@@ -192,14 +193,14 @@ export function createEditorTabController({ onMapActivated = () => {} } = {}) {
   }
 
   function openAgentsTab(agentsPanel) {
-    const tabId = "agents-editor";
+    const tabId = "agent-editor";
 
     if (tabs.find((t) => t.id === tabId)) {
       activateTab(tabId);
       return;
     }
 
-    tabs.push({ id: tabId, label: "Agent Modules", closeable: true });
+    tabs.push({ id: tabId, label: "Agent", closeable: true });
 
     if (!panelMap[tabId]) {
       agentsPanel.hidden = true;
@@ -211,14 +212,14 @@ export function createEditorTabController({ onMapActivated = () => {} } = {}) {
   }
 
   function openSearchSourcesTab(searchSourcesPanel) {
-    const tabId = "search-sources-editor";
+    const tabId = "address-search-editor";
 
     if (tabs.find((t) => t.id === tabId)) {
       activateTab(tabId);
       return;
     }
 
-    tabs.push({ id: tabId, label: "Search Sources", closeable: true });
+    tabs.push({ id: tabId, label: "Address Search", closeable: true });
 
     if (!panelMap[tabId]) {
       searchSourcesPanel.hidden = true;
@@ -261,6 +262,21 @@ export function createEditorTabController({ onMapActivated = () => {} } = {}) {
     detailPanel.hidden = true;
     viewport.appendChild(detailPanel);
     panelMap[tabId] = detailPanel;
+
+    activateTab(tabId);
+  }
+
+  function openEmptyPageTab(tabId, label) {
+    if (tabs.find((t) => t.id === tabId)) {
+      activateTab(tabId);
+      return;
+    }
+
+    tabs.push({ id: tabId, label, closeable: true });
+
+    const panel = createEmptyPagePanel();
+    viewport.appendChild(panel);
+    panelMap[tabId] = panel;
 
     activateTab(tabId);
   }
@@ -357,7 +373,7 @@ export function createEditorTabController({ onMapActivated = () => {} } = {}) {
   }
 
   render();
-  return { openTableTab, openPdfTab, openSourcesTab, openPostmanTab, openLayerSourcesTab, openCatalogResultsTab, openCatalogDatasetTab, openReportTab, openAgentsTab, openSearchSourcesTab };
+  return { openTableTab, openPdfTab, openSourcesTab, openPostmanTab, openLayerSourcesTab, openCatalogResultsTab, openCatalogDatasetTab, openReportTab, openAgentsTab, openSearchSourcesTab, openEmptyPageTab };
 }
 
 function renderHtmlElement(element) {

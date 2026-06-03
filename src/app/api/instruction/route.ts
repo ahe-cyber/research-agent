@@ -1,17 +1,15 @@
 import { readFile } from "node:fs/promises";
 import { dataPath, jsonResponse, writeJsonFile } from "../_shared/files";
 
-const agentsPath = dataPath("agents.json");
+const instructionPath = dataPath("instruction.json");
 
 interface AgentRegistry {
   globalInstruction?: string;
-  agents?: unknown[];
-  connections?: unknown[];
 }
 
 export async function GET() {
   try {
-    const data = JSON.parse(await readFile(agentsPath, "utf8")) as AgentRegistry;
+    const data = JSON.parse(await readFile(instructionPath, "utf8")) as AgentRegistry;
     return jsonResponse({ instruction: data.globalInstruction || "" });
   } catch {
     return jsonResponse({ instruction: "" });
@@ -27,13 +25,13 @@ export async function PUT(request: Request) {
   }
 
   try {
-    let data: AgentRegistry = { globalInstruction: "", agents: [], connections: [] };
+    let data: AgentRegistry = { globalInstruction: "" };
     try {
-      data = JSON.parse(await readFile(agentsPath, "utf8")) as AgentRegistry;
+      data = JSON.parse(await readFile(instructionPath, "utf8")) as AgentRegistry;
     } catch {}
 
     data.globalInstruction = instruction;
-    await writeJsonFile(agentsPath, data);
+    await writeJsonFile(instructionPath, data);
     return jsonResponse({ ok: true });
   } catch (error) {
     console.error(error);

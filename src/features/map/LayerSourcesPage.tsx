@@ -10,15 +10,12 @@ interface EditorTabController {
 
 interface LayerSource {
   [key: string]: unknown;
+  kind: string;
   label: string;
   metadata?: Record<string, unknown>;
 }
 
-interface BasemapCatalog {
-  basemaps?: LayerSource[];
-  terrain?: LayerSource;
-  sceneLayers?: LayerSource[];
-}
+type BasemapCatalog = LayerSource[];
 
 interface LayerSourceGroup {
   label: string;
@@ -42,7 +39,7 @@ export function createLayerSourcesController(editorTabController: EditorTabContr
 }
 
 async function buildLayerSourcesPanel() {
-  const response = await fetch("/data/basemaps.json");
+  const response = await fetch("/data/basemap.json");
   if (!response.ok) throw new Error(`Failed to load layer sources: ${response.status}`);
   const catalog = await response.json() as BasemapCatalog;
   const panel = document.createElement("div");
@@ -56,9 +53,9 @@ async function buildLayerSourcesPanel() {
 function LayerSourcesPage({ catalog }: { catalog: BasemapCatalog }) {
   const [view, setView] = useState<"list" | "table">("list");
   const groups: LayerSourceGroup[] = [
-    { label: "Basemaps", sources: catalog.basemaps ?? [] },
-    { label: "Terrain", sources: catalog.terrain ? [catalog.terrain] : [] },
-    { label: "3D Layers", sources: catalog.sceneLayers ?? [] }
+    { label: "Basemaps", sources: catalog.filter((source) => source.kind === "basemap") },
+    { label: "Terrain", sources: catalog.filter((source) => source.kind === "terrain") },
+    { label: "3D Layers", sources: catalog.filter((source) => source.kind === "sceneLayer") }
   ];
 
   return (

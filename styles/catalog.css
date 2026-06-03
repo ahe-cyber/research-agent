@@ -201,8 +201,8 @@
   height: 13px;
   flex-shrink: 0;
   background: #526070;
-  mask: center / contain no-repeat url("/assets/internet.svg");
-  -webkit-mask: center / contain no-repeat url("/assets/internet.svg");
+  mask: center / contain no-repeat url("/assets/browser.svg");
+  -webkit-mask: center / contain no-repeat url("/assets/browser.svg");
 }
 
 /* Inline result chips inside the assistant bubble */

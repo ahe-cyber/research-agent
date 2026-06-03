@@ -233,8 +233,8 @@ function normalizeToolDeclarations(declarations) {
 
 export function FormulasTab({ active }) {
   return (
-    <section className={`workspace-tab${active ? " is-active" : ""}`} id="formulasTab" data-tab-panel hidden={!active}>
-      <h2 className="section-title">Agent Tools</h2>
+    <section className={`workspace-tab${active ? " is-active" : ""}`} id="toolTab" data-tab-panel hidden={!active}>
+      <h2 className="section-title">Tool</h2>
       <div className="formula-list" id="formulaList" />
     </section>
   );

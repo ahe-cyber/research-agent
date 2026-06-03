@@ -5,7 +5,6 @@ import { PageMenu } from "../editor/PageMenu";
 
 export function createCatalogController(editorTabController, agentController, getVariables, onAddSource) {
   let hubs = [];
-  let hubRegistry = createEmptyHubRegistry();
   let liveSaveTimer = null;
   let liveSaveInFlight = false;
   let liveSaveQueued = false;
@@ -49,8 +48,7 @@ export function createCatalogController(editorTabController, agentController, ge
     try {
       const res = await fetch("/api/hubs");
       if (res.ok) {
-        hubRegistry = normalizeHubRegistry(await res.json());
-        hubs = flattenHubRegistry(hubRegistry);
+        hubs = normalizeHubs(await res.json());
         renderHubCards();
       }
     } catch (error) {
@@ -68,7 +66,7 @@ export function createCatalogController(editorTabController, agentController, ge
 
   async function syncHubsNow() {
     if (liveSaveInFlight || !liveSaveQueued) return;
-    const serializedRegistry = mergeHubsIntoRegistry(hubRegistry, serializeHubs());
+    const serializedHubs = serializeHubs();
     liveSaveQueued = false;
     liveSaveInFlight = true;
 
@@ -76,14 +74,14 @@ export function createCatalogController(editorTabController, agentController, ge
       const res = await fetch("/api/hubs", {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(serializedRegistry)
+        body: JSON.stringify(serializedHubs)
       });
 
       if (!res.ok) {
         throw new Error(`Hub save failed with status ${res.status}`);
       }
 
-      hubRegistry = serializedRegistry;
+      hubs = serializedHubs;
       saveStatusEl.textContent = "Saved";
       saveStatusEl.classList.add("is-saved");
       setTimeout(() => {
@@ -254,9 +252,7 @@ export function createCatalogController(editorTabController, agentController, ge
     const vars = getVariables?.() || {};
     return {
       hubs: serializeHubs({ onlyValid: true }),
-      supportedInputParams: Object.fromEntries(
-        Object.entries(hubRegistry).map(([type, group]) => [type, group.supportedInputParams || []])
-      ),
+      supportedInputParams: getSupportedInputParamsByType(hubs),
       locationContext: {
         coordinates: vars.selectedCoordinates ?? null,
         address: vars.selectedAddress ?? null
@@ -421,49 +417,41 @@ export function createCatalogController(editorTabController, agentController, ge
   return { open };
 }
 
-function createEmptyHubRegistry() {
-  return {
-    arcgis: { supportedInputParams: [], items: [] },
-    socrata: { supportedInputParams: [], items: [] }
-  };
+function normalizeHubs(value) {
+  return Array.isArray(value) ? value.map((hub) => ({
+    ...hub,
+    type: hub.type === "socrata" ? "socrata" : "arcgis",
+    supportedInputParams: Array.isArray(hub.supportedInputParams) ? hub.supportedInputParams : getDefaultSupportedInputParams(hub.type)
+  })) : [];
 }
 
-function normalizeHubRegistry(registry) {
-  if (!registry || Array.isArray(registry) || typeof registry !== "object") {
-    return createEmptyHubRegistry();
-  }
-
-  const normalized = createEmptyHubRegistry();
-  Object.entries(normalized).forEach(([type, group]) => {
-    const incoming = registry?.[type] || {};
-    group.supportedInputParams = Array.isArray(incoming.supportedInputParams) ? incoming.supportedInputParams : [];
-    group.items = Array.isArray(incoming.items) ? incoming.items.map(stripHubType) : [];
-  });
-
-  return normalized;
-}
-
-function flattenHubRegistry(registry) {
-  return Object.entries(registry).flatMap(([type, group]) =>
-    (group.items || []).map((hub) => ({ ...hub, type }))
-  );
-}
-
-function mergeHubsIntoRegistry(registry, hubs) {
-  const next = normalizeHubRegistry(registry);
-  Object.keys(next).forEach((type) => {
-    next[type].items = [];
-  });
-
-  hubs.forEach((hub) => {
+function getSupportedInputParamsByType(hubs) {
+  return hubs.reduce((acc, hub) => {
     const type = hub.type === "socrata" ? "socrata" : "arcgis";
-    next[type].items.push(stripHubType(hub));
-  });
-
-  return next;
+    acc[type] ??= hub.supportedInputParams || getDefaultSupportedInputParams(type);
+    return acc;
+  }, {});
 }
 
-function stripHubType(hub) {
-  const { type, ...rest } = hub || {};
-  return rest;
+function getDefaultSupportedInputParams(type) {
+  if (type === "socrata") {
+    return ["$select", "$where", "$order", "$group", "$limit", "$offset", "$q", "$query"];
+  }
+  return [
+    "where",
+    "geometry",
+    "geometryType",
+    "inSR",
+    "spatialRel",
+    "outFields",
+    "returnGeometry",
+    "outSR",
+    "f",
+    "resultOffset",
+    "resultRecordCount",
+    "orderByFields",
+    "objectIds",
+    "returnDistinctValues",
+    "returnCountOnly"
+  ];
 }

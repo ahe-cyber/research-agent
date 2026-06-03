@@ -15,6 +15,7 @@ interface BasemapStyle {
 }
 
 interface Basemap {
+  kind: "basemap";
   id: string;
   label: string;
   style: BasemapStyle;
@@ -25,6 +26,7 @@ interface Basemap {
 }
 
 export interface SceneLayerConfig {
+  kind: "sceneLayer";
   id: string;
   label: string;
   url: string;
@@ -34,6 +36,7 @@ export interface SceneLayerConfig {
 }
 
 export interface TerrainConfig {
+  kind: "terrain";
   id: string;
   label: string;
   tiles: string[];
@@ -45,11 +48,7 @@ export interface TerrainConfig {
   itemUrl: string;
 }
 
-interface BasemapCatalog {
-  basemaps: Basemap[];
-  sceneLayers?: SceneLayerConfig[];
-  terrain?: TerrainConfig;
-}
+type BasemapCatalogItem = Basemap | SceneLayerConfig | TerrainConfig;
 
 interface StyleSource {
   url?: string;
@@ -70,31 +69,32 @@ interface BasemapMap {
   setStyle(style: Style, options: { diff: boolean; validate: boolean }): void;
 }
 
-let catalogPromise: Promise<BasemapCatalog> | null = null;
+let catalogPromise: Promise<BasemapCatalogItem[]> | null = null;
 
 function getCatalog() {
-  catalogPromise ??= fetch("/data/basemaps.json")
+  catalogPromise ??= fetch("/data/basemap.json")
     .then((response) => {
       if (!response.ok) throw new Error(`Failed to load basemaps: ${response.status}`);
-      return response.json() as Promise<BasemapCatalog>;
+      return response.json() as Promise<BasemapCatalogItem[]>;
     });
   return catalogPromise;
 }
 
 export function getBasemaps() {
   return getCatalog()
-    .then(({ basemaps }) => {
+    .then((catalog) => {
       const token = getMapboxAccessToken();
+      const basemaps = catalog.filter((item): item is Basemap => item.kind === "basemap");
       return basemaps.filter((basemap) => !basemap.requiresMapboxAccessToken || token);
     });
 }
 
 export function getSceneLayers() {
-  return getCatalog().then(({ sceneLayers = [] }) => sceneLayers);
+  return getCatalog().then((catalog) => catalog.filter((item): item is SceneLayerConfig => item.kind === "sceneLayer"));
 }
 
 export function getTerrain() {
-  return getCatalog().then(({ terrain }) => terrain);
+  return getCatalog().then((catalog) => catalog.find((item): item is TerrainConfig => item.kind === "terrain"));
 }
 
 function appendLabel(element: HTMLElement, basemap: Basemap) {

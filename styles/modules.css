@@ -1,12 +1,12 @@
 /* ── Agents sidebar tab ───────────────────────────────────────────────────── */
 
-#agentsTab {
+#agentTab {
   display: grid;
   align-content: start;
   gap: 10px;
 }
 
-#agentsTab[hidden] {
+#agentTab[hidden] {
   display: none;
 }
 

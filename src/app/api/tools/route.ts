@@ -29,17 +29,17 @@ export const TOOL_DECLARATIONS = [
   },
   {
     name: "list_agents",
-    description: "List configured agent modules available for delegation. Returns id, name, instruction summary, attached direct collaborators, and suggested tools."
+    description: "List configured agents available for delegation. Returns id, name, instruction summary, attached direct collaborators, and suggested tools."
   },
   {
     name: "call_agent",
-    description: "Call an agent module directly by id or name. Use this to delegate a focused task to an attached or configured specialist agent and get its response. The result contains a `text` field with the agent's reply — always relay that text to the user verbatim or quoted.",
+    description: "Call an agent directly by id or name. Use this to delegate a focused task to an attached or configured specialist agent and get its response. The result contains a `text` field with the agent's reply — always relay that text to the user verbatim or quoted.",
     parameters: {
       type: "OBJECT",
       properties: {
-        agentId: { type: "STRING", description: "Agent module id or exact name." },
+        agentId: { type: "STRING", description: "Agent id or exact name." },
         callerId: { type: "STRING", description: "Caller agent id." },
-        message: { type: "STRING", description: "The task, question, or context to send to that agent module." },
+        message: { type: "STRING", description: "The task, question, or context to send to that agent." },
         blind: { type: "BOOLEAN", description: "When true, the call starts a fresh conversation with no history and the result is not saved. Use for one-off lookups that should not affect ongoing context." }
       },
       required: ["agentId", "callerId", "message"]
@@ -47,7 +47,7 @@ export const TOOL_DECLARATIONS = [
   },
   {
     name: "create_agent",
-    description: "Create a new agent module with a name and optional instruction. Use this when the user asks to add or create a new agent.",
+    description: "Create a new agent with a name and optional instruction. Use this when the user asks to add or create a new agent.",
     parameters: {
       type: "OBJECT",
       properties: {
@@ -59,11 +59,11 @@ export const TOOL_DECLARATIONS = [
   },
   {
     name: "edit_agent",
-    description: "Edit a single agent module's instruction by id or name. Call multiple times to edit multiple agents.",
+    description: "Edit a single agent's instruction by id or name. Call multiple times to edit multiple agents.",
     parameters: {
       type: "OBJECT",
       properties: {
-        agentId: { type: "STRING", description: "Agent module id or exact name to edit." },
+        agentId: { type: "STRING", description: "Agent id or exact name to edit." },
         instruction: { type: "STRING", description: "Instruction text to apply." },
         mode: { type: "STRING", description: "Use replace to overwrite the instruction, or append to add to the current instruction. Defaults to replace." }
       },
@@ -102,7 +102,7 @@ export const TOOL_DECLARATIONS = [
   },
   {
     name: "update_report",
-    description: "Add structured findings to the research report. Use this for property data, zoning info, ownership details, and key findings. Keep chat conversational — save structure for the report.",
+    description: "Add structured findings to the research report. Use this for property data, zoning info, ownership details, and key findings. You must call this tool before telling the user that you added, saved, wrote, or updated report content. Keep chat conversational — save structure for the report.",
     parameters: {
       type: "OBJECT",
       properties: {

@@ -10,7 +10,7 @@ Current capabilities include:
 
 * Configurable address and place search sources, including NYC GeoSearch, Mapbox Search, and Google Places.
 * Registry-backed dataset source editors.
-* Manual dataset queries through an Express proxy API.
+* Manual dataset queries through a server-side proxy API.
 * In-memory query records with request, response, timing, and extracted output variables.
 * Expandable JSON response trees.
 * GeoJSON polygon visibility toggles on the map.
@@ -79,9 +79,9 @@ If a record response is a GeoJSON polygon, a FeatureCollection of polygons, or a
 
 If a record contains PDF or image links, the record should expose a way to collect those links into the Assets tab.
 
-### Sources
+### Dataset
 
-The Sources tab lists registry-backed dataset sources as expandable source editors. Search sources have a separate editor opened from the Address workspace.
+The Dataset tab lists registry-backed datasets as expandable editors. Address search items have a separate editor opened from the Address workspace.
 
 Dataset endpoint editors are loaded from:
 
@@ -89,15 +89,15 @@ Dataset endpoint editors are loaded from:
 /api/datasets
 ```
 
-The source registry is backed by:
+The dataset registry is backed by:
 
 ```text
-public/data/datasets.json
+public/data/dataset.json
 ```
 
-Dataset source settings can be saved from the Sources tab. The Express API writes edits back to `public/data/datasets.json`.
+Dataset settings can be saved from the Dataset tab. The API writes edits back to `public/data/dataset.json`.
 
-Search source settings are loaded from `/api/searchsources` and currently backed by `public/data/searchsource.json`.
+Search settings are loaded from `/api/searchsources` and currently backed by list-shaped `public/data/search.json`. Dataset browser entries also live in `search.json` with `activity: "dataset"`. Other list-shaped registries include `activity.json`, `agent.json`, `dataset.json`, and `basemap.json`.
 
 Dataset overview buttons open the configured ArcGIS REST layer overview in a new tab. Those pages include dataset descriptions, supported query formats, extents, and field lists.
 
@@ -146,41 +146,32 @@ src/
       WorkspaceClient.tsx
   lib/
     markdown.ts
-  main.jsx
 ```
 
 Keep shared logic in `src/lib`, map rendering and GeoJSON logic in `src/features/map`, reusable editor components in `src/features/editor`, and feature-specific UI or controllers in their matching `src/features/*` folder. Follow Next.js naming and routing conventions for new modules. Avoid adding new browser modules to old or ad hoc locations.
 
 ## Development
 
-The current migration state runs Express beside Next.js. Start both processes:
+Run the Next.js development server:
 
 ```bash
-# Terminal 1 - Express API on port 3001
-npm run api:dev
-
-# Terminal 2 - Next.js dev server on port 3000
-npm run next:dev
+npm run dev
 ```
 
-Set matching ports when overriding the API port:
+Create a production build and run it locally:
 
 ```bash
-EXPRESS_PORT=4000 npm run next:dev
-PORT=4000 npm run api:dev
+npm run build
+npm run start
 ```
 
 ## Current Progress
 
-The project has TypeScript checking, typed framework-neutral map utilities, typed address-search providers, a Next.js App Router client shell, and typed App Router route handlers for datasets, hubs, global instruction, tool declarations, search sources, query proxying, Postman collections, agent registry, and Gemini agent chat. The workspace already includes registry-backed datasets, hubs, agents, basemaps, and search sources; configurable search-source editing; source cards; map layer source inspection with list and table modes; agent modules; editor tabs; Postman collections; catalog browsing; and shared editor page primitives. The editor shell now uses typed React `PageMenu`, `PageListView`, `PageTableView`, and `PageGraphView` primitives, with remaining imperative panel controls bridged through React roots. Catalog editor cards are expandable with read-only summaries and expanded edit controls. Migration is incomplete: the default dev and preview scripts still use the legacy Express/Vite server with compatibility handlers, several UI controllers remain imperative DOM modules, several files still use JavaScript or JSX, and styles remain plain CSS.
+The project has TypeScript checking, typed framework-neutral map utilities, typed address-search providers, a Next.js App Router client shell, and typed App Router route handlers for datasets, hubs, global instruction, tool declarations, search sources, terrain tiles, query proxying, Postman collections, agent registry, and Gemini agent chat. The workspace runs through Next.js for development, production build, and production start; the legacy Express/Vite server has been removed. The app already includes registry-backed datasets, hubs, agents, basemaps, and search sources; configurable search-source editing; source cards; map layer source inspection with list and table modes; agents; editor tabs; Postman collections; catalog browsing; and shared editor page primitives. The editor shell now uses typed React `PageMenu`, `PageListView`, `PageTableView`, and `PageGraphView` primitives, with remaining imperative panel controls bridged through React roots. Catalog editor cards are expandable with read-only summaries and expanded edit controls. Migration is incomplete: several UI controllers remain imperative DOM modules, several files still use JavaScript or JSX, and styles remain plain CSS.
 
 ## TODO
 
 Complete one TODO block at a time. Before implementing a block, stage all changes and create a Git commit with a message that describes in one or two simple sentences what you are about to do. Keep each increment buildable, prefer typed Next.js components, and preserve existing behavior unless a task explicitly changes it. When a block is complete, change `TODO` to `DONE` and replace its instruction block with a brief summary of what was implemented. Then review the remaining TODO blocks for changed assumptions or dependencies and revise their instructions when the current state has made them outdated. Stage the related changes, but do not commit after completing a TODO. If there are too many DONE items, compact them. If there are TODO items without instruction or detail, populate them based on the title line.
-
-### TODO: Remove the Legacy Server
-
-After every endpoint has a Route Handler, remove `server.cjs`, Express, and the temporary API rewrites. Replace Vite scripts with Next.js scripts and confirm development, production build, and production start behavior.
 
 ### TODO: Adopt Next.js Features Selectively
 

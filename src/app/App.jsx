@@ -6,48 +6,46 @@ import { AgentModulesTab } from "../features/agents/AgentModulesTab.jsx";
 import { DetailsTab } from "../features/records/DetailsTab.jsx";
 import { FormulasTab } from "../features/formulas/FormulasTab.jsx";
 import { SourcesTab } from "../features/sources/SourcesTab.jsx";
+import { ActivityTab } from "../features/workspace/ActivityTab.jsx";
+import { SidebarHeader } from "../features/workspace/SidebarHeader.jsx";
 import { loadWorkspaceState, saveWorkspaceState } from "../lib/workspaceState.js";
 
 const DEFAULT_TABS = [
-  { id: "address", label: "Address", icon: "address" },
-  { id: "details", label: "Records", icon: "record" },
-  { id: "sources", label: "Sources", icon: "source" },
-  { id: "formulas", label: "Agent Tools", icon: "formula" },
-  { id: "agents", label: "Agent Modules", icon: "agents" },
-  { id: "map", label: "Map", icon: "map" },
+  { id: "project", label: "Project", iconSrc: "/assets/project.svg", emptyEditor: true },
+  { id: "folder", label: "Folder", iconSrc: "/assets/folder.svg", emptyEditor: true },
+  { id: "address", label: "Address", iconSrc: "/assets/address.svg" },
+  { id: "record", label: "Record", iconSrc: "/assets/record.svg", emptyEditor: true },
+  { id: "dataset", label: "Dataset", iconSrc: "/assets/dataset.svg" },
+  { id: "browser", label: "Browser", iconSrc: "/assets/browser.svg" },
+  { id: "tool", label: "Tool", iconSrc: "/assets/tool.svg", emptyEditor: true },
+  { id: "agent", label: "Agent", iconSrc: "/assets/agent.svg" },
+  { id: "map", label: "Map", iconSrc: "/assets/map.svg" },
 ];
+
+const LEGACY_ACTIVITY_IDS = {
+  formulas: "tool",
+  agents: "agent",
+  details: "record",
+  sources: "dataset",
+  tools: "tool"
+};
+
+function normalizeActivityId(id) {
+  return LEGACY_ACTIVITY_IDS[id] || id;
+}
 
 function getInitialTabs() {
   const { activityOrder } = loadWorkspaceState();
   if (!Array.isArray(activityOrder)) return DEFAULT_TABS;
-  const ordered = activityOrder.map((id) => DEFAULT_TABS.find((t) => t.id === id)).filter(Boolean);
-  const remaining = DEFAULT_TABS.filter((t) => !activityOrder.includes(t.id));
+  const normalizedOrder = activityOrder.map(normalizeActivityId);
+  const ordered = normalizedOrder.map((id) => DEFAULT_TABS.find((t) => t.id === id)).filter(Boolean);
+  const remaining = DEFAULT_TABS.filter((t) => !normalizedOrder.includes(t.id));
   return [...ordered, ...remaining];
 }
 
-function ActivityButton({ tab, label, icon, active, dragOver, onDragStart, onDragOver, onDrop, onDragEnd, onClick }) {
-  return (
-    <button
-      className={[
-        "activity-button",
-        active && "is-active",
-        icon && `activity-icon activity-icon-${icon}`,
-        dragOver && "is-drag-over",
-      ].filter(Boolean).join(" ")}
-      type="button"
-      aria-label={label}
-      draggable
-      onClick={() => onClick(tab)}
-      onDragStart={onDragStart}
-      onDragOver={onDragOver}
-      onDrop={onDrop}
-      onDragEnd={onDragEnd}
-    />
-  );
-}
-
 export default function App() {
-  const [activeTab, setActiveTab] = useState(() => loadWorkspaceState().activeActivityTab ?? "address");
+  const [activeTab, setActiveTab] = useState(() => normalizeActivityId(loadWorkspaceState().activeActivityTab ?? "address"));
+  const [workspaceId, setWorkspaceId] = useState("map");
   const [isViewMenuOpen, setIsViewMenuOpen] = useState(true);
   const [tabs, setTabs] = useState(getInitialTabs);
   const [dragOverId, setDragOverId] = useState(null);
@@ -63,6 +61,9 @@ export default function App() {
 
   useEffect(() => {
     saveWorkspaceState({ activeActivityTab: activeTab });
+    if (activeTab === "browser") {
+      window.dispatchEvent(new CustomEvent("research-agent:open-browser"));
+    }
   }, [activeTab]);
 
   function handleDragStart(id) {
@@ -94,15 +95,21 @@ export default function App() {
     setDragOverId(null);
   }
 
+  const activeTabMeta = tabs.find((tab) => tab.id === activeTab) ?? DEFAULT_TABS.find((tab) => tab.id === activeTab);
+  const workspaceOptions = tabs.map(({ id, label }) => ({
+    id,
+    label: `${label} Workspace`
+  }));
+
   return (
     <div className="app-shell">
       <nav className="activity-bar" aria-label="Activity Bar">
-        {tabs.map(({ id, label, icon }) => (
-          <ActivityButton
+        {tabs.map(({ id, label, iconSrc }) => (
+          <ActivityTab
             key={id}
             tab={id}
             label={label}
-            icon={icon}
+            iconSrc={iconSrc}
             active={activeTab === id}
             dragOver={dragOverId === id}
             onClick={setActiveTab}
@@ -115,22 +122,42 @@ export default function App() {
       </nav>
 
       <aside className="workspace-sidebar" aria-label="Primary Side Bar">
-        <header className="panel-header">
-          <div>
-            <span className="panel-kicker">Research Agent</span>
-            <strong className="panel-title">Map Workspace</strong>
-          </div>
-          <button
-            className={`section-tool-button view-menu-button${isViewMenuOpen ? " is-active" : ""}`}
-            type="button"
-            aria-pressed={isViewMenuOpen}
-            aria-label="View menu"
-            title="View menu"
-            onClick={() => setIsViewMenuOpen((open) => !open)}
-          />
-        </header>
+        <SidebarHeader
+          kicker="Research Agent"
+          dropdown={
+            <select
+              aria-label="Workspace"
+              value={workspaceId}
+              onChange={(event) => setWorkspaceId(event.target.value)}
+            >
+              {workspaceOptions.map(({ id, label }) => (
+                <option key={id} value={id}>{label}</option>
+              ))}
+            </select>
+          }
+          action={
+            <button
+              className={`section-tool-button view-menu-button${isViewMenuOpen ? " is-active" : ""}`}
+              type="button"
+              aria-pressed={isViewMenuOpen}
+              aria-label="View menu"
+              title="View menu"
+              onClick={() => setIsViewMenuOpen((open) => !open)}
+            />
+          }
+        />
 
         <div className="view-menu-toolbar" hidden={!isViewMenuOpen}>
+          <button
+            className="section-tool-button edit-activity-button"
+            type="button"
+            id="editActivityButton"
+            aria-label={`Edit ${activeTabMeta?.label ?? activeTab}`}
+            title={`Edit ${activeTabMeta?.label ?? activeTab}`}
+            data-active-tab={activeTab}
+            data-active-label={activeTabMeta?.label ?? activeTab}
+            hidden={!activeTabMeta?.emptyEditor}
+          />
           <button
             className="section-tool-button layer-sources-button"
             type="button"
@@ -146,7 +173,7 @@ export default function App() {
             aria-pressed="false"
             aria-label="Wrap text"
             title="Wrap text"
-            hidden={activeTab !== "details"}
+            hidden={activeTab !== "record"}
           />
           <button
             className="section-tool-button cloud-collections-button"
@@ -154,47 +181,42 @@ export default function App() {
             id="postmanCollectionsButton"
             aria-label="Postman collections"
             title="Postman collections"
-            hidden={activeTab !== "sources"}
+            hidden={activeTab !== "dataset"}
           />
           <button
-            className="section-tool-button browse-catalogs-button"
+            className="section-tool-button edit-dataset-button"
             type="button"
-            id="browseCatalogsButton"
-            aria-label="Browse dataset catalogs"
-            title="Browse dataset catalogs"
-            hidden={activeTab !== "sources"}
-          />
-          <button
-            className="section-tool-button edit-sources-button"
-            type="button"
-            id="editSourcesButton"
-            aria-label="Edit sources"
-            title="Edit sources"
-            hidden={activeTab !== "sources"}
+            id="editDatasetButton"
+            aria-label="Edit dataset"
+            title="Edit dataset"
+            hidden={activeTab !== "dataset"}
           />
           <button
             className="section-tool-button edit-search-sources-button"
             type="button"
             id="editSearchSourcesButton"
-            aria-label="Edit search sources"
-            title="Edit search sources"
+            aria-label="Edit search"
+            title="Edit search"
             hidden={activeTab !== "address"}
           />
           <button
-            className="section-tool-button edit-agents-button"
+            className="section-tool-button edit-agent-button"
             type="button"
-            id="editAgentsButton"
-            aria-label="Edit agent modules"
-            title="Edit agent modules"
-            hidden={activeTab !== "agents"}
+            id="editAgentButton"
+            aria-label="Edit agent"
+            title="Edit agent"
+            hidden={activeTab !== "agent"}
           />
         </div>
 
+        <section className="workspace-tab" id="projectTab" aria-label="Project" hidden={activeTab !== "project"} />
+        <section className="workspace-tab" id="folderTab" aria-label="Folder" hidden={activeTab !== "folder"} />
         <AddressTab active={activeTab === "address"} />
-        <DetailsTab active={activeTab === "details"} />
-        <SourcesTab active={activeTab === "sources"} />
-        <FormulasTab active={activeTab === "formulas"} />
-        <AgentModulesTab active={activeTab === "agents"} />
+        <DetailsTab active={activeTab === "record"} />
+        <SourcesTab active={activeTab === "dataset"} />
+        <section className="workspace-tab" id="browserTab" aria-label="Browser" hidden={activeTab !== "browser"} />
+        <FormulasTab active={activeTab === "tool"} />
+        <AgentModulesTab active={activeTab === "agent"} />
 
         <section className="workspace-tab map-display-settings" aria-label="Map display settings" hidden={activeTab !== "map"}>
           <div className="map-display-group">

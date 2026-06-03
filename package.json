@@ -1,28 +1,21 @@
 {
   "scripts": {
-    "dev": "node server.cjs",
-    "client:dev": "vite --host 0.0.0.0",
-    "build": "vite build",
-    "api:dev": "API_ONLY=true node server.cjs",
-    "next:dev": "next dev",
-    "next:build": "next build",
-    "next:start": "next start",
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
     "typecheck": "tsc --noEmit",
-    "preview": "NODE_ENV=production node server.cjs"
+    "preview": "next start"
   },
   "dependencies": {
     "@deck.gl/geo-layers": "^9.3.2",
     "@deck.gl/mapbox": "^9.3.2",
     "@loaders.gl/i3s": "^4.4.2",
-    "@vitejs/plugin-react": "latest",
-    "express": "latest",
     "lerc": "^4.1.1",
     "next": "^16.2.7",
     "postman-cli": "^1.38.0",
     "react": "latest",
     "react-dom": "latest",
-    "sharp": "^0.34.5",
-    "vite": "latest"
+    "sharp": "^0.34.5"
   },
   "devDependencies": {
     "@types/node": "^25.9.1",

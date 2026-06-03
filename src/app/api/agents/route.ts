@@ -1,16 +1,16 @@
 import { dataPath, jsonResponse, readJsonFileResponse, writeJsonFile } from "../_shared/files";
 
-const agentsPath = dataPath("agents.json");
+const agentsPath = dataPath("agent.json");
 
 export async function GET() {
-  return readJsonFileResponse(agentsPath, { agents: [] });
+  return readJsonFileResponse(agentsPath, []);
 }
 
 export async function PUT(request: Request) {
   const body = await request.json().catch(() => null);
 
-  if (!body || !Array.isArray(body.agents)) {
-    return jsonResponse({ error: "Agents payload must have an agents array." }, { status: 400 });
+  if (!Array.isArray(body)) {
+    return jsonResponse({ error: "Agents payload must be an array." }, { status: 400 });
   }
 
   try {

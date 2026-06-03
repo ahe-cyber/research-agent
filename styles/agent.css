@@ -6,27 +6,10 @@
 
 /* Explicit row placement so display:none on the toolbar
    doesn't cause remaining items to shift into wrong tracks */
-.panel-header            { grid-row: 1; }
+.sidebar-header          { grid-row: 1; }
 .agent-instruction-toolbar { grid-row: 2; }
 .agent-thread            { grid-row: 3; }
 .agent-composer          { grid-row: 4; }
-
-.agent-target-select {
-  display: block;
-  max-width: 190px;
-  border: none;
-  background: transparent;
-  padding: 0 18px 0 0;
-  color: #1f2933;
-  font: inherit;
-  font-weight: 700;
-  cursor: pointer;
-}
-
-.agent-target-select:focus {
-  outline: 1px solid #2f6fed;
-  outline-offset: 2px;
-}
 
 .agent-instruction-toolbar {
   display: grid;

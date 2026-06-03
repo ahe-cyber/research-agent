@@ -2,8 +2,8 @@ import { hideGeoJsonRecord, normalizeGeoJson, showGeoJsonRecord } from "../map/g
 
 export function DetailsTab({ active }) {
   return (
-    <section className={`workspace-tab${active ? " is-active" : ""}`} id="detailsTab" data-tab-panel hidden={!active}>
-      <h2 className="section-title">Records</h2>
+    <section className={`workspace-tab${active ? " is-active" : ""}`} id="recordTab" data-tab-panel hidden={!active}>
+      <h2 className="section-title">Record</h2>
       <div className="record-list" id="recordList" />
     </section>
   );
@@ -69,7 +69,7 @@ export function createRecordController(recordStore, map, editorTabController, ge
     if (recordStore.all().length === 0) {
       const empty = document.createElement("div");
       empty.className = "agent-message agent-message-system";
-      empty.textContent = "Query records will appear here.";
+      empty.textContent = "Query record will appear here.";
       recordList.appendChild(empty);
       return;
     }

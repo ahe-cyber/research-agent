@@ -7,9 +7,9 @@ const DEFAULT_AGENT_SYSTEM_INSTRUCTION = "You are a GIS research assistant.";
 const AGENT_ATTACHMENT_CONTEXT_MAX_CHARS = 8_000;
 const GEMINI_MODEL = process.env.GEMINI_MODEL || "gemini-2.5-flash";
 
-const datasetsPath = dataPath("datasets.json");
-const hubsPath = dataPath("hubs.json");
-const agentsPath = dataPath("agents.json");
+const datasetsPath = dataPath("dataset.json");
+const hubsPath = dataPath("search.json");
+const agentsPath = dataPath("agent.json");
 
 const RETRYABLE_STATUSES = new Set([429, 502, 503]);
 const agentInteractionIds = new Map<string, string>();
@@ -69,9 +69,9 @@ async function runAgentChat({ apiKey, appMessages, legacyContents, systemInstruc
 
   try {
     const registry = JSON.parse(await readFile(hubsPath, "utf8"));
-    flatHubs = Object.entries(registry).flatMap(([type, group]: any) =>
-      (group.items || []).map((item: any) => ({ id: item.id, name: item.name, url: item.url, type }))
-    );
+    flatHubs = Array.isArray(registry)
+      ? registry.filter((item: any) => item.activity === "dataset").map((item: any) => ({ id: item.id, name: item.name, url: item.url, type: item.type }))
+      : [];
   } catch {}
 
   try {
@@ -80,8 +80,8 @@ async function runAgentChat({ apiKey, appMessages, legacyContents, systemInstruc
 
   try {
     const loadedAgents = JSON.parse(await readFile(agentsPath, "utf8"));
-    if (loadedAgents && Array.isArray(loadedAgents.agents)) {
-      agentRegistry = loadedAgents;
+    if (Array.isArray(loadedAgents)) {
+      agentRegistry = { agents: loadedAgents, connections: [] };
     }
   } catch {}
 
@@ -166,7 +166,7 @@ async function runAgentChat({ apiKey, appMessages, legacyContents, systemInstruc
     if (name === "edit_communication") {
       try {
         const result = await editCommunication(agentRegistry, args);
-        agentRegistry = JSON.parse(await readFile(agentsPath, "utf8"));
+        agentRegistry = { agents: JSON.parse(await readFile(agentsPath, "utf8")), connections: [] };
         send({ type: "agents_updated" });
         return result;
       } catch (error) {
@@ -503,7 +503,7 @@ async function createAgentModule(registry: any, args: any) {
 
   const agent = { id, name, description, x: 100, y: 100, attachments: [], toolHints: [] };
   registry.agents.push(agent);
-  await writeFile(agentsPath, `${JSON.stringify(registry, null, 2)}\n`, "utf8");
+  await writeFile(agentsPath, `${JSON.stringify(registry.agents || [], null, 2)}\n`, "utf8");
   return { registry, agent };
 }
 
@@ -524,7 +524,7 @@ async function editAgentInstructions(registry: any, args: any) {
     agent.description = instruction;
   }
 
-  await writeFile(agentsPath, `${JSON.stringify(registry, null, 2)}\n`, "utf8");
+  await writeFile(agentsPath, `${JSON.stringify(registry.agents || [], null, 2)}\n`, "utf8");
   return { registry, edited: { id: agent.id, name: agent.name || "Agent module", instruction: agent.description } };
 }
 
@@ -551,7 +551,7 @@ async function editCommunication(registry: any, args: any) {
   }
   senderPeer["communication-instruction"] = instruction;
 
-  await writeFile(agentsPath, `${JSON.stringify(registry, null, 2)}\n`, "utf8");
+  await writeFile(agentsPath, `${JSON.stringify(registry.agents || [], null, 2)}\n`, "utf8");
   return { ok: true, senderId: sender.id, receiverId: receiver.id };
 }
 

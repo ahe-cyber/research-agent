@@ -1,39 +1,32 @@
-export interface HubRegistryGroup {
-  supportedInputParams: unknown[];
-  items: Array<Record<string, unknown>>;
+export interface HubRegistryItem extends Record<string, unknown> {
+  id: string;
+  name: string;
+  url: string;
+  type: string;
+  supportedInputParams?: unknown[];
 }
 
-export type HubRegistry = Record<string, HubRegistryGroup>;
+export type HubRegistry = HubRegistryItem[];
 
 export function normalizeHubRegistry(registry: unknown): HubRegistry {
   if (!isHubRegistry(registry)) {
-    throw new Error("Invalid hubs registry.");
+    throw new Error("Invalid dataset search registry.");
   }
 
-  return Object.fromEntries(
-    Object.entries(registry).map(([type, group]) => [
-      type,
-      {
-        supportedInputParams: group.supportedInputParams,
-        items: group.items.map(stripHubType)
-      }
-    ])
-  );
+  return registry.map((hub) => ({
+    ...hub,
+    supportedInputParams: Array.isArray(hub.supportedInputParams) ? hub.supportedInputParams : []
+  }));
 }
 
 export function isHubRegistry(value: unknown): value is HubRegistry {
-  return Boolean(value)
-    && !Array.isArray(value)
-    && typeof value === "object"
-    && Object.values(value).every((group) =>
-      group
-      && typeof group === "object"
-      && Array.isArray((group as HubRegistryGroup).supportedInputParams)
-      && Array.isArray((group as HubRegistryGroup).items)
+  return Array.isArray(value)
+    && value.every((hub) =>
+      hub
+      && typeof hub === "object"
+      && typeof (hub as HubRegistryItem).id === "string"
+      && typeof (hub as HubRegistryItem).name === "string"
+      && typeof (hub as HubRegistryItem).url === "string"
+      && typeof (hub as HubRegistryItem).type === "string"
     );
-}
-
-function stripHubType(hub: Record<string, unknown>) {
-  const { type: _type, ...rest } = hub || {};
-  return rest;
 }

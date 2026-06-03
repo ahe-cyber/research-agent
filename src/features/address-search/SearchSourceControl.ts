@@ -29,7 +29,7 @@ async function loadSources(): Promise<SearchSource[]> {
   try {
     const res = await fetch("/api/searchsources");
     if (!res.ok) throw new Error("Failed to load");
-    const { sources }: { sources: SearchSourceConfig[] } = await res.json();
+    const sources = await res.json() as SearchSourceConfig[];
     return sources
       .filter(s => PROVIDER_MAP[s.type]?.hasKey())
       .map(s => ({ ...s, provider: PROVIDER_MAP[s.type].provider }));
