@@ -1,5 +1,27 @@
 import { markdownToHtml } from "../../lib/markdown";
-import { createPageMenu } from "../editor/PageMenu";
+import { createRoot } from "react-dom/client";
+import { PageMenu } from "../editor/PageMenu";
+
+function PostmanPageMenu({ status, onRefresh }) {
+  return (
+    <PageMenu
+      left={
+        <>
+          <button
+            className="section-tool-button"
+            type="button"
+            aria-label="Refresh collections"
+            title="Refresh collections"
+            onClick={onRefresh}
+          >
+            Refresh
+          </button>
+          <span className="postman-status">{status}</span>
+        </>
+      }
+    />
+  );
+}
 
 export function createPostmanController(editorTabController) {
   const postmanButton = document.getElementById("postmanCollectionsButton");
@@ -8,17 +30,9 @@ export function createPostmanController(editorTabController) {
   const panel = document.createElement("div");
   panel.className = "editor-sources-panel";
 
-  const refreshButton = document.createElement("button");
-  refreshButton.className = "section-tool-button";
-  refreshButton.type = "button";
-  refreshButton.textContent = "Refresh";
-  refreshButton.setAttribute("aria-label", "Refresh collections");
-  refreshButton.title = "Refresh collections";
-
-  const statusEl = document.createElement("span");
-  statusEl.className = "postman-status";
-
-  const { element: pageMenu } = createPageMenu({ left: [refreshButton, statusEl] });
+  const pageMenu = document.createElement("div");
+  const pageMenuRoot = createRoot(pageMenu);
+  let statusMessage = "";
 
   const collectionList = document.createElement("div");
   collectionList.id = "postmanCollectionList";
@@ -36,7 +50,7 @@ export function createPostmanController(editorTabController) {
   // Tracks which collection UIDs the user has opened — persists across refreshes
   const openCollectionUids = new Set();
 
-  refreshButton.addEventListener("click", loadCollections);
+  renderPageMenu();
 
   // ── Data loading ─────────────────────────────────────────────────────────
 
@@ -248,7 +262,12 @@ export function createPostmanController(editorTabController) {
   }
 
   function setStatus(message) {
-    statusEl.textContent = message;
+    statusMessage = message;
+    renderPageMenu();
+  }
+
+  function renderPageMenu() {
+    pageMenuRoot.render(<PostmanPageMenu status={statusMessage} onRefresh={loadCollections} />);
   }
 }
 

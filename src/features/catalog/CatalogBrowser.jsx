@@ -1,5 +1,7 @@
-import { createPageListView } from "../editor/PageListView";
-import { createPageMenu } from "../editor/PageMenu";
+import { createRoot } from "react-dom/client";
+import { DomSlot } from "../editor/DomSlot";
+import { PageListView } from "../editor/PageListView";
+import { PageMenu } from "../editor/PageMenu";
 
 export function createCatalogController(editorTabController, agentController, getVariables, onAddSource) {
   let hubs = [];
@@ -31,12 +33,20 @@ export function createCatalogController(editorTabController, agentController, ge
   pageMenuLeft.className = "catalog-menu-title";
   pageMenuLeft.append(hubsTitle, saveStatusEl);
 
-  const { element: pageMenu } = createPageMenu({ left: [pageMenuLeft], right: [addHubBtn] });
+  const pageMenu = document.createElement("div");
+  createRoot(pageMenu).render(
+    <PageMenu left={<DomSlot nodes={[pageMenuLeft]} />} right={<DomSlot nodes={[addHubBtn]} />} />
+  );
 
   const hubListEl = document.createElement("div");
   hubListEl.className = "catalog-hub-card-list";
 
-  const { element: pageListView } = createPageListView({ children: [hubListEl] });
+  const pageListView = document.createElement("div");
+  createRoot(pageListView).render(
+    <PageListView>
+      <DomSlot nodes={[hubListEl]} />
+    </PageListView>
+  );
   resultsPanel.append(pageMenu, pageListView);
 
   // ── Hub loading ────────────────────────────────────────────────────────────

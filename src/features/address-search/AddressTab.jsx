@@ -1,4 +1,6 @@
-import { createPageMenu } from "../editor/PageMenu";
+import { createRoot } from "react-dom/client";
+import { DomSlot } from "../editor/DomSlot";
+import { PageMenu } from "../editor/PageMenu";
 
 export function AddressTab({ active }) {
   return (
@@ -72,8 +74,8 @@ export function createSearchSourceEditorPanel(onSaved) {
   const statusEl = document.createElement("span");
   statusEl.className = "search-sources-save-status";
 
-  const { element: pageMenu, add: addPageMenuAction } = createPageMenu({ left: [addBtn] });
-  addPageMenuAction(statusEl);
+  const pageMenu = document.createElement("div");
+  createRoot(pageMenu).render(<PageMenu left={<DomSlot nodes={[addBtn, statusEl]} />} />);
 
   const list = document.createElement("div");
   list.className = "search-sources-list";

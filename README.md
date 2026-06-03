@@ -176,15 +176,15 @@ The project has TypeScript checking, typed framework-neutral map utilities, type
 
 ## TODO
 
-Complete one TODO block at a time. Before implementing a block, create a Git commit with a message that describes in one or two simple sentences what you are about to do. Keep each increment buildable, prefer typed Next.js components, and preserve existing behavior unless a task explicitly changes it. When a block is complete, change `TODO` to `DONE` and replace its instruction block with a brief summary of what was implemented. Then review the remaining TODO blocks for changed assumptions or dependencies and revise their instructions when the current state has made them outdated.
+Complete one TODO block at a time. Before implementing a block, stage all changes and create a Git commit with a message that describes in one or two simple sentences what you are about to do. Keep each increment buildable, prefer typed Next.js components, and preserve existing behavior unless a task explicitly changes it. When a block is complete, change `TODO` to `DONE` and replace its instruction block with a brief summary of what was implemented. Then review the remaining TODO blocks for changed assumptions or dependencies and revise their instructions when the current state has made them outdated.
 
 ### DONE: Continue the Next.js Component Migration
 
 Added typed React `PageMenu`, `PageListView`, `PageTableView`, and `PageGraphView` primitives. Migrated the layer-sources editor page to React as the first working page: its list/table toggles live in `PageMenu`, and its `Copy as TSV` action lives in `PageTableView`. A typed `PageMenu` DOM adapter keeps the remaining legacy panels buildable while they migrate incrementally.
 
-### TODO: Migrate Remaining Editor Panels to React
+### DONE: Migrate Remaining Editor Panels to React
 
-Move the remaining imperative editor panels to the typed page primitives one working page at a time. Catalog now uses the shared menu and list-view primitives, but still uses a DOM adapter. Retire the temporary `createPageMenu` and `createPageListView` DOM adapters after the sources editor, search-sources editor, Postman collections editor, catalog editor, and agent-modules editor no longer depend on them.
+Removed the temporary `createPageMenu` and `createPageListView` DOM adapters. Sources, search-source editing, Postman collections, Catalog, and agent-modules panels now render the shared `PageMenu` and `PageListView` primitives through React roots, with a small `DomSlot` bridge preserving their existing imperative controls while panel bodies continue migrating incrementally.
 
 ### TODO: Normalize Catalog Page Menu and Cards
 

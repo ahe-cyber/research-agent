@@ -3,11 +3,11 @@ import { createMap } from "../features/map/createMap";
 import { createSearchSourceControl } from "../features/address-search/SearchSourceControl";
 import { createAddressController, createSearchSourceEditorPanel } from "../features/address-search/AddressTab.jsx";
 import { createAgentModulesController } from "../features/agents/AgentModulesTab.jsx";
-import { createCatalogController } from "../features/catalog/CatalogBrowser.js";
+import { createCatalogController } from "../features/catalog/CatalogBrowser.jsx";
 import { createRecordController, createRecordStore } from "../features/records/DetailsTab.jsx";
 import { createEditorTabController } from "../features/editor/EditorTabs.js";
 import { createFormulaController } from "../features/formulas/FormulasTab.jsx";
-import { createPostmanController } from "../features/postman/PostmanTab.js";
+import { createPostmanController } from "../features/postman/PostmanTab.jsx";
 import { createSourceController } from "../features/sources/SourcesTab.jsx";
 import { createLayerSourcesController } from "../features/map/LayerSourcesPage";
 

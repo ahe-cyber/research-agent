@@ -1,4 +1,6 @@
-import { createPageMenu } from "../editor/PageMenu";
+import { createRoot } from "react-dom/client";
+import { DomSlot } from "../editor/DomSlot";
+import { PageMenu } from "../editor/PageMenu";
 
 const CARD_WIDTH = 220;
 const SVG_NS = "http://www.w3.org/2000/svg";
@@ -40,7 +42,8 @@ export function createAgentModulesController(editorTabController, agentControlle
   exportBtn.type = "button";
   exportBtn.textContent = "Export";
 
-  const { element: pageMenu } = createPageMenu({ left: [addBtn, exportBtn] });
+  const pageMenu = document.createElement("div");
+  createRoot(pageMenu).render(<PageMenu left={<DomSlot nodes={[addBtn, exportBtn]} />} />);
 
   const wrapper = document.createElement("div");
   wrapper.className = "agents-canvas-wrapper";

@@ -1,5 +1,7 @@
 import { buildUrlWithParams, queryUrl } from "../map/geojson";
-import { createPageMenu } from "../editor/PageMenu";
+import { createRoot } from "react-dom/client";
+import { DomSlot } from "../editor/DomSlot";
+import { PageMenu } from "../editor/PageMenu";
 
 const LAYER_FIELDS_FOLDED_STORAGE_KEY = "research-agent.layerFieldsFolded";
 const NEW_SOURCE_NAME = "New Source";
@@ -82,7 +84,8 @@ export function createSourceController(recordController, formulaController, edit
   addDatasetSourceButton.setAttribute("aria-label", "Add source");
   addDatasetSourceButton.title = "Add source";
 
-  const { element: pageMenu } = createPageMenu({ left: [addDatasetSourceButton] });
+  const pageMenu = document.createElement("div");
+  createRoot(pageMenu).render(<PageMenu left={<DomSlot nodes={[addDatasetSourceButton]} />} />);
   editorPanel.append(pageMenu, sourceList);
 
   let datasetSources = [];
