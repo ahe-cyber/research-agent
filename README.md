@@ -194,17 +194,9 @@ Aligned the Catalog editor with the shared page-menu pattern by removing the vis
 
 Moved the low-risk JSON registry endpoints into typed App Router route handlers for datasets, hubs, global instruction, tool declarations, and search sources. The new handlers keep the existing JSON files as their data source, preserve validation and fallback behavior, and the matching Express handlers were removed after Next smoke tests verified the replacements.
 
-### TODO: Move External API Proxies
+### DONE: Move External API Proxies
 
-Migrate the query proxy and Postman routes:
-
-```text
-src/app/api/query/route.ts
-src/app/api/postman/collections/route.ts
-src/app/api/postman/collections/[id]/route.ts
-```
-
-Keep Postman credentials server-only. Verify JSON error responses and upstream failure handling.
+Moved the server-side query proxy and Postman collection endpoints into typed App Router route handlers. The query handler preserves the structured upstream response envelope and JSON/HTML parsing behavior, while Postman handlers keep credentials in server-only environment variables and proxy upstream JSON statuses. Legacy Express compatibility handlers remain until the default dev server is retired, and live Next smoke tests covered query success, validation errors, upstream fetch failure, and Postman upstream JSON responses.
 
 ### TODO: Move Agent APIs
 
