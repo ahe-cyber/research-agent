@@ -10,32 +10,26 @@ export function createCatalogController(editorTabController, agentController, ge
   let liveSaveInFlight = false;
   let liveSaveQueued = false;
   const inlineResultsByBubble = new WeakMap();
+  const openHubIds = new Set();
 
   // ── Catalog registry panel ─────────────────────────────────────────────────
 
   const resultsPanel = document.createElement("div");
   resultsPanel.className = "catalog-results-panel";
 
-  const hubsTitle = document.createElement("span");
-  hubsTitle.className = "catalog-hubs-title";
-  hubsTitle.textContent = "Catalogs";
-
   const saveStatusEl = document.createElement("span");
   saveStatusEl.className = "catalog-save-status";
 
   const addHubBtn = document.createElement("button");
-  addHubBtn.className = "catalog-add-hub-btn";
+  addHubBtn.className = "section-tool-button add-source-button";
   addHubBtn.type = "button";
-  addHubBtn.textContent = "+ Add catalog";
+  addHubBtn.setAttribute("aria-label", "Add catalog");
+  addHubBtn.title = "Add catalog";
   addHubBtn.addEventListener("click", addHub);
-
-  const pageMenuLeft = document.createElement("div");
-  pageMenuLeft.className = "catalog-menu-title";
-  pageMenuLeft.append(hubsTitle, saveStatusEl);
 
   const pageMenu = document.createElement("div");
   createRoot(pageMenu).render(
-    <PageMenu left={<DomSlot nodes={[pageMenuLeft]} />} right={<DomSlot nodes={[addHubBtn]} />} />
+    <PageMenu left={<DomSlot nodes={[addHubBtn, saveStatusEl]} />} />
   );
 
   const hubListEl = document.createElement("div");
@@ -67,6 +61,7 @@ export function createCatalogController(editorTabController, agentController, ge
   function queueHubSync() {
     liveSaveQueued = true;
     saveStatusEl.textContent = "Saving...";
+    saveStatusEl.classList.remove("is-saved");
     clearTimeout(liveSaveTimer);
     liveSaveTimer = setTimeout(syncHubsNow, 350);
   }
@@ -98,6 +93,7 @@ export function createCatalogController(editorTabController, agentController, ge
     } catch (error) {
       console.error("[Catalog] Live sync failed", error);
       saveStatusEl.textContent = "Save failed";
+      saveStatusEl.classList.remove("is-saved");
       liveSaveQueued = true;
     } finally {
       liveSaveInFlight = false;
@@ -114,30 +110,58 @@ export function createCatalogController(editorTabController, agentController, ge
   }
 
   function createHubCard(hub, index) {
-    const card = document.createElement("article");
+    const card = document.createElement("details");
     card.className = "catalog-hub-card";
     card.dataset.hubId = hub.id || `hub-${Date.now()}`;
 
     if (!hub.id) hub.id = card.dataset.hubId;
+    card.open = openHubIds.has(hub.id);
+    card.addEventListener("toggle", () => {
+      if (card.open) {
+        openHubIds.add(hub.id);
+      } else {
+        openHubIds.delete(hub.id);
+      }
+    });
 
-    const header = document.createElement("div");
-    header.className = "catalog-hub-card-header";
+    const summary = document.createElement("summary");
+    summary.className = "catalog-hub-card-summary";
+
+    const summaryText = document.createElement("div");
+    summaryText.className = "catalog-hub-card-summary-text";
 
     const title = document.createElement("strong");
     title.textContent = hub.name || "New catalog";
+
+    const summaryMeta = document.createElement("div");
+    summaryMeta.className = "catalog-hub-card-meta";
+
+    const typeLabel = document.createElement("span");
+    typeLabel.className = "catalog-hub-type";
+    typeLabel.textContent = getHubTypeLabel(hub.type);
+
+    const urlLabel = document.createElement("span");
+    urlLabel.className = "catalog-hub-url";
+    urlLabel.textContent = hub.url || "No URL";
+    urlLabel.title = hub.url || "";
 
     const removeBtn = document.createElement("button");
     removeBtn.className = "catalog-hub-remove";
     removeBtn.type = "button";
     removeBtn.setAttribute("aria-label", "Remove catalog");
     removeBtn.title = "Remove catalog";
-    removeBtn.addEventListener("click", () => {
+    removeBtn.addEventListener("click", (event) => {
+      event.preventDefault();
+      event.stopPropagation();
       hubs.splice(index, 1);
+      openHubIds.delete(hub.id);
       renderHubCards();
       queueHubSync();
     });
 
-    header.append(title, removeBtn);
+    summaryMeta.append(typeLabel, urlLabel);
+    summaryText.append(title, summaryMeta);
+    summary.append(summaryText, removeBtn);
 
     const fields = document.createElement("div");
     fields.className = "catalog-hub-card-fields";
@@ -170,10 +194,13 @@ export function createCatalogController(editorTabController, agentController, ge
     });
     urlInput.addEventListener("input", () => {
       hub.url = urlInput.value;
+      urlLabel.textContent = hub.url.trim() || "No URL";
+      urlLabel.title = hub.url.trim();
       queueHubSync();
     });
     typeSelect.addEventListener("change", () => {
       hub.type = typeSelect.value;
+      typeLabel.textContent = getHubTypeLabel(hub.type);
       queueHubSync();
     });
 
@@ -182,7 +209,7 @@ export function createCatalogController(editorTabController, agentController, ge
       createField("URL", urlInput),
       createField("Type", typeSelect)
     );
-    card.append(header, fields);
+    card.append(summary, fields);
     return card;
   }
 
@@ -198,9 +225,14 @@ export function createCatalogController(editorTabController, agentController, ge
   function addHub() {
     const hub = { id: `hub-${Date.now()}`, name: "New catalog", url: "", type: "arcgis" };
     hubs.push(hub);
+    openHubIds.add(hub.id);
     renderHubCards();
     hubListEl.lastElementChild?.querySelector(".catalog-hub-name-input")?.focus();
     queueHubSync();
+  }
+
+  function getHubTypeLabel(type) {
+    return type === "socrata" ? "Socrata" : "ArcGIS";
   }
 
   function serializeHubs({ onlyValid = false } = {}) {

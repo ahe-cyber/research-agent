@@ -8,23 +8,15 @@
   background: #ffffff;
 }
 
-.catalog-menu-title {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.catalog-hubs-title {
-  font-size: 11px;
-  font-weight: 700;
-  color: #526070;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-}
-
 .catalog-save-status {
   font-size: 12px;
   color: #526070;
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+
+.catalog-save-status:not(:empty) {
+  opacity: 1;
 }
 
 .catalog-save-status.is-saved {
@@ -42,27 +34,62 @@
   border: 1px solid #d6d9de;
   border-radius: 6px;
   background: #ffffff;
-  padding: 12px 14px;
 }
 
-.catalog-hub-card-header {
+.catalog-hub-card-summary {
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   justify-content: space-between;
   gap: 10px;
-  margin-bottom: 10px;
+  min-height: 44px;
+  box-sizing: border-box;
+  padding: 10px 14px;
+  cursor: pointer;
+  list-style: none;
 }
 
-.catalog-hub-card-header strong {
+.catalog-hub-card-summary::-webkit-details-marker {
+  display: none;
+}
+
+.catalog-hub-card-summary-text {
+  display: grid;
+  gap: 3px;
+  min-width: 0;
+}
+
+.catalog-hub-card-summary strong {
   color: #1f2933;
   font-size: 14px;
   line-height: 1.35;
+}
+
+.catalog-hub-card-meta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  color: #526070;
+  font-size: 12px;
+}
+
+.catalog-hub-type {
+  flex: 0 0 auto;
+}
+
+.catalog-hub-url {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .catalog-hub-card-fields {
   display: grid;
   grid-template-columns: minmax(120px, 0.8fr) minmax(220px, 1.6fr) minmax(100px, 0.5fr);
   gap: 10px;
+  border-top: 1px solid #e5e8ec;
+  padding: 12px 14px 14px;
 }
 
 .catalog-hub-field {
@@ -115,22 +142,6 @@
 }
 
 .catalog-hub-remove:hover { background: #f0f2f4; }
-
-.catalog-add-hub-btn {
-  font: inherit;
-  font-size: 12px;
-  color: #526070;
-  background: none;
-  border: 1px dashed #c9ced6;
-  border-radius: 4px;
-  padding: 4px 10px;
-  cursor: pointer;
-}
-
-.catalog-add-hub-btn:hover {
-  border-color: #1f2933;
-  color: #1f2933;
-}
 
 /* ── Chat thread ──────────────────────────────────────────────────────────── */
 

@@ -186,9 +186,9 @@ Added typed React `PageMenu`, `PageListView`, `PageTableView`, and `PageGraphVie
 
 Removed the temporary `createPageMenu` and `createPageListView` DOM adapters. Sources, search-source editing, Postman collections, Catalog, and agent-modules panels now render the shared `PageMenu` and `PageListView` primitives through React roots, with a small `DomSlot` bridge preserving their existing imperative controls while panel bodies continue migrating incrementally.
 
-### TODO: Normalize Catalog Page Menu and Cards
+### DONE: Normalize Catalog Page Menu and Cards
 
-Bring the Catalog editor fully in line with the other shared page-menu panels. Remove the visible `CATALOGS` menu label, put the add-catalog action on the left using the same compact icon-button style as the other add actions, and keep save status subtle. Make catalog cards expandable and collapsible, with read-only collapsed summaries and editing controls available only while a card is expanded.
+Aligned the Catalog editor with the shared page-menu pattern by removing the visible menu label, moving the add-catalog action to the left as the compact add icon button, and making save status appear only when active. Catalog entries now use expandable cards with read-only collapsed summaries for name, type, and URL; editing controls are only shown inside the expanded card body.
 
 ### TODO: Move Simple API Routes
 
