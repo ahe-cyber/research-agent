@@ -160,31 +160,6 @@ function encodeTerrainRgbTile(tile) {
   }).png().toBuffer();
 }
 
-app.get("/api/datasets", async (request, response) => {
-  try {
-    response.type("json").send(await fs.readFile(datasetsPath, "utf8"));
-  } catch (error) {
-    console.error(error);
-    response.status(500).json({ error: "Failed to read datasets." });
-  }
-});
-
-app.put("/api/datasets", async (request, response) => {
-  if (!Array.isArray(request.body)) {
-    response.status(400).json({ error: "Datasets payload must be an array." });
-    return;
-  }
-
-  try {
-    const content = `${JSON.stringify(request.body, null, 2)}\n`;
-    await fs.writeFile(datasetsPath, content, "utf8");
-    response.json({ ok: true });
-  } catch (error) {
-    console.error(error);
-    response.status(500).json({ error: "Failed to write datasets." });
-  }
-});
-
 app.post("/api/query", async (request, response) => {
   const queryUrl = request.body && request.body.url;
 
@@ -285,35 +260,6 @@ app.get("/api/postman/collections/:id", async (request, response) => {
   } catch (error) {
     console.error("[Postman] collection detail failed", error);
     response.status(502).json({ error: "Failed to fetch Postman collection.", message: error.message });
-  }
-});
-
-// ── Agent instruction ─────────────────────────────────────────────────────────
-
-app.get("/api/instruction", async (request, response) => {
-  try {
-    const data = JSON.parse(await fs.readFile(agentsPath, "utf8"));
-    response.json({ instruction: data.globalInstruction || "" });
-  } catch {
-    response.json({ instruction: "" });
-  }
-});
-
-app.put("/api/instruction", async (request, response) => {
-  const { instruction } = request.body;
-  if (typeof instruction !== "string") {
-    response.status(400).json({ error: "instruction must be a string." });
-    return;
-  }
-  try {
-    let data = { globalInstruction: "", agents: [], connections: [] };
-    try { data = JSON.parse(await fs.readFile(agentsPath, "utf8")); } catch {}
-    data.globalInstruction = instruction;
-    await fs.writeFile(agentsPath, `${JSON.stringify(data, null, 2)}\n`, "utf8");
-    response.json({ ok: true });
-  } catch (error) {
-    console.error(error);
-    response.status(500).json({ error: "Failed to write instruction." });
   }
 });
 
@@ -433,10 +379,6 @@ const TOOL_DECLARATIONS = [
   }
 ];
 
-app.get("/api/tools", (_request, response) => {
-  response.json(TOOL_DECLARATIONS);
-});
-
 // ── Agent modules registry ────────────────────────────────────────────────────
 
 const agentsPath = path.join(rootDir, "public", "data", "agents.json");
@@ -464,92 +406,9 @@ app.put("/api/agents", async (request, response) => {
   }
 });
 
-// ── Search sources registry ───────────────────────────────────────────────────
-
-const searchSourcesPath = path.join(rootDir, "public", "data", "searchsource.json");
-
-app.get("/api/searchsources", async (_request, response) => {
-  try {
-    response.type("json").send(await fs.readFile(searchSourcesPath, "utf8"));
-  } catch {
-    response.json({ sources: [] });
-  }
-});
-
-app.put("/api/searchsources", async (request, response) => {
-  const body = request.body;
-  if (!body || !Array.isArray(body.sources)) {
-    response.status(400).json({ error: "sources must be an array." });
-    return;
-  }
-  try {
-    await fs.writeFile(searchSourcesPath, `${JSON.stringify(body, null, 2)}\n`, "utf8");
-    response.json({ ok: true });
-  } catch (error) {
-    response.status(500).json({ error: error.message });
-  }
-});
-
 // ── Hub catalog registry ──────────────────────────────────────────────────────
 
 const hubsPath = path.join(rootDir, "public", "data", "hubs.json");
-
-app.get("/api/hubs", async (request, response) => {
-  try {
-    const registry = JSON.parse(await fs.readFile(hubsPath, "utf8"));
-    response.json(normalizeHubRegistry(registry));
-  } catch (error) {
-    console.error(error);
-    response.status(500).json({ error: "Failed to read hubs." });
-  }
-});
-
-app.put("/api/hubs", async (request, response) => {
-  if (!isHubRegistry(request.body)) {
-    response.status(400).json({ error: "Hubs must be grouped by type." });
-    return;
-  }
-  try {
-    await fs.writeFile(hubsPath, `${JSON.stringify(normalizeHubRegistry(request.body), null, 2)}\n`, "utf8");
-    response.json({ ok: true });
-  } catch (error) {
-    console.error(error);
-    response.status(500).json({ error: "Failed to write hubs." });
-  }
-});
-
-function normalizeHubRegistry(registry) {
-  if (!isHubRegistry(registry)) {
-    throw new Error("Invalid hubs registry.");
-  }
-
-  return Object.fromEntries(
-    Object.entries(registry).map(([type, group]) => [
-      type,
-      {
-        supportedInputParams: group.supportedInputParams,
-        items: group.items.map(stripHubType)
-      }
-    ])
-  );
-}
-
-function isHubRegistry(value) {
-  return Boolean(value)
-    && !Array.isArray(value)
-    && typeof value === "object"
-    && Object.values(value).every((group) =>
-      group
-      && typeof group === "object"
-      && Array.isArray(group.supportedInputParams)
-      && Array.isArray(group.items)
-    );
-}
-
-function stripHubType(hub) {
-  const { type, ...rest } = hub || {};
-  return rest;
-}
 
 async function searchArcGIS(hubUrl, query, bbox) {
   const base = hubUrl.replace(/\/$/, "");

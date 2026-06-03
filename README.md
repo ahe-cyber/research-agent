@@ -176,7 +176,7 @@ The project has TypeScript checking, typed framework-neutral map utilities, type
 
 ## TODO
 
-Complete one TODO block at a time. Before implementing a block, stage all changes and create a Git commit with a message that describes in one or two simple sentences what you are about to do. Keep each increment buildable, prefer typed Next.js components, and preserve existing behavior unless a task explicitly changes it. When a block is complete, change `TODO` to `DONE` and replace its instruction block with a brief summary of what was implemented. Then review the remaining TODO blocks for changed assumptions or dependencies and revise their instructions when the current state has made them outdated.
+Complete one TODO block at a time. Before implementing a block, stage all changes and create a Git commit with a message that describes in one or two simple sentences what you are about to do. Keep each increment buildable, prefer typed Next.js components, and preserve existing behavior unless a task explicitly changes it. When a block is complete, change `TODO` to `DONE` and replace its instruction block with a brief summary of what was implemented. Then review the remaining TODO blocks for changed assumptions or dependencies and revise their instructions when the current state has made them outdated. Stage the related changes, but do not commit after completing a TODO.
 
 ### DONE: Continue the Next.js Component Migration
 
@@ -190,19 +190,9 @@ Removed the temporary `createPageMenu` and `createPageListView` DOM adapters. So
 
 Aligned the Catalog editor with the shared page-menu pattern by removing the visible menu label, moving the add-catalog action to the left as the compact add icon button, and making save status appear only when active. Catalog entries now use expandable cards with read-only collapsed summaries for name, type, and URL; editing controls are only shown inside the expanded card body.
 
-### TODO: Move Simple API Routes
+### DONE: Move Simple API Routes
 
-Move low-risk Express endpoints into App Router Route Handlers one domain at a time:
-
-```text
-src/app/api/datasets/route.ts
-src/app/api/hubs/route.ts
-src/app/api/instruction/route.ts
-src/app/api/tools/route.ts
-src/app/api/searchsources/route.ts
-```
-
-Keep the JSON registries as the current data source. Remove each matching Express handler only after verifying its typed Next.js replacement.
+Moved the low-risk JSON registry endpoints into typed App Router route handlers for datasets, hubs, global instruction, tool declarations, and search sources. The new handlers keep the existing JSON files as their data source, preserve validation and fallback behavior, and the matching Express handlers were removed after Next smoke tests verified the replacements.
 
 ### TODO: Move External API Proxies
 
