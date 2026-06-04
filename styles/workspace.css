@@ -270,7 +270,7 @@
 }
 
 .address-list,
-.asset-list,
+.folder-asset-list,
 .formula-list {
   display: grid;
   gap: 10px;
@@ -332,7 +332,7 @@
 }
 
 .address-item,
-.asset-item,
+.folder-asset-item,
 .formula-item,
 .source-editor {
   position: relative;
@@ -345,7 +345,7 @@
 }
 
 .address-item,
-.asset-item {
+.folder-asset-item {
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
@@ -376,7 +376,7 @@
 }
 
 .address-item span,
-.asset-item span,
+.folder-asset-item span,
 .formula-item span,
 .source-editor span {
   display: block;

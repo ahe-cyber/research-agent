@@ -30,12 +30,6 @@
     "workspaceLabel": "Dataset Workspace"
   },
   {
-    "id": "browser",
-    "label": "Browser",
-    "icon": "/assets/browser.svg",
-    "workspaceLabel": "Browser Workspace"
-  },
-  {
     "id": "tool",
     "label": "Tool",
     "icon": "/assets/tool.svg",

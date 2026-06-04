@@ -1,16 +1,15 @@
-import { createAgentController } from "../features/agents/AgentPanel.jsx";
+import { createAgentController } from "../features/agent/AgentPanel.jsx";
 import { createMap } from "../features/map/createMap";
-import { createSearchSourceControl } from "../features/address-search/SearchSourceControl";
-import { createAddressController, createSearchSourceEditorPanel } from "../features/address-search/AddressTab.jsx";
-import { createAgentModulesController } from "../features/agents/AgentModulesTab.jsx";
-import { createCatalogController } from "../features/catalog/CatalogBrowser.jsx";
-import { createRecordController, createRecordStore } from "../features/records/DetailsTab.jsx";
+import { createSearchSourceControl } from "../features/search/SearchSourceControl";
+import { createAddressController, createSearchSourceEditorPanel } from "../features/search/AddressTab.jsx";
+import { createAgentTabController } from "../features/agent/AgentTab.jsx";
+import { createCatalogController } from "../features/search/CatalogPanel.jsx";
+import { createRecordController, createRecordStore } from "../features/record/RecordTab.jsx";
 import { createEditorTabController } from "../features/editor/EditorTabs.js";
-import { createFormulaController } from "../features/formulas/FormulasTab.jsx";
+import { createToolController } from "../features/tool/ToolTab.jsx";
 import { createPostmanController } from "../features/postman/PostmanTab.jsx";
-import { createSourceController } from "../features/sources/SourcesTab.jsx";
+import { createDatasetController } from "../features/dataset/DatasetTab.jsx";
 import { createLayerSourcesController } from "../features/map/LayerSourcesPage";
-import { loadWorkspaceState } from "../lib/workspaceState.js";
 
 let initialized = false;
 let sourceController;
@@ -51,7 +50,7 @@ export async function initializeMapApp() {
   }
 
   const recordStore = createRecordStore();
-  const formulaController = createFormulaController(() => agentController);
+  const toolController = createToolController(() => agentController);
   const editorTabController = createEditorTabController({
     onMapActivated: () => {
       requestAnimationFrame(() => map?.resize?.());
@@ -70,28 +69,24 @@ export async function initializeMapApp() {
     const address = addressController.getCurrentAddress() || { title: "Research Report", subtitle: "" };
     return editorTabController.openReportTab(address);
   });
-  sourceController = createSourceController(recordController, formulaController, editorTabController, agentController);
+  sourceController = createDatasetController(recordController, toolController, editorTabController, agentController);
   catalogController = createCatalogController(
     editorTabController,
     agentController,
     () => sourceController.getVariables(),
     (item) => sourceController.addSourceFromCatalog(item)
   );
-  window.addEventListener("research-agent:open-browser", () => catalogController?.open());
-  if (loadWorkspaceState().activeActivityTab === "browser") {
-    catalogController.open();
-  }
   createPostmanController(editorTabController);
-  const agentModulesController = createAgentModulesController(editorTabController, agentController);
-  agentController.setAttachmentTargetProvider(() => agentModulesController.getAttachmentTarget());
-  agentController.setModulesRefresher(() => agentModulesController.reload());
+  const agentTabController = createAgentTabController(editorTabController, agentController);
+  agentController.setAttachmentTargetProvider(() => agentTabController.getAttachmentTarget());
+  agentController.setModulesRefresher(() => agentTabController.reload());
 
   let reloadSources;
   const { panel: searchSourcesPanel } = createSearchSourceEditorPanel(() => reloadSources?.());
   const { element: selectorElement, reload } = createSearchSourceControl(map, handlePlaceRetrieved, searchBoxContainer);
   reloadSources = reload;
   document.getElementById("searchSourceSelector").appendChild(selectorElement);
-  document.getElementById("editSearchSourcesButton")?.addEventListener("click", () => editorTabController.openSearchSourcesTab(searchSourcesPanel));
+  document.getElementById("editSearchSourcesButton")?.addEventListener("click", () => editorTabController.openAddressSearchTab(searchSourcesPanel));
   document.getElementById("editActivityButton")?.addEventListener("click", (event) => {
     const button = event.currentTarget;
     const tabId = button.dataset.activeTab || "project";

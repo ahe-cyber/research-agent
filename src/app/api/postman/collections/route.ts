@@ -1,6 +1,6 @@
-import { jsonResponse } from "../../_shared/files";
-import { errorMessage } from "../../_shared/http";
-import { POSTMAN_API_BASE, postmanJsonResponse } from "./_shared";
+import { jsonResponse } from "../../_lib/files";
+import { errorMessage } from "../../_lib/http";
+import { POSTMAN_API_BASE, postmanJsonResponse } from "../../_services/postman";
 
 export async function GET() {
   const apiKey = process.env.POSTMAN_API_KEY;

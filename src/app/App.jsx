@@ -1,30 +1,30 @@
 import { useEffect, useRef, useState } from "react";
-import { AgentPanel } from "../features/agents/AgentPanel.jsx";
+import { AgentPanel } from "../features/agent/AgentPanel.jsx";
 import { initializeMapApp } from "./initializeMapApp.js";
-import { AddressTab } from "../features/address-search/AddressTab.jsx";
-import { AgentModulesTab } from "../features/agents/AgentModulesTab.jsx";
-import { DetailsTab } from "../features/records/DetailsTab.jsx";
-import { FormulasTab } from "../features/formulas/FormulasTab.jsx";
-import { SourcesTab } from "../features/sources/SourcesTab.jsx";
+import { AddressTab } from "../features/search/AddressTab.jsx";
+import { AgentTab } from "../features/agent/AgentTab.jsx";
+import { FolderTab } from "../features/folder/FolderTab.jsx";
+import { RecordTab } from "../features/record/RecordTab.jsx";
+import { ToolTab } from "../features/tool/ToolTab.jsx";
+import { DatasetTab } from "../features/dataset/DatasetTab.jsx";
 import { ActivityTab } from "../features/workspace/ActivityTab.jsx";
 import { SidebarHeader } from "../features/workspace/SidebarHeader.jsx";
 import { loadWorkspaceState, saveWorkspaceState } from "../lib/workspaceState.js";
+import activityRegistry from "../../public/data/activity.json";
 
-const DEFAULT_TABS = [
-  { id: "project", label: "Project", iconSrc: "/assets/project.svg", emptyEditor: true },
-  { id: "folder", label: "Folder", iconSrc: "/assets/folder.svg", emptyEditor: true },
-  { id: "address", label: "Address", iconSrc: "/assets/address.svg" },
-  { id: "record", label: "Record", iconSrc: "/assets/record.svg", emptyEditor: true },
-  { id: "dataset", label: "Dataset", iconSrc: "/assets/dataset.svg" },
-  { id: "browser", label: "Browser", iconSrc: "/assets/browser.svg" },
-  { id: "tool", label: "Tool", iconSrc: "/assets/tool.svg", emptyEditor: true },
-  { id: "agent", label: "Agent", iconSrc: "/assets/agent.svg" },
-  { id: "map", label: "Map", iconSrc: "/assets/map.svg" },
-];
+const EMPTY_EDITOR_ACTIVITY_IDS = new Set(["project", "record", "tool"]);
+const DEFAULT_TABS = activityRegistry.map(({ id, label, icon, workspaceLabel }) => ({
+  id,
+  label,
+  iconSrc: icon,
+  workspaceLabel,
+  emptyEditor: EMPTY_EDITOR_ACTIVITY_IDS.has(id)
+}));
 
 const LEGACY_ACTIVITY_IDS = {
   formulas: "tool",
   agents: "agent",
+  browser: "address",
   details: "record",
   sources: "dataset",
   tools: "tool"
@@ -37,7 +37,7 @@ function normalizeActivityId(id) {
 function getInitialTabs() {
   const { activityOrder } = loadWorkspaceState();
   if (!Array.isArray(activityOrder)) return DEFAULT_TABS;
-  const normalizedOrder = activityOrder.map(normalizeActivityId);
+  const normalizedOrder = Array.from(new Set(activityOrder.map(normalizeActivityId)));
   const ordered = normalizedOrder.map((id) => DEFAULT_TABS.find((t) => t.id === id)).filter(Boolean);
   const remaining = DEFAULT_TABS.filter((t) => !normalizedOrder.includes(t.id));
   return [...ordered, ...remaining];
@@ -61,9 +61,6 @@ export default function App() {
 
   useEffect(() => {
     saveWorkspaceState({ activeActivityTab: activeTab });
-    if (activeTab === "browser") {
-      window.dispatchEvent(new CustomEvent("research-agent:open-browser"));
-    }
   }, [activeTab]);
 
   function handleDragStart(id) {
@@ -96,9 +93,9 @@ export default function App() {
   }
 
   const activeTabMeta = tabs.find((tab) => tab.id === activeTab) ?? DEFAULT_TABS.find((tab) => tab.id === activeTab);
-  const workspaceOptions = tabs.map(({ id, label }) => ({
+  const workspaceOptions = tabs.map(({ id, label, workspaceLabel }) => ({
     id,
-    label: `${label} Workspace`
+    label: workspaceLabel || `${label} Workspace`
   }));
 
   return (
@@ -210,13 +207,12 @@ export default function App() {
         </div>
 
         <section className="workspace-tab" id="projectTab" aria-label="Project" hidden={activeTab !== "project"} />
-        <section className="workspace-tab" id="folderTab" aria-label="Folder" hidden={activeTab !== "folder"} />
+        <FolderTab active={activeTab === "folder"} />
         <AddressTab active={activeTab === "address"} />
-        <DetailsTab active={activeTab === "record"} />
-        <SourcesTab active={activeTab === "dataset"} />
-        <section className="workspace-tab" id="browserTab" aria-label="Browser" hidden={activeTab !== "browser"} />
-        <FormulasTab active={activeTab === "tool"} />
-        <AgentModulesTab active={activeTab === "agent"} />
+        <RecordTab active={activeTab === "record"} />
+        <DatasetTab active={activeTab === "dataset"} />
+        <ToolTab active={activeTab === "tool"} />
+        <AgentTab active={activeTab === "agent"} />
 
         <section className="workspace-tab map-display-settings" aria-label="Map display settings" hidden={activeTab !== "map"}>
           <div className="map-display-group">

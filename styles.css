@@ -1,9 +1,9 @@
 @import url("./styles/base.css");
 @import url("./styles/layout.css");
 @import url("./styles/map.css");
-@import url("./styles/search-box.css");
+@import url("./styles/address.css");
 @import url("./styles/workspace.css");
-@import url("./styles/records.css");
+@import url("./styles/record.css");
 @import url("./styles/agent.css");
-@import url("./styles/catalog.css");
-@import url("./styles/modules.css");
+@import url("./styles/agent-workspace.css");
+@import url("./styles/search-catalog.css");

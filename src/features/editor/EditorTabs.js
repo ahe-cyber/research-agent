@@ -70,7 +70,7 @@ export function createEditorTabController({ onMapActivated = () => {} } = {}) {
     updateTabButtons(id, false);
 
     if (panelMap[id]) {
-      if (id === "dataset-editor" || id === "postman-collections" || id === "catalog-results" || id === "agent-editor") {
+      if (id === "dataset-editor" || id === "postman-collections" || id === "search-catalog-results" || id === "agent-editor") {
         panelMap[id].hidden = true;
       } else {
         panelMap[id].remove();
@@ -107,7 +107,7 @@ export function createEditorTabController({ onMapActivated = () => {} } = {}) {
     activateTab(tabId);
   }
 
-  function openSourcesTab(editorPanel) {
+  function openDatasetTab(editorPanel) {
     const tabId = "dataset-editor";
 
     if (tabs.find((t) => t.id === tabId)) {
@@ -192,7 +192,7 @@ export function createEditorTabController({ onMapActivated = () => {} } = {}) {
     });
   }
 
-  function openAgentsTab(agentsPanel) {
+  function openAgentTab(agentsPanel) {
     const tabId = "agent-editor";
 
     if (tabs.find((t) => t.id === tabId)) {
@@ -211,7 +211,7 @@ export function createEditorTabController({ onMapActivated = () => {} } = {}) {
     activateTab(tabId);
   }
 
-  function openSearchSourcesTab(searchSourcesPanel) {
+  function openAddressSearchTab(searchSourcesPanel) {
     const tabId = "address-search-editor";
 
     if (tabs.find((t) => t.id === tabId)) {
@@ -230,8 +230,8 @@ export function createEditorTabController({ onMapActivated = () => {} } = {}) {
     activateTab(tabId);
   }
 
-  function openCatalogResultsTab(resultsPanel) {
-    const tabId = "catalog-results";
+  function openSearchCatalogResultsTab(resultsPanel) {
+    const tabId = "search-catalog-results";
 
     if (tabs.find((t) => t.id === tabId)) {
       activateTab(tabId);
@@ -249,8 +249,8 @@ export function createEditorTabController({ onMapActivated = () => {} } = {}) {
     activateTab(tabId);
   }
 
-  function openCatalogDatasetTab(item, detailPanel) {
-    const tabId = `catalog-dataset-${item.id}`;
+  function openSearchCatalogDatasetTab(item, detailPanel) {
+    const tabId = `search-catalog-dataset-${item.id}`;
 
     if (tabs.find((t) => t.id === tabId)) {
       activateTab(tabId);
@@ -373,7 +373,7 @@ export function createEditorTabController({ onMapActivated = () => {} } = {}) {
   }
 
   render();
-  return { openTableTab, openPdfTab, openSourcesTab, openPostmanTab, openLayerSourcesTab, openCatalogResultsTab, openCatalogDatasetTab, openReportTab, openAgentsTab, openSearchSourcesTab, openEmptyPageTab };
+  return { openTableTab, openPdfTab, openDatasetTab, openPostmanTab, openLayerSourcesTab, openSearchCatalogResultsTab, openSearchCatalogDatasetTab, openReportTab, openAgentTab, openAddressSearchTab, openEmptyPageTab };
 }
 
 function renderHtmlElement(element) {

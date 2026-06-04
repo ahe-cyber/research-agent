@@ -1862,5 +1862,17 @@
       }
     ],
     "queryUrl": "https://data.cityofnewyork.us/resource/6bgk-3dad.json?boro=5"
+  },
+  {
+    "id": "source-mpzj1811",
+    "name": "Satellite (VIIRS) Thermal Hotspots and Fire Activity",
+    "description": "Global Thermal activity detected by the VIIRS sensors on the NOAA/NASA Suomi NPP, NOAA-20, and NOAA-21 satellites during the last 7 days.",
+    "type": "arcgis-feature-layer",
+    "method": "GET",
+    "overviewUrl": "https://services9.arcgis.com/RHVPKKiFTONKtxq3/arcgis/rest/services/Satellite_VIIRS_Thermal_Hotspots_and_Fire_Activity/FeatureServer/0",
+    "defaultParams": [],
+    "defaultOutputs": [],
+    "queryUrl": "https://services9.arcgis.com/RHVPKKiFTONKtxq3/arcgis/rest/services/Satellite_VIIRS_Thermal_Hotspots_and_Fire_Activity/FeatureServer/0/query",
+    "layerFields": []
   }
 ]

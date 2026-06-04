@@ -14,7 +14,7 @@ Current capabilities include:
 * In-memory query records with request, response, timing, and extracted output variables.
 * Expandable JSON response trees.
 * GeoJSON polygon visibility toggles on the map.
-* PDF and image link extraction into an Assets tab.
+* PDF and image link extraction into the Folder tab.
 * An AI agent panel that can use attached query records as context for analysis.
 
 ## Engineering Conventions
@@ -27,6 +27,8 @@ The project is migrating incrementally to Next.js. New code should follow the in
 * Prefer data-driven behavior over hard-coded configuration. The current registries are JSON files under `public/data`.
 * Extract reusable components when multiple editor pages share layout or interaction patterns, especially menus, list views, table views, graph views, cards, and action rows.
 * Keep each migration increment buildable. Avoid combining broad file moves, visual redesigns, and behavior changes unless they belong to the same focused task.
+
+Activity nomenclature must stay absolutely consistent. Use the canonical singular activity ids from `public/data/activity.json` everywhere an activity identity appears: `project`, `folder`, `address`, `record`, `dataset`, `tool`, `agent`, and `map`. Folder names, filenames, exported component names, controller/function names, CSS namespace roots, route folders, object keys, and object values should use the same singular activity word when they refer to that activity. Do not reintroduce plural or legacy aliases such as `agents`, `datasets`, `tools`, `sources`, `assets`, `records`, `details`, or `formulas` for activity-owned code.
 
 ## UI Style Guidance
 
@@ -48,107 +50,21 @@ The layout should remain fixed:
 Activity rail → Workspace sidebar → Map editor → Agent sidebar
 ```
 
-## Workspace Tabs
+## Activity Tabs
 
 ### Address
 
-The Address tab always contains the search input. There is no add popup.
-
-The active search provider is selected from the search-source registry. Available providers currently include NYC GeoSearch, Mapbox Search JS Web's `MapboxSearchBox`, and Google Places. Configured sources can support:
-
-* Addresses
-* Place names
-* Landmarks
-* POIs
-
-### Details
-
-The Details tab shows in-memory query records.
-
-Address searches keep only the latest selected result response. Manual dataset queries keep:
-
-* Request
-* Response
-* Timestamp
-* Duration
-* Extracted output variables
-
-JSON responses should render as expandable accordion trees.
-
-If a record response is a GeoJSON polygon, a FeatureCollection of polygons, or a list of polygon features, the record should expose a map visibility toggle.
-
-If a record contains PDF or image links, the record should expose a way to collect those links into the Assets tab.
+### Record
 
 ### Dataset
 
-The Dataset tab lists registry-backed datasets as expandable editors. Address search items have a separate editor opened from the Address workspace.
-
-Dataset endpoint editors are loaded from:
-
-```text
-/api/datasets
-```
-
-The dataset registry is backed by:
-
-```text
-public/data/dataset.json
-```
-
-Dataset settings can be saved from the Dataset tab. The API writes edits back to `public/data/dataset.json`.
-
-Search settings are loaded from `/api/searchsources` and currently backed by list-shaped `public/data/search.json`. Dataset browser entries also live in `search.json` with `activity: "dataset"`. Other list-shaped registries include `activity.json`, `agent.json`, `dataset.json`, and `basemap.json`.
-
-Dataset overview buttons open the configured ArcGIS REST layer overview in a new tab. Those pages include dataset descriptions, supported query formats, extents, and field lists.
-
-### Assets
-
-The Assets tab collects PDF and image links extracted from records.
+### Folder
 
 ### Agent
 
-The right agent panel supports:
-
-* A text composer
-* An attach-context control
-
-When context is attached, the agent can use the current query records alongside the user message for GIS and data analysis.
-
 ## Client Source Organization
 
-The application is organized by feature while the Next.js migration is in progress. Some browser controllers still use imperative DOM code and some files remain JavaScript or JSX. Treat those as migration boundaries, not patterns for new work.
-
-```text
-src/
-  app/
-    App.jsx
-    initializeMapApp.js
-    layout.tsx
-    page.tsx
-  features/
-    address-search/
-      AddressTab.jsx
-      SearchSourceControl.ts
-      providers/
-        googlePlaces.ts
-        mapbox.ts
-        nycGeoSearch.ts
-    agents/
-    assets/
-    catalog/
-    editor/
-    formulas/
-    map/
-    postman/
-    records/
-    sources/
-    workspace/
-      WorkspaceClient.tsx
-  lib/
-    markdown.ts
-```
-
-Keep shared logic in `src/lib`, map rendering and GeoJSON logic in `src/features/map`, reusable editor components in `src/features/editor`, and feature-specific UI or controllers in their matching `src/features/*` folder. Follow Next.js naming and routing conventions for new modules. Avoid adding new browser modules to old or ad hoc locations.
+## API Source Organization
 
 ## Development
 
@@ -167,7 +83,7 @@ npm run start
 
 ## Current Progress
 
-The project has TypeScript checking, typed framework-neutral map utilities, typed address-search providers, a Next.js App Router client shell, and typed App Router route handlers for datasets, hubs, global instruction, tool declarations, search sources, terrain tiles, query proxying, Postman collections, agent registry, and Gemini agent chat. The workspace runs through Next.js for development, production build, and production start; the legacy Express/Vite server has been removed. The app already includes registry-backed datasets, hubs, agents, basemaps, and search sources; configurable search-source editing; source cards; map layer source inspection with list and table modes; agents; editor tabs; Postman collections; catalog browsing; and shared editor page primitives. The editor shell now uses typed React `PageMenu`, `PageListView`, `PageTableView`, and `PageGraphView` primitives, with remaining imperative panel controls bridged through React roots. Catalog editor cards are expandable with read-only summaries and expanded edit controls. Migration is incomplete: several UI controllers remain imperative DOM modules, several files still use JavaScript or JSX, and styles remain plain CSS.
+The project has TypeScript checking, typed framework-neutral map utilities, typed search providers, a Next.js App Router client shell, and typed App Router route handlers for datasets, search, agents, tools, terrain tiles, query proxying, Postman collections, and Gemini agent chat. The workspace runs through Next.js for development, production build, and production start; the legacy Express/Vite server has been removed. The app already includes registry-backed datasets, catalogs, agents, basemaps, and search sources; configurable search-source editing; source cards; map layer source inspection with list and table modes; agents; editor tabs; Postman collections; catalog browsing; and shared editor page primitives. Address and Dataset search now share the same search widget shell/dropdown styling; Dataset exposes catalog choices as a provider dropdown and autocompletes top records for the active catalog. The API folder now separates private `_lib` helpers, `_services` provider/model logic, and thin domain route handlers. The editor shell now uses typed React `PageMenu`, `PageListView`, `PageTableView`, and `PageGraphView` primitives, with remaining imperative panel controls bridged through React roots. Migration is incomplete: several UI controllers remain imperative DOM modules, several files still use JavaScript or JSX, and styles remain plain CSS.
 
 ## TODO
 
@@ -184,30 +100,38 @@ Reviewed the current structure against the current Next.js App Router documentat
 * Consider adding route groups for future sections such as `(workspace)`, `(reports)`, or `(settings)` once multiple pages exist. Do not split the current single-screen editor into route segments until there is a real navigation or persistence goal.
 * Useful Next.js docs for follow-up decisions: [App Router](https://nextjs.org/docs/app), [Project Structure](https://nextjs.org/docs/app/getting-started/project-structure), [Server and Client Components](https://nextjs.org/docs/app/getting-started/server-and-client-components), [Route Handlers](https://nextjs.org/docs/app/getting-started/route-handlers), [CSS](https://nextjs.org/docs/app/getting-started/css), [Sass](https://nextjs.org/docs/app/guides/sass), and [`fetch`](https://nextjs.org/docs/app/api-reference/functions/fetch).
 
-### TODO: Organize Project Structure
+### DONE: Organize Project Structure
 
-change the names of folders and filenames as well as object/component names in features to align with the name in activity.json.  Since each activity will in the future be an addon, we should organize them in a package, the data together with the component. We have already decided that search will be a feature across multiple activities, so change the name from address-search to just search. I dont recall there still being an assets tab, if so it should be Folder right? Even if we want to change the names in the future at least they are syncronized right now. Also rename for consistency the styles filenames and classnames. Make sure this is a refactor and no code should become broken
+Renamed feature packages, API folders, and exported tab/controller names to align with `public/data/activity.json`: `agent`, `dataset`, `folder`, `record`, `search`, and `tool` now replace the prior plural or legacy folders. Address search and catalog browsing now live under `src/features/search`, the old assets tab is represented as `FolderTab`, and the Browser activity was removed because catalog browsing is part of search. The Dataset tab now uses the same `SearchWidget` family as Address: catalog entries are dropdown choices and typed queries autocomplete top records from the selected catalog. The activity rail derives its default labels/icons from `activity.json` so the UI and registry stay synchronized. API routes were reorganized around `/api/search/*`, `/api/agent/*`, `/api/dataset`, and `/api/proxy/query`, with provider logic extracted into private `_services`.
+
+### TODO: Convert Activity Controllers to Typed React Packages
+
+Move one activity at a time from imperative DOM controllers into typed React modules. Each activity package should own its tab component, sidebar panel, menu buttons, editor panels, API client helpers, and focused tests where useful. UI elements should extend shared components to keep consistent. Start with `folder` or `tool` because they have smaller behavior, then migrate `record`, `dataset`, `search`, and `agent`. Avoid broad visual changes during this conversion. Use TypeScript, existing React, and local `src/features/editor` primitives; do not introduce a state library until repeated cross-activity state makes it necessary.
+
+### TODO: Add Resizable and Persisted Workbench Layout
+
+Use `react-resizable-panels` for the activity rail/sidebar/editor/agent-sidebar layout after the shell is fully typed. Persist panel sizes and collapsed states through `src/lib/workspaceState.js` first, then move persistence into the project/folder model when that exists. Keep the current fixed layout as the default so existing map and editor behavior remain stable.
+
+### TODO: Persist Projects, Folders, and Editor Tabs
+
+Introduce a project model that stores mounted folders, collected assets, open editor tabs, selected activity, selected dataset/search source, map viewport, and panel sizes. Use `idb-keyval` for local-first persistence before adding any server database. This should replace scattered localStorage keys and make reload restoration predictable.
+
+### TODO: Add Record Graph and JSON Inspection
+
+Add a graph view for records, variables, source queries, attached assets, and agent messages using `@xyflow/react`. Keep the existing JSON accordion for precise inspection, and use the graph for relationships rather than raw JSON rendering. The graph should open from Record and support selecting nodes to reveal the existing record detail/table views.
+
+### TODO: Give Agents Map, Record, and UI Context (Multimodal, screenshot, extent, records, camera location)
+
+Extend agent context with the current map viewport, visible GeoJSON layers, selected records, active project, and open editor tab metadata. Keep the agent payload compact by sending summaries plus stable record IDs, and let tools fetch full records when needed. Validate tool inputs with `zod` before executing registry edits, source queries, catalog search, or agent-to-agent calls.
+
+### TODO: Add CAD/BIM Folder Mounts, Import, and Export (Question: why not use ifc.js)
+
+Support browser folder mounting through the File System Access API in the Folder activity. Use `dxf-parser` for DXF import, `@tarikjabiri/dxf` for DXF export, and `web-ifc` with `three` for IFC parsing and preview. Keep CAD/BIM records linked to the same project model as datasets and reports. Start with import/inspect before export, and keep geometry conversion isolated from map rendering until coordinate assumptions are explicit.
+
+### TODO: Add Multimodal RAG for Building Codes, Drawings, and Models
+
+Use `@google/genai` for Gemini chat, multimodal inputs, and embeddings, `pdfjs-dist` for PDF text/page extraction, `@lancedb/lancedb` for local vector tables, and the CAD/BIM packages from the Folder TODO for geometric files. Store source chunks, citations, thumbnails, and extracted entities as project records. Start with building-code PDFs and dataset metadata before adding image-heavy sheets or full IFC semantic extraction.
 
 ### TODO: Migrate CSS to SCSS
 
-Adopt SCSS incrementally after the component boundaries are clearer. Start with shared variables for colors, spacing, borders, and editor surfaces, then migrate styles by feature without mixing visual redesign into the stylesheet conversion.
-
-### TODO: Consider DXF IFC support for importing exporting to CAD/BIM systems
-
-How to mount a folder, support multiple file types.
-
-## Future Work
-
-- JSON Crack or another Graph View for records
-
-- Blind Mode use case
-
-- resizable panels
-
-- Restore Editor Tabs on Reload
-
-- reconsider prompt for search dataset make it output less
-
-- allow agent to see map viewport
-
-- Fix collections clipping off card issue
+Install `sass` and adopt SCSS incrementally on top of the activity-aligned stylesheet files. Start with shared variables and mixins for colors, spacing, borders, icon masks, and editor surfaces, then migrate `styles/base.css`, `styles/layout.css`, and one activity stylesheet at a time without mixing visual redesign into the stylesheet conversion.
