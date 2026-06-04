@@ -173,15 +173,17 @@ The project has TypeScript checking, typed framework-neutral map utilities, type
 
 Complete one TODO block at a time. Before implementing a block, stage all changes and create a Git commit with a message that describes in one or two simple sentences what you are about to do. Keep each increment buildable, prefer typed Next.js components, and preserve existing behavior unless a task explicitly changes it. When a block is complete, change `TODO` to `DONE` and replace its instruction block with a brief summary of what was implemented. Then review the remaining TODO blocks for changed assumptions or dependencies and revise their instructions when the current state has made them outdated. Stage the related changes, but do not commit after completing a TODO. If there are too many DONE items, compact them. If there are TODO items without instruction or detail, populate them based on the title line.
 
-### TODO: Adopt Next.js Features Selectively
+### TODO: Analyze current project against conventional nextjs app
 
-Once parity is established, evaluate route-based editor views, server-rendered non-map pages, `next/font`, `next/script`, and code splitting. Keep the interactive GIS map in a client component unless there is a concrete reason to change that boundary.
+Lookup nextjs documentation, compare suggested use with current structure. suggest changes, suggest features that might benefit for certain goal.
 
 ### TODO: Migrate CSS to SCSS
 
 Adopt SCSS incrementally after the component boundaries are clearer. Start with shared variables for colors, spacing, borders, and editor surfaces, then migrate styles by feature without mixing visual redesign into the stylesheet conversion.
 
 ### TODO: Consider DXF IFC support for importing exporting to CAD/BIM systems
+
+How to mount a folder, support multiple file types.
 
 ## Future Work
 
