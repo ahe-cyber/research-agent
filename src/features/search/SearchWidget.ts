@@ -13,7 +13,6 @@ export interface SearchWidgetInstance {
   getQuery(): string;
   isFocused(): boolean;
   setQuery(query: string): void;
-  setSearchElement(element: HTMLElement): void;
   setResults(results: HTMLElement[]): void;
   clearResults(): void;
 }
@@ -157,9 +156,6 @@ export function createSearchWidget({
     getQuery: () => input.value,
     setQuery(query: string) {
       input.value = query;
-    },
-    setSearchElement(searchElement: HTMLElement) {
-      shell.replaceChildren(searchElement);
     },
     setResults,
     clearResults

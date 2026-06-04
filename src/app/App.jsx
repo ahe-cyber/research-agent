@@ -9,6 +9,7 @@ import { ToolTab } from "../features/tool/ToolTab.tsx";
 import { DatasetTab } from "../features/dataset/DatasetTab.jsx";
 import { ActivityTab } from "../features/workspace/ActivityTab.jsx";
 import { SidebarHeader } from "../features/workspace/SidebarHeader.jsx";
+import { WorkbenchLayout } from "../features/workspace/WorkbenchLayout.tsx";
 import { loadWorkspaceState, saveWorkspaceState } from "../lib/workspaceState.js";
 import activityRegistry from "../../public/data/activity.json";
 
@@ -88,142 +89,151 @@ export default function App() {
     label: workspaceLabel || `${label} Workspace`
   }));
 
-  return (
-    <div className="app-shell">
-      <nav className="activity-bar" aria-label="Activity Bar">
-        {tabs.map(({ id, label, iconSrc }) => (
-          <ActivityTab
-            key={id}
-            tab={id}
-            label={label}
-            iconSrc={iconSrc}
-            active={activeTab === id}
-            dragOver={dragOverId === id}
-            onClick={setActiveTab}
-            onDragStart={() => handleDragStart(id)}
-            onDragOver={(e) => handleDragOver(e, id)}
-            onDrop={(e) => handleDrop(e, id)}
-            onDragEnd={handleDragEnd}
-          />
-        ))}
-      </nav>
-
-      <aside className="workspace-sidebar" aria-label="Primary Side Bar">
-        <SidebarHeader
-          kicker="Research Agent"
-          dropdown={
-            <select
-              aria-label="Workspace"
-              value={workspaceId}
-              onChange={(event) => setWorkspaceId(event.target.value)}
-            >
-              {workspaceOptions.map(({ id, label }) => (
-                <option key={id} value={id}>{label}</option>
-              ))}
-            </select>
-          }
-          action={
-            <button
-              className={`section-tool-button view-menu-button${isViewMenuOpen ? " is-active" : ""}`}
-              type="button"
-              aria-pressed={isViewMenuOpen}
-              aria-label="View menu"
-              title="View menu"
-              onClick={() => setIsViewMenuOpen((open) => !open)}
-            />
-          }
+  const activityBar = (
+    <nav className="activity-bar" aria-label="Activity Bar">
+      {tabs.map(({ id, label, iconSrc }) => (
+        <ActivityTab
+          key={id}
+          tab={id}
+          label={label}
+          iconSrc={iconSrc}
+          active={activeTab === id}
+          dragOver={dragOverId === id}
+          onClick={setActiveTab}
+          onDragStart={() => handleDragStart(id)}
+          onDragOver={(e) => handleDragOver(e, id)}
+          onDrop={(e) => handleDrop(e, id)}
+          onDragEnd={handleDragEnd}
         />
+      ))}
+    </nav>
+  );
 
-        <div className="view-menu-toolbar" hidden={!isViewMenuOpen}>
+  const sidebar = (
+    <aside className="workspace-sidebar" aria-label="Primary Side Bar">
+      <SidebarHeader
+        kicker="Research Agent"
+        dropdown={
+          <select
+            aria-label="Workspace"
+            value={workspaceId}
+            onChange={(event) => setWorkspaceId(event.target.value)}
+          >
+            {workspaceOptions.map(({ id, label }) => (
+              <option key={id} value={id}>{label}</option>
+            ))}
+          </select>
+        }
+        action={
           <button
-            className="section-tool-button edit-activity-button"
+            className={`section-tool-button view-menu-button${isViewMenuOpen ? " is-active" : ""}`}
             type="button"
-            id="editActivityButton"
-            aria-label={`Edit ${activeTabMeta?.label ?? activeTab}`}
-            title={`Edit ${activeTabMeta?.label ?? activeTab}`}
-            data-active-tab={activeTab}
-            data-active-label={activeTabMeta?.label ?? activeTab}
-            hidden={!activeTabMeta?.emptyEditor}
+            aria-pressed={isViewMenuOpen}
+            aria-label="View menu"
+            title="View menu"
+            onClick={() => setIsViewMenuOpen((open) => !open)}
           />
-          <button
-            className="section-tool-button layer-sources-button"
-            type="button"
-            id="layerSourcesButton"
-            aria-label="Layer sources"
-            title="Layer sources"
-            hidden={activeTab !== "map"}
-          />
-          <button
-            className="section-tool-button wrap-text-button"
-            type="button"
-            id="wrapJsonTextButton"
-            aria-pressed="false"
-            aria-label="Wrap text"
-            title="Wrap text"
-            hidden={activeTab !== "record"}
-          />
-          <button
-            className="section-tool-button cloud-collections-button"
-            type="button"
-            id="postmanCollectionsButton"
-            aria-label="Postman collections"
-            title="Postman collections"
-            hidden={activeTab !== "dataset"}
-          />
-          <button
-            className="section-tool-button edit-dataset-button"
-            type="button"
-            id="editDatasetButton"
-            aria-label="Edit dataset"
-            title="Edit dataset"
-            hidden={activeTab !== "dataset"}
-          />
-          <button
-            className="section-tool-button edit-search-sources-button"
-            type="button"
-            id="editSearchSourcesButton"
-            aria-label="Edit search"
-            title="Edit search"
-            hidden={activeTab !== "address"}
-          />
-          <button
-            className="section-tool-button edit-agent-button"
-            type="button"
-            id="editAgentButton"
-            aria-label="Edit agent"
-            title="Edit agent"
-            hidden={activeTab !== "agent"}
-          />
+        }
+      />
+
+      <div className="view-menu-toolbar" hidden={!isViewMenuOpen}>
+        <button
+          className="section-tool-button edit-activity-button"
+          type="button"
+          id="editActivityButton"
+          aria-label={`Edit ${activeTabMeta?.label ?? activeTab}`}
+          title={`Edit ${activeTabMeta?.label ?? activeTab}`}
+          data-active-tab={activeTab}
+          data-active-label={activeTabMeta?.label ?? activeTab}
+          hidden={!activeTabMeta?.emptyEditor}
+        />
+        <button
+          className="section-tool-button layer-sources-button"
+          type="button"
+          id="layerSourcesButton"
+          aria-label="Layer sources"
+          title="Layer sources"
+          hidden={activeTab !== "map"}
+        />
+        <button
+          className="section-tool-button wrap-text-button"
+          type="button"
+          id="wrapJsonTextButton"
+          aria-pressed="false"
+          aria-label="Wrap text"
+          title="Wrap text"
+          hidden={activeTab !== "record"}
+        />
+        <button
+          className="section-tool-button cloud-collections-button"
+          type="button"
+          id="postmanCollectionsButton"
+          aria-label="Postman collections"
+          title="Postman collections"
+          hidden={activeTab !== "dataset"}
+        />
+        <button
+          className="section-tool-button edit-dataset-button"
+          type="button"
+          id="editDatasetButton"
+          aria-label="Edit dataset"
+          title="Edit dataset"
+          hidden={activeTab !== "dataset"}
+        />
+        <button
+          className="section-tool-button edit-search-sources-button"
+          type="button"
+          id="editSearchSourcesButton"
+          aria-label="Edit search"
+          title="Edit search"
+          hidden={activeTab !== "address"}
+        />
+        <button
+          className="section-tool-button edit-agent-button"
+          type="button"
+          id="editAgentButton"
+          aria-label="Edit agent"
+          title="Edit agent"
+          hidden={activeTab !== "agent"}
+        />
+      </div>
+
+      <section className="workspace-tab" id="projectTab" aria-label="Project" hidden={activeTab !== "project"} />
+      <FolderTab ref={folderRef} active={activeTab === "folder"} />
+      <AddressTab active={activeTab === "address"} />
+      <RecordTab active={activeTab === "record"} />
+      <DatasetTab active={activeTab === "dataset"} />
+      <ToolTab active={activeTab === "tool"} onSuggestTool={onSuggestTool} />
+      <AgentTab active={activeTab === "agent"} />
+
+      <section className="workspace-tab map-display-settings" aria-label="Map display settings" hidden={activeTab !== "map"}>
+        <div className="map-display-group">
+          <h3>Basemap</h3>
+          <div id="mapBasemapOptions" />
         </div>
-
-        <section className="workspace-tab" id="projectTab" aria-label="Project" hidden={activeTab !== "project"} />
-        <FolderTab ref={folderRef} active={activeTab === "folder"} />
-        <AddressTab active={activeTab === "address"} />
-        <RecordTab active={activeTab === "record"} />
-        <DatasetTab active={activeTab === "dataset"} />
-        <ToolTab active={activeTab === "tool"} onSuggestTool={onSuggestTool} />
-        <AgentTab active={activeTab === "agent"} />
-
-        <section className="workspace-tab map-display-settings" aria-label="Map display settings" hidden={activeTab !== "map"}>
-          <div className="map-display-group">
-            <h3>Basemap</h3>
-            <div id="mapBasemapOptions" />
-          </div>
-          <div className="map-display-group">
-            <h3>Details</h3>
-            <div id="mapDetailOptions" />
-          </div>
-        </section>
-      </aside>
-
-      <main className="editor-area" aria-label="Editor">
-        <div className="editor-tab-bar" id="editorTabBar" />
-        <div className="editor-viewport" id="editorViewport">
-          <div id="map" />
+        <div className="map-display-group">
+          <h3>Details</h3>
+          <div id="mapDetailOptions" />
         </div>
-      </main>
+      </section>
+    </aside>
+  );
 
-      <AgentPanel />
-    </div>
+  const editor = (
+    <main className="editor-area" aria-label="Editor">
+      <div className="editor-tab-bar" id="editorTabBar" />
+      <div className="editor-viewport" id="editorViewport">
+        <div id="map" />
+      </div>
+    </main>
+  );
+
+  return (
+    <WorkbenchLayout
+      activityBar={activityBar}
+      sidebar={sidebar}
+      editor={editor}
+      agentPanel={<AgentPanel />}
+    />
   );
 }

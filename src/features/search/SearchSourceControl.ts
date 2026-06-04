@@ -1,88 +1,107 @@
-import { getMapboxAccessToken, getGoogleMapsApiKey } from "../map/config";
-import { createPlaceSearchBox } from "./providers/mapbox";
-import { createGeoSearchBox } from "./providers/nycGeoSearch";
-import { createGoogleSearchBox } from "./providers/googlePlaces";
+import { getGoogleMapsApiKey } from "../map/config";
+import { suggestGeoSearch } from "./providers/nycGeoSearch";
+import { suggestGooglePlaces } from "./providers/googlePlaces";
 import { createSearchWidget } from "./SearchWidget";
-import type { DestroyableSearchBox, RetrieveHandler, SearchMap, SearchProvider } from "./types";
+import type { RetrieveHandler, SearchMap } from "./types";
 
-export type SearchSourceType = "geosearch" | "mapbox" | "google";
+export type AddressSourceType = "geosearch" | "google";
 
 export interface SearchSourceConfig {
   id: string;
   label: string;
-  type: SearchSourceType;
+  type: AddressSourceType;
   costly?: boolean;
-  description?: string;
-  outputs?: Array<{ variable: string; path: string }>;
 }
 
-interface SearchSource extends SearchSourceConfig {
-  provider: SearchProvider;
-}
+type SuggestFn = (
+  query: string,
+  map: SearchMap | null,
+  onRetrieve: RetrieveHandler
+) => Promise<HTMLElement[]>;
 
-const PROVIDER_MAP: Record<SearchSourceType, { provider: SearchProvider; hasKey: () => boolean }> = {
-  geosearch: { provider: createGeoSearchBox, hasKey: () => true },
-  mapbox:    { provider: createPlaceSearchBox, hasKey: () => !!getMapboxAccessToken() },
-  google:    { provider: createGoogleSearchBox, hasKey: () => !!getGoogleMapsApiKey() }
+const SUGGEST_MAP: Record<AddressSourceType, { suggest: SuggestFn; hasKey(): boolean }> = {
+  geosearch: { suggest: suggestGeoSearch, hasKey: () => true },
+  google: { suggest: suggestGooglePlaces, hasKey: () => !!getGoogleMapsApiKey() }
 };
 
-async function loadSources(): Promise<SearchSource[]> {
+async function loadSources(): Promise<SearchSourceConfig[]> {
   try {
     const res = await fetch("/api/search?activity=address");
     if (!res.ok) throw new Error("Failed to load");
-    const sources = await res.json() as SearchSourceConfig[];
-    return sources
-      .filter(s => PROVIDER_MAP[s.type]?.hasKey())
-      .map(s => ({ ...s, provider: PROVIDER_MAP[s.type].provider }));
+    const all = (await res.json()) as SearchSourceConfig[];
+    return all.filter(
+      (s): s is SearchSourceConfig =>
+        s.type in SUGGEST_MAP && SUGGEST_MAP[s.type].hasKey()
+    );
   } catch {
-    return [{ id: "src-geosearch", label: "NYC GeoSearch", type: "geosearch", provider: createGeoSearchBox }];
+    return [{ id: "src-geosearch", label: "NYC GeoSearch", type: "geosearch" }];
   }
 }
 
 export function createSearchSourceControl(
   map: SearchMap | null,
-  onRetrieve: (result: Parameters<RetrieveHandler>[0], sourceId: string, sourceLabel: string) => void,
-  searchBoxContainer: HTMLElement
+  onRetrieve: (
+    result: Parameters<RetrieveHandler>[0],
+    sourceId: string,
+    sourceLabel: string
+  ) => void,
+  container: HTMLElement
 ) {
-  let sources: SearchSource[] = [];
-  let currentId = "";
-  let currentBox: DestroyableSearchBox | null = null;
+  let sources: SearchSourceConfig[] = [];
+  let debounceTimer: ReturnType<typeof setTimeout> | null = null;
+  let requestId = 0;
+
   const widget = createSearchWidget({
-    onSourceChange(source) {
-      if (!source || source.id === currentId) return;
-      currentId = source.id;
-      swapBox();
+    placeholder: "Search address or place",
+    onQuery(query, source) {
+      scheduleSearch(query, source?.id ?? "");
+    },
+    onSubmit(query, source) {
+      scheduleSearch(query, source?.id ?? "", 0);
+    },
+    onSourceChange() {
+      cancelSearch();
+      widget.clearResults();
     }
   });
-  searchBoxContainer.replaceChildren(widget.shellElement);
 
-  function swapBox() {
-    const query = getSearchText(currentBox);
-    currentBox?.destroy?.();
-    searchBoxContainer.replaceChildren();
-    const source = sources.find(s => s.id === currentId);
-    if (!source) return;
-    const wrapped: RetrieveHandler = (result) => onRetrieve(result, currentId, source.label);
-    const box = source.provider(map, wrapped, query);
-    widget.setSearchElement(box);
-    currentBox = box;
+  container.replaceChildren(widget.shellElement);
+
+  function cancelSearch() {
+    if (debounceTimer !== null) clearTimeout(debounceTimer);
+  }
+
+  function scheduleSearch(query: string, sourceId: string, delay = 250) {
+    cancelSearch();
+    if (!query.trim() || !sourceId) {
+      widget.clearResults();
+      return;
+    }
+    const id = ++requestId;
+    debounceTimer = setTimeout(async () => {
+      const src = sources.find((s) => s.id === sourceId);
+      if (!src) return;
+      const suggest = SUGGEST_MAP[src.type]?.suggest;
+      if (!suggest) return;
+      try {
+        const items = await suggest(query.trim(), map, (result) => {
+          onRetrieve(result, src.id, src.label);
+          widget.clearResults();
+        });
+        if (id !== requestId) return;
+        widget.setResults(items);
+      } catch {}
+    }, delay);
   }
 
   async function reload() {
-    const prev = currentId;
     sources = await loadSources();
-    currentId = sources.some(s => s.id === prev) ? prev : (sources[0]?.id ?? "");
-    widget.setSources(sources, currentId);
-    swapBox();
+    widget.setSources(
+      sources.map((s) => ({ id: s.id, label: s.label, costly: s.costly }))
+    );
   }
 
   reload();
 
   return { element: widget.sourceElement, reload };
-}
-
-function getSearchText(box: DestroyableSearchBox | null) {
-  if (!box) return "";
-  if (typeof box.value === "string") return box.value;
-  return box.querySelector("input")?.value ?? "";
 }

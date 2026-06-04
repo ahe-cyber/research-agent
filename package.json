@@ -15,6 +15,7 @@
     "postman-cli": "^1.38.0",
     "react": "latest",
     "react-dom": "latest",
+    "react-resizable-panels": "^4.11.2",
     "sharp": "^0.34.5"
   },
   "devDependencies": {

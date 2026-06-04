@@ -115,13 +115,20 @@ Converted the `folder` and `tool` activities from imperative DOM controllers to 
 
 Remaining activities (`record`, `dataset`, `search`, `agent`) still use imperative DOM controllers and are next in the migration sequence.
 
-### TODO: Add Resizable and Persisted Workbench Layout
+### DONE: Add Resizable and Persisted Workbench Layout
 
-Use `react-resizable-panels` for the activity rail/sidebar/editor/agent-sidebar layout after the shell is fully typed. Persist panel sizes and collapsed states through `src/lib/workspaceState.js` first, then move persistence into the project/folder model when that exists. Keep the current fixed layout as the default so existing map and editor behavior remain stable.
+Replaced the fixed `grid-template-columns: 48px 360px minmax(360px, 1fr) 380px` in `layout.css` with `48px 1fr`. The 48 px activity rail stays fixed. The remaining three columns (sidebar, editor, agent panel) are now driven by `react-resizable-panels` v4 through a new `src/features/workspace/WorkbenchLayout.tsx` component:
 
-### TODO: Persist Projects, Folders, and Editor Tabs
+* `Group` wraps the three resizable panels with `orientation="horizontal"`.
+* `Panel` ids are `sidebar`, `editor`, and `agent`; default sizes are 22 / 56 / 22 percent.
+* Sidebar and agent panels set `collapsible` so they can be fully dragged shut.
+* `onLayoutChanged` (fires on pointer-up) saves the `Layout` dict to `workspaceState` under the key `panelLayout`; on next load the saved layout is validated and passed back to `Group` via `defaultLayout`.
+* `Separator` elements carry the `workbench-resize-handle` class — a 4 px invisible hit zone that turns `#2f6fed` on hover or while dragging.
+* `height: 100%` was added to `.workspace-sidebar`, `.editor-area`, and `.agent-panel` so they fill their panel containers (the previous CSS grid stretched them automatically; the flex-based Panel layout requires explicit height).
 
-Introduce a project model that stores mounted folders, collected assets, open editor tabs, selected activity, selected dataset/search source, map viewport, and panel sizes. Use `idb-keyval` for local-first persistence before adding any server database. This should replace scattered localStorage keys and make reload restoration predictable.
+### TODO: Add CAD/BIM Folder Mounts, Import, and Export (Question: why not use ifc.js)
+
+Support browser folder mounting through the File System Access API in the Folder activity. Use `dxf-parser` for DXF import, `@tarikjabiri/dxf` for DXF export, and `web-ifc` with `three` for IFC parsing and preview. Keep CAD/BIM records linked to the same project model as datasets and reports. Start with import/inspect before export, and keep geometry conversion isolated from map rendering until coordinate assumptions are explicit.
 
 ### TODO: Add Record Graph and JSON Inspection
 
@@ -131,9 +138,9 @@ Add a graph view for records, variables, source queries, attached assets, and ag
 
 Extend agent context with the current map viewport, visible GeoJSON layers, selected records, active project, and open editor tab metadata. Keep the agent payload compact by sending summaries plus stable record IDs, and let tools fetch full records when needed. Validate tool inputs with `zod` before executing registry edits, source queries, catalog search, or agent-to-agent calls.
 
-### TODO: Add CAD/BIM Folder Mounts, Import, and Export (Question: why not use ifc.js)
+### TODO: Persist Project and Editor State
 
-Support browser folder mounting through the File System Access API in the Folder activity. Use `dxf-parser` for DXF import, `@tarikjabiri/dxf` for DXF export, and `web-ifc` with `three` for IFC parsing and preview. Keep CAD/BIM records linked to the same project model as datasets and reports. Start with import/inspect before export, and keep geometry conversion isolated from map rendering until coordinate assumptions are explicit.
+Consolidate the scattered `localStorage` keys (`workspace-state`, `layer-fields-folded`) into a single typed `ProjectState` object. Create `src/lib/projectStore.ts` with `loadProject`/`saveProject` backed by `localStorage`. Define `ProjectState` in `src/lib/project.ts` covering `activeActivity`, `activityOrder`, `panelLayout`, `openEditorTabs`, `activeEditorTab`, `mapViewport`, `selectedDatasetSourceId`, `selectedAddressSourceId`, and `layerFieldsCollapsed`. Migrate the four callers (`App.jsx`, `EditorTabs.js`, `WorkbenchLayout.tsx`, `DatasetTab.jsx`) then delete `src/lib/workspaceState.js`. No new packages needed.
 
 ### TODO: Add Multimodal RAG for Building Codes, Drawings, and Models
 
