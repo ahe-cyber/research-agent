@@ -271,7 +271,7 @@
 
 .address-list,
 .folder-asset-list,
-.formula-list {
+.tool-list {
   display: grid;
   gap: 10px;
   margin-top: 14px;
@@ -333,7 +333,7 @@
 
 .address-item,
 .folder-asset-item,
-.formula-item,
+.tool-item,
 .source-editor {
   position: relative;
   border: 1px solid #d6d9de;
@@ -362,72 +362,21 @@
   border-color: #b0bec5;
 }
 
-.formula-summary {
-  cursor: pointer;
-  padding: 10px;
-}
-
-.formula-summary::-webkit-details-marker {
-  display: none;
-}
-
-.formula-summary::marker {
-  content: "";
-}
-
 .address-item span,
 .folder-asset-item span,
-.formula-item span,
+.tool-item span,
 .source-editor span {
   display: block;
   margin-top: 3px;
   color: #526070;
 }
 
-.formula-item code {
+.tool-item code {
   display: block;
   margin-top: 4px;
   color: #0b5cad;
   font-family: Consolas, "Courier New", monospace;
   font-size: 12px;
-}
-
-.formula-body {
-  display: grid;
-  gap: 12px;
-  border-top: 1px solid #e5e8ec;
-  padding: 10px;
-}
-
-.formula-detail-section h3 {
-  margin: 0 0 6px;
-  color: #526070;
-  font-size: 11px;
-  text-transform: uppercase;
-}
-
-.formula-detail-section table {
-  width: 100%;
-  border-collapse: collapse;
-  table-layout: fixed;
-}
-
-.formula-detail-section td {
-  border-top: 1px solid #eef1f5;
-  padding: 6px 4px;
-  color: #1f2933;
-  font-size: 12px;
-  vertical-align: top;
-}
-
-.formula-detail-section td:first-child {
-  color: #6f42c1;
-  font-weight: 700;
-}
-
-.formula-detail-section td:nth-child(2) {
-  color: #0b5cad;
-  font-family: Consolas, "Courier New", monospace;
 }
 
 .tool-card {

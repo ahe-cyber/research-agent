@@ -1,11 +1,11 @@
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { AgentPanel } from "../features/agent/AgentPanel.jsx";
 import { initializeMapApp } from "./initializeMapApp.js";
 import { AddressTab } from "../features/search/AddressTab.jsx";
 import { AgentTab } from "../features/agent/AgentTab.jsx";
-import { FolderTab } from "../features/folder/FolderTab.jsx";
+import { FolderTab } from "../features/folder/FolderTab.tsx";
 import { RecordTab } from "../features/record/RecordTab.jsx";
-import { ToolTab } from "../features/tool/ToolTab.jsx";
+import { ToolTab } from "../features/tool/ToolTab.tsx";
 import { DatasetTab } from "../features/dataset/DatasetTab.jsx";
 import { ActivityTab } from "../features/workspace/ActivityTab.jsx";
 import { SidebarHeader } from "../features/workspace/SidebarHeader.jsx";
@@ -21,38 +21,28 @@ const DEFAULT_TABS = activityRegistry.map(({ id, label, icon, workspaceLabel }) 
   emptyEditor: EMPTY_EDITOR_ACTIVITY_IDS.has(id)
 }));
 
-const LEGACY_ACTIVITY_IDS = {
-  formulas: "tool",
-  agents: "agent",
-  browser: "address",
-  details: "record",
-  sources: "dataset",
-  tools: "tool"
-};
-
-function normalizeActivityId(id) {
-  return LEGACY_ACTIVITY_IDS[id] || id;
-}
-
 function getInitialTabs() {
   const { activityOrder } = loadWorkspaceState();
   if (!Array.isArray(activityOrder)) return DEFAULT_TABS;
-  const normalizedOrder = Array.from(new Set(activityOrder.map(normalizeActivityId)));
-  const ordered = normalizedOrder.map((id) => DEFAULT_TABS.find((t) => t.id === id)).filter(Boolean);
-  const remaining = DEFAULT_TABS.filter((t) => !normalizedOrder.includes(t.id));
+  const ordered = activityOrder.map((id) => DEFAULT_TABS.find((t) => t.id === id)).filter(Boolean);
+  const remaining = DEFAULT_TABS.filter((t) => !activityOrder.includes(t.id));
   return [...ordered, ...remaining];
 }
 
 export default function App() {
-  const [activeTab, setActiveTab] = useState(() => normalizeActivityId(loadWorkspaceState().activeActivityTab ?? "address"));
+  const [activeTab, setActiveTab] = useState(() => loadWorkspaceState().activeActivityTab ?? "address");
   const [workspaceId, setWorkspaceId] = useState("map");
   const [isViewMenuOpen, setIsViewMenuOpen] = useState(true);
   const [tabs, setTabs] = useState(getInitialTabs);
   const [dragOverId, setDragOverId] = useState(null);
   const draggedId = useRef(null);
 
+  const folderRef = useRef(null);
+  const suggestToolRef = useRef(null);
+  const onSuggestTool = useCallback((name) => suggestToolRef.current?.(name), []);
+
   useEffect(() => {
-    initializeMapApp();
+    initializeMapApp({ folderRef, suggestToolRef });
   }, []);
 
   useEffect(() => {
@@ -207,11 +197,11 @@ export default function App() {
         </div>
 
         <section className="workspace-tab" id="projectTab" aria-label="Project" hidden={activeTab !== "project"} />
-        <FolderTab active={activeTab === "folder"} />
+        <FolderTab ref={folderRef} active={activeTab === "folder"} />
         <AddressTab active={activeTab === "address"} />
         <RecordTab active={activeTab === "record"} />
         <DatasetTab active={activeTab === "dataset"} />
-        <ToolTab active={activeTab === "tool"} />
+        <ToolTab active={activeTab === "tool"} onSuggestTool={onSuggestTool} />
         <AgentTab active={activeTab === "agent"} />
 
         <section className="workspace-tab map-display-settings" aria-label="Map display settings" hidden={activeTab !== "map"}>

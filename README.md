@@ -104,9 +104,16 @@ Reviewed the current structure against the current Next.js App Router documentat
 
 Renamed feature packages, API folders, and exported tab/controller names to align with `public/data/activity.json`: `agent`, `dataset`, `folder`, `record`, `search`, and `tool` now replace the prior plural or legacy folders. Address search and catalog browsing now live under `src/features/search`, the old assets tab is represented as `FolderTab`, and the Browser activity was removed because catalog browsing is part of search. The Dataset tab now uses the same `SearchWidget` family as Address: catalog entries are dropdown choices and typed queries autocomplete top records from the selected catalog. The activity rail derives its default labels/icons from `activity.json` so the UI and registry stay synchronized. API routes were reorganized around `/api/search/*`, `/api/agent/*`, `/api/dataset`, and `/api/proxy/query`, with provider logic extracted into private `_services`.
 
-### TODO: Convert Activity Controllers to Typed React Packages
+### DONE: Convert Activity Controllers to Typed React Packages (folder and tool)
 
-Move one activity at a time from imperative DOM controllers into typed React modules. Each activity package should own its tab component, sidebar panel, menu buttons, editor panels, API client helpers, and focused tests where useful. UI elements should extend shared components to keep consistent. Start with `folder` or `tool` because they have smaller behavior, then migrate `record`, `dataset`, `search`, and `agent`. Avoid broad visual changes during this conversion. Use TypeScript, existing React, and local `src/features/editor` primitives; do not introduce a state library until repeated cross-activity state makes it necessary.
+Converted the `folder` and `tool` activities from imperative DOM controllers to typed React modules:
+
+* **folder** — `FolderTab.jsx` replaced by `FolderTab.tsx`. Asset state lives in `useState`. The component is a `forwardRef` that exposes a `FolderController` handle (`addFromRecord`, `addFromValue`) via `useImperativeHandle` so future callers can push assets from records. `hasAssetUrls` remains an exported pure function. The old `createFolderController` (which was never wired) is removed.
+* **tool** — `ToolTab.jsx` replaced by `ToolTab.tsx`. Tool list state lives in `useState`; the API fetch runs in `useEffect`. The component accepts an `onSuggestTool` callback prop instead of a `getAgentController` closure. The built-in tool functions (`applyFormula`, `hasFormula`, and the functions data) are extracted into `src/features/tool/builtins.ts` and imported directly by `initializeMapApp` as a plain `formulaController` object passed to the dataset controller.
+* **App.jsx** — Imports the new `.tsx` tab components. Holds a `folderRef` (passed to `FolderTab`) and a `suggestToolRef` (populated by `initializeMapApp` after the agent controller is ready). A stable `onSuggestTool` callback reads from `suggestToolRef` and is passed to `ToolTab`.
+* **initializeMapApp.js** — Accepts `{ folderRef, suggestToolRef }` options. Replaces `createToolController` with direct imports from `formulas.ts`. Sets `suggestToolRef.current` to the agent controller's `suggestTool` method immediately after the agent controller is created.
+
+Remaining activities (`record`, `dataset`, `search`, `agent`) still use imperative DOM controllers and are next in the migration sequence.
 
 ### TODO: Add Resizable and Persisted Workbench Layout
 

@@ -71,7 +71,7 @@ export function DatasetTab({ active }) {
   );
 }
 
-export function createDatasetController(recordController, formulaController, editorTabController, agentController) {
+export function createDatasetController(recordController, builtinController, editorTabController, agentController) {
   const variables = {};
   const sourceElements = {};
   const compactSourceList = document.getElementById("sourcesCompact");
@@ -786,7 +786,7 @@ export function createDatasetController(recordController, formulaController, edi
     try {
       updateSourceRunState(elements, "");
       const result = await queryUrl(url);
-      const outputVariables = collectOutputVariables(elements.outputsGrid, result.response, formulaController);
+      const outputVariables = collectOutputVariables(elements.outputsGrid, result.response, builtinController);
 
       Object.entries(outputVariables).forEach(([name, value]) => {
         setVariable(name, value);
@@ -840,7 +840,7 @@ export function createDatasetController(recordController, formulaController, edi
 
   function assignMapboxSearchOutputs(searchResult) {
     const mapboxSource = sourceElements["mapbox-search"];
-    const outputVariables = collectOutputVariables(mapboxSource.outputsGrid, searchResult, formulaController);
+    const outputVariables = collectOutputVariables(mapboxSource.outputsGrid, searchResult, builtinController);
     const normalizedOutputVariables = {};
 
     Object.entries(outputVariables).forEach(([name, value]) => {
@@ -1631,7 +1631,7 @@ function collectSourceRowPairs(grid, firstKey, secondKey) {
   return rows;
 }
 
-function collectOutputVariables(grid, response, formulaController) {
+function collectOutputVariables(grid, response, builtinController) {
   const inputs = Array.from(grid.querySelectorAll("input"));
   const outputVariables = {};
 
@@ -1640,20 +1640,20 @@ function collectOutputVariables(grid, response, formulaController) {
     const expression = inputs[index + 1].value.trim();
 
     if (expression && variableName) {
-      outputVariables[variableName] = evaluateOutputExpression(response, expression, formulaController, outputVariables);
+      outputVariables[variableName] = evaluateOutputExpression(response, expression, builtinController, outputVariables);
     }
   }
 
   return outputVariables;
 }
 
-function evaluateOutputExpression(response, expression, formulaController, computedVariables = {}) {
-  const formulaMatch = expression.match(/^([A-Za-z_$][\w$]*)\((.*)\)$/);
+function evaluateOutputExpression(response, expression, builtinController, computedVariables = {}) {
+  const builtinMatch = expression.match(/^([A-Za-z_$][\w$]*)\((.*)\)$/);
 
-  if (formulaMatch && formulaController?.hasFormula(formulaMatch[1])) {
-    const argExprs = parseFormulaArgs(formulaMatch[2]);
-    const argValues = argExprs.map((arg) => resolveFormulaArg(arg, response, computedVariables));
-    return formulaController.applyFormula(formulaMatch[1], argValues);
+  if (builtinMatch && builtinController?.has(builtinMatch[1])) {
+    const argExprs = parseBuiltinArgs(builtinMatch[2]);
+    const argValues = argExprs.map((arg) => resolveBuiltinArg(arg, response, computedVariables));
+    return builtinController.apply(builtinMatch[1], argValues);
   }
 
   if (Object.prototype.hasOwnProperty.call(computedVariables, expression)) {
@@ -1663,7 +1663,7 @@ function evaluateOutputExpression(response, expression, formulaController, compu
   return getValueAtPath(response, expression);
 }
 
-function parseFormulaArgs(argsStr) {
+function parseBuiltinArgs(argsStr) {
   const args = [];
   let current = "";
   let inString = false;
@@ -1696,7 +1696,7 @@ function parseFormulaArgs(argsStr) {
   return args;
 }
 
-function resolveFormulaArg(arg, response, computedVariables) {
+function resolveBuiltinArg(arg, response, computedVariables) {
   if (arg.startsWith('"') && arg.endsWith('"') && arg.length >= 2) {
     return arg.slice(1, -1);
   }

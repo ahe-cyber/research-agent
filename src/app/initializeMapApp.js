@@ -6,7 +6,7 @@ import { createAgentTabController } from "../features/agent/AgentTab.jsx";
 import { createCatalogController } from "../features/search/CatalogPanel.jsx";
 import { createRecordController, createRecordStore } from "../features/record/RecordTab.jsx";
 import { createEditorTabController } from "../features/editor/EditorTabs.js";
-import { createToolController } from "../features/tool/ToolTab.jsx";
+import { applyBuiltin, hasBuiltin } from "../features/tool/builtins.ts";
 import { createPostmanController } from "../features/postman/PostmanTab.jsx";
 import { createDatasetController } from "../features/dataset/DatasetTab.jsx";
 import { createLayerSourcesController } from "../features/map/LayerSourcesPage";
@@ -37,7 +37,7 @@ async function handlePlaceRetrieved(searchResult, _sourceId, sourceLabel) {
   agentController.attachRecord(record);
 }
 
-export async function initializeMapApp() {
+export async function initializeMapApp({ folderRef = null, suggestToolRef = null } = {}) {
   if (initialized) return;
   initialized = true;
   const searchBoxContainer = document.getElementById("placeSearchBox");
@@ -50,7 +50,7 @@ export async function initializeMapApp() {
   }
 
   const recordStore = createRecordStore();
-  const toolController = createToolController(() => agentController);
+  const builtinController = { apply: applyBuiltin, has: hasBuiltin };
   const editorTabController = createEditorTabController({
     onMapActivated: () => {
       requestAnimationFrame(() => map?.resize?.());
@@ -69,7 +69,8 @@ export async function initializeMapApp() {
     const address = addressController.getCurrentAddress() || { title: "Research Report", subtitle: "" };
     return editorTabController.openReportTab(address);
   });
-  sourceController = createDatasetController(recordController, toolController, editorTabController, agentController);
+  if (suggestToolRef) suggestToolRef.current = (name) => agentController.suggestTool(name);
+  sourceController = createDatasetController(recordController, builtinController, editorTabController, agentController);
   catalogController = createCatalogController(
     editorTabController,
     agentController,
