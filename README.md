@@ -173,9 +173,20 @@ The project has TypeScript checking, typed framework-neutral map utilities, type
 
 Complete one TODO block at a time. Before implementing a block, stage all changes and create a Git commit with a message that describes in one or two simple sentences what you are about to do. Keep each increment buildable, prefer typed Next.js components, and preserve existing behavior unless a task explicitly changes it. When a block is complete, change `TODO` to `DONE` and replace its instruction block with a brief summary of what was implemented. Then review the remaining TODO blocks for changed assumptions or dependencies and revise their instructions when the current state has made them outdated. Stage the related changes, but do not commit after completing a TODO. If there are too many DONE items, compact them. If there are TODO items without instruction or detail, populate them based on the title line.
 
-### TODO: Analyze current project against conventional nextjs app
+### DONE: Analyze current project against conventional Next.js app
 
-Lookup nextjs documentation, compare suggested use with current structure. suggest changes, suggest features that might benefit for certain goal.
+Reviewed the current structure against the current Next.js App Router documentation:
+
+* The project is aligned with App Router basics: source lives under the supported `src` folder, `src/app/page.tsx` is a Server Component by default, route handlers live under `src/app/api/*/route.ts`, and the interactive map is isolated behind a client component (`WorkspaceClient`) that loads browser-only scripts with `next/script`.
+* Keep the map/editor shell as a client boundary because it depends on state, effects, `window`, MapLibre, and Mapbox Search. Use Server Components selectively for future non-map routes such as dataset documentation, reports, settings summaries, saved project overviews, and read-only catalog pages.
+* Preserve route handlers for server-side proxying, registry reads/writes, Postman calls, and agent chat. Add explicit cache policy only where a GET endpoint is truly static or safely revalidated; registry-editing endpoints and query proxies should remain request-time behavior.
+* Move toward component-level CSS Modules or SCSS Modules for newly migrated React components, keeping global CSS only for app-wide reset/layout tokens until the SCSS TODO is implemented.
+* Consider adding route groups for future sections such as `(workspace)`, `(reports)`, or `(settings)` once multiple pages exist. Do not split the current single-screen editor into route segments until there is a real navigation or persistence goal.
+* Useful Next.js docs for follow-up decisions: [App Router](https://nextjs.org/docs/app), [Project Structure](https://nextjs.org/docs/app/getting-started/project-structure), [Server and Client Components](https://nextjs.org/docs/app/getting-started/server-and-client-components), [Route Handlers](https://nextjs.org/docs/app/getting-started/route-handlers), [CSS](https://nextjs.org/docs/app/getting-started/css), [Sass](https://nextjs.org/docs/app/guides/sass), and [`fetch`](https://nextjs.org/docs/app/api-reference/functions/fetch).
+
+### TODO: Organize Project Structure
+
+change the names of folders and filenames as well as object/component names in features to align with the name in activity.json.  Since each activity will in the future be an addon, we should organize them in a package, the data together with the component. We have already decided that search will be a feature across multiple activities, so change the name from address-search to just search. I dont recall there still being an assets tab, if so it should be Folder right? Even if we want to change the names in the future at least they are syncronized right now. Also rename for consistency the styles filenames and classnames. Make sure this is a refactor and no code should become broken
 
 ### TODO: Migrate CSS to SCSS
 
