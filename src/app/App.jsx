@@ -12,6 +12,8 @@ import { SidebarHeader } from "../features/workspace/SidebarHeader.jsx";
 import { WorkbenchLayout } from "../features/workspace/WorkbenchLayout.tsx";
 import { loadWorkspaceState, saveWorkspaceState } from "../lib/workspaceState.js";
 import activityRegistry from "../../public/data/activity.json";
+import { PdfOverlaySection } from "../features/map/PdfOverlaySection";
+import { CustomLayersSection } from "../features/map/CustomLayersSection";
 
 const EMPTY_EDITOR_ACTIVITY_IDS = new Set(["project", "record", "tool"]);
 const DEFAULT_TABS = activityRegistry.map(({ id, label, icon, workspaceLabel }) => ({
@@ -40,10 +42,12 @@ export default function App() {
 
   const folderRef = useRef(null);
   const suggestToolRef = useRef(null);
+  const openFileRef = useRef(null);
   const onSuggestTool = useCallback((name) => suggestToolRef.current?.(name), []);
+  const onOpenFile = useCallback((entry) => openFileRef.current?.(entry), []);
 
   useEffect(() => {
-    initializeMapApp({ folderRef, suggestToolRef });
+    initializeMapApp({ folderRef, suggestToolRef, openFileRef });
   }, []);
 
   useEffect(() => {
@@ -199,7 +203,7 @@ export default function App() {
       </div>
 
       <section className="workspace-tab" id="projectTab" aria-label="Project" hidden={activeTab !== "project"} />
-      <FolderTab ref={folderRef} active={activeTab === "folder"} />
+      <FolderTab ref={folderRef} active={activeTab === "folder"} onOpenFile={onOpenFile} />
       <AddressTab active={activeTab === "address"} />
       <RecordTab active={activeTab === "record"} />
       <DatasetTab active={activeTab === "dataset"} />
@@ -215,6 +219,8 @@ export default function App() {
           <h3>Details</h3>
           <div id="mapDetailOptions" />
         </div>
+        <PdfOverlaySection />
+        <CustomLayersSection />
       </section>
     </aside>
   );

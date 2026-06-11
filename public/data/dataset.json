@@ -1874,5 +1874,34 @@
     "defaultOutputs": [],
     "queryUrl": "https://services9.arcgis.com/RHVPKKiFTONKtxq3/arcgis/rest/services/Satellite_VIIRS_Thermal_Hotspots_and_Fire_Activity/FeatureServer/0/query",
     "layerFields": []
+  },
+  {
+    "id": "source-mpzsp4v8",
+    "name": "Informational Freshwater Wetland Mapping",
+    "description": "The Informational Freshwater Wetland Mapping layer is only intended to be used for informational purposes in identifying the general location and extent of freshwater wetland areas of any size throughout the state. Informational Freshwater Wetland Mapping is not regulatory.",
+    "type": "arcgis-feature-layer",
+    "method": "GET",
+    "overviewUrl": "https://gisservices.dec.ny.gov/arcgis/rest/services/Wetlands/MapServer/0",
+    "defaultParams": [
+      {
+        "key": "geometry",
+        "value": "{{selectedCoordinates}}"
+      }
+    ],
+    "defaultOutputs": [],
+    "queryUrl": "https://gisservices.dec.ny.gov/arcgis/rest/services/Wetlands/MapServer/0/query?geometryType=esriGeometryPoint&inSR=4326&spatialRel=esriSpatialRelIntersects&returnGeometry=true&outSR=4326&f=geojson",
+    "layerFields": []
+  },
+  {
+    "id": "source-mq8day26",
+    "name": "USA Soils Map Units",
+    "description": "This feature layer displays soil map units of the 50 US States and its territories. It is derived from the US Department of Agriculture, Natural Resources Conservation Service SSURGO dataset.",
+    "type": "arcgis-feature-layer",
+    "method": "GET",
+    "overviewUrl": "https://landscape11.arcgis.com/arcgis/rest/services/USA_Soils_Map_Units/featureserver",
+    "defaultParams": [],
+    "defaultOutputs": [],
+    "queryUrl": "https://landscape11.arcgis.com/arcgis/rest/services/USA_Soils_Map_Units/featureserver/query",
+    "layerFields": []
   }
 ]

@@ -4,6 +4,7 @@ import { DomSlot } from "../editor/DomSlot";
 import { PageMenu } from "../editor/PageMenu";
 import { createSearchWidget } from "../search/SearchWidget";
 import { searchCatalog } from "../search/catalogSearch";
+import { buildSearchCatalogDatasetDetailPanel } from "../search/CatalogPanel.jsx";
 
 const LAYER_FIELDS_FOLDED_STORAGE_KEY = "research-agent.layerFieldsFolded";
 const NEW_SOURCE_NAME = "New Source";
@@ -103,6 +104,8 @@ export function createDatasetController(recordController, builtinController, edi
   let liveSaveTimer = null;
   let liveSaveInFlight = false;
   let liveSaveQueued = false;
+  let searchSourcesEditorOpener = null;
+  let catalogSearchWidget = null;
 
   renderSources(BUILT_IN_SOURCES);
   renderCompactSources(BUILT_IN_SOURCES);
@@ -125,9 +128,14 @@ export function createDatasetController(recordController, builtinController, edi
       },
       onSourceChange(source) {
         queueCatalogSearch(widget, widget.getQuery(), source, { immediate: true });
-      }
+      },
+      onEditSources() {
+        searchSourcesEditorOpener?.();
+      },
+      editSourcesLabel: "Edit dataset catalogs"
     });
 
+    catalogSearchWidget = widget;
     catalogSelector.appendChild(widget.sourceElement);
     catalogSearchBox.appendChild(widget.shellElement);
     loadCatalogSearchSources(widget);
@@ -137,17 +145,21 @@ export function createDatasetController(recordController, builtinController, edi
     try {
       const response = await fetch("/api/search?activity=dataset");
       if (!response.ok) throw new Error(`Catalog registry failed with status ${response.status}`);
-      searchCatalogs = normalizeSearchCatalogs(await response.json());
-      widget.setSources(searchCatalogs.map((catalog) => ({
-        id: catalog.id,
-        label: catalog.name,
-        costly: catalog.costly
-      })));
+      setSearchCatalogs(await response.json(), widget);
     } catch (error) {
       console.error("[Dataset] Failed to load search catalogs", error);
       searchCatalogs = [];
       widget.setSources([]);
     }
+  }
+
+  function setSearchCatalogs(catalogs, widget = catalogSearchWidget) {
+    searchCatalogs = normalizeSearchCatalogs(catalogs);
+    widget?.setSources(searchCatalogs.map((catalog) => ({
+      id: catalog.id,
+      label: catalog.name,
+      costly: catalog.costly
+    })));
   }
 
   function queueCatalogSearch(widget, query, source, { immediate = false } = {}) {
@@ -189,21 +201,24 @@ export function createDatasetController(recordController, builtinController, edi
     const text = document.createElement("span");
     const title = document.createElement("strong");
     const meta = document.createElement("span");
-    const add = document.createElement("span");
 
     row.className = "search-widget-result";
     row.type = "button";
     title.textContent = item.title || "Untitled dataset";
     meta.textContent = [item.catalogName, item.type].filter(Boolean).join(" · ");
-    add.className = "search-widget-result-action";
-    add.textContent = "Add";
     text.append(title, meta);
-    row.append(text, add);
-    row.addEventListener("click", () => {
-      addSourceFromCatalog(item);
-      row.classList.add("is-added");
-      add.textContent = "Added";
+    row.append(text);
+    const openResult = () => {
+      editorTabController.openSearchCatalogDatasetTab(
+        item,
+        buildSearchCatalogDatasetDetailPanel(item, addSourceFromCatalog)
+      );
+    };
+    row.addEventListener("mousedown", (event) => {
+      event.preventDefault();
+      openResult();
     });
+    row.addEventListener("click", openResult);
     return row;
   }
 
@@ -259,19 +274,6 @@ export function createDatasetController(recordController, builtinController, edi
     summaryContent.appendChild(text);
 
     if (source.type !== "mapbox-search") {
-      const overviewButton = document.createElement("button");
-      overviewButton.className = "source-overview-button";
-      overviewButton.type = "button";
-      overviewButton.setAttribute("aria-label", `Overview of ${source.name}`);
-      overviewButton.title = `Overview of ${source.name}`;
-      overviewButton.addEventListener("click", (event) => {
-        event.preventDefault();
-        event.stopPropagation();
-        const url = sourceElements[source.id]?.overviewUrlInput?.value?.trim() || source.overviewUrl;
-        if (url) window.open(url, "_blank", "noopener");
-      });
-      summaryContent.appendChild(overviewButton);
-
       const runButton = document.createElement("button");
       runButton.className = "source-run-button";
       runButton.type = "button";
@@ -947,7 +949,23 @@ export function createDatasetController(recordController, builtinController, edi
     return { ...variables };
   }
 
-  return { setVariable, assignMapboxSearchOutputs, addSourceFromCatalog, getVariables };
+  function setSearchSourcesEditorOpener(opener) {
+    searchSourcesEditorOpener = opener;
+  }
+
+  function reloadSearchCatalogs() {
+    if (catalogSearchWidget) return loadCatalogSearchSources(catalogSearchWidget);
+  }
+
+  return {
+    setVariable,
+    assignMapboxSearchOutputs,
+    addSourceFromCatalog,
+    getVariables,
+    setSearchSourcesEditorOpener,
+    reloadSearchCatalogs,
+    setSearchCatalogs
+  };
 }
 
 async function syncArcGISSource(url) {

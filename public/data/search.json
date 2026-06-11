@@ -141,5 +141,13 @@
       "$query"
     ],
     "activity": "dataset"
+  },
+  {
+    "id": "catalog-1781114929410",
+    "name": "NY Geo",
+    "url": "https://new-york-opd-geographic-information-gateway-nysdos.hub.arcgis.com",
+    "type": "arcgis",
+    "supportedInputParams": [],
+    "activity": "dataset"
   }
 ]

@@ -26,12 +26,7 @@ export async function suggestGooglePlaces(
     headers: { "Content-Type": "application/json", "X-Goog-Api-Key": apiKey },
     body: JSON.stringify({
       input: query,
-      locationBias: {
-        rectangle: {
-          low: { latitude: STATEN_ISLAND_BBOX[1], longitude: STATEN_ISLAND_BBOX[0] },
-          high: { latitude: STATEN_ISLAND_BBOX[3], longitude: STATEN_ISLAND_BBOX[2] }
-        }
-      },
+      locationBias: getLocationBias(map),
       includedRegionCodes: ["us"]
     })
   });
@@ -104,4 +99,24 @@ async function selectPrediction(
   };
 
   onRetrieve({ type: "FeatureCollection", features: [normalized] });
+}
+
+function getLocationBias(map: SearchMap | null) {
+  const bounds = map?.getBounds?.();
+
+  if (bounds) {
+    return {
+      rectangle: {
+        low: { latitude: bounds.getSouth(), longitude: bounds.getWest() },
+        high: { latitude: bounds.getNorth(), longitude: bounds.getEast() }
+      }
+    };
+  }
+
+  return {
+    rectangle: {
+      low: { latitude: STATEN_ISLAND_BBOX[1], longitude: STATEN_ISLAND_BBOX[0] },
+      high: { latitude: STATEN_ISLAND_BBOX[3], longitude: STATEN_ISLAND_BBOX[2] }
+    }
+  };
 }

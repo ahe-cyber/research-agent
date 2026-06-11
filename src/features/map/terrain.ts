@@ -36,6 +36,7 @@ export class TerrainControl {
     const button = document.createElement("button");
     button.className = "map-display-option map-display-check" + (this._enabled ? " is-active" : "");
     button.type = "button";
+    button.tabIndex = -1;
     button.textContent = this._config.label;
     button.title = `${this._enabled ? "Hide" : "Show"} ${this._config.label}`;
     button.setAttribute("aria-pressed", String(this._enabled));

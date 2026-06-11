@@ -310,6 +310,15 @@ function createRecordActionFooter(record, onToggleGeoJson, editorTabController) 
   }
 
   if (editorTabController) {
+    footer.appendChild(createGraphActionButton(record, (event) => {
+      event.preventDefault();
+      event.stopPropagation();
+      editorTabController.openRecordGraphTab(record, {
+        editorTabController,
+        onToggleGeoJson
+      });
+    }));
+
     findTableOutputs(record).forEach(([variableName, element]) => {
       const tabId = `table-${record.id}-${variableName}`;
       const tableButton = createTableActionButton(variableName, tabId, (event) => {
@@ -332,6 +341,17 @@ function createRecordActionFooter(record, onToggleGeoJson, editorTabController) 
 
   footer.hidden = footer.childElementCount === 0;
   return footer;
+}
+
+function createGraphActionButton(record, onClick) {
+  const button = document.createElement("button");
+  button.className = "json-graph-action";
+  button.type = "button";
+  button.dataset.tabId = `record-graph-${record.id}`;
+  button.setAttribute("aria-label", `Open graph for ${record.title || record.kind || "record"}`);
+  button.title = "Graph";
+  button.addEventListener("click", onClick);
+  return button;
 }
 
 function findTableOutputs(record) {
@@ -372,10 +392,10 @@ function findFirstGeoJsonAction(value, path) {
   return null;
 }
 
-function renderJsonTree(value, record, onToggleGeoJson, editorTabController, expandedJsonPaths, label = "record") {
+export function renderJsonTree(value, record, onToggleGeoJson, editorTabController, expandedJsonPaths, label = "record", rootPath = `${record.id}.${label}`) {
   const container = document.createElement("div");
   container.className = "json-tree";
-  container.appendChild(renderJsonNode(label, value, record, onToggleGeoJson, editorTabController, expandedJsonPaths, `${record.id}.${label}`));
+  container.appendChild(renderJsonNode(label, value, record, onToggleGeoJson, editorTabController, expandedJsonPaths, rootPath));
   return container;
 }
 

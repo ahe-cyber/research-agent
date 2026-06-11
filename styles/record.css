@@ -126,7 +126,8 @@
   overflow-y: hidden;
 }
 
-.record-list.is-json-text-wrapped .json-tree {
+.record-list.is-json-text-wrapped .json-tree,
+.is-json-text-wrapped .json-tree {
   overflow-x: hidden;
 }
 
@@ -140,7 +141,9 @@
 }
 
 .record-list.is-json-text-wrapped .json-node,
-.record-list.is-json-text-wrapped .json-leaf {
+.record-list.is-json-text-wrapped .json-leaf,
+.is-json-text-wrapped .json-node,
+.is-json-text-wrapped .json-leaf {
   width: auto;
 }
 
@@ -181,7 +184,8 @@
   min-width: 0;
 }
 
-.record-list.is-json-text-wrapped .json-label {
+.record-list.is-json-text-wrapped .json-label,
+.is-json-text-wrapped .json-label {
   overflow-wrap: anywhere;
 }
 
@@ -221,7 +225,8 @@
   color: #526070;
 }
 
-.json-file-action {
+.json-file-action,
+.json-graph-action {
   position: relative;
   flex: 0 0 auto;
   width: 24px;
@@ -260,21 +265,155 @@
   -webkit-mask: center / contain no-repeat url("/assets/document.svg");
 }
 
+.json-graph-action::before {
+  content: "";
+  position: absolute;
+  inset: 3px;
+  background: #1f2933;
+  mask: center / contain no-repeat url("/assets/graph.svg");
+  -webkit-mask: center / contain no-repeat url("/assets/graph.svg");
+}
+
 .json-file-action::after {
   content: none;
 }
 
-.json-file-action.is-active {
+.json-file-action.is-active,
+.json-graph-action.is-active {
   background: #1f2933;
   border-color: #1f2933;
 }
 
-.json-file-action.is-active::before {
+.json-file-action.is-active::before,
+.json-graph-action.is-active::before {
   background: #ffffff;
 }
 
-.json-file-action:hover:not(.is-active) {
+.json-file-action:hover:not(.is-active),
+.json-graph-action:hover:not(.is-active) {
   background: #f7f8fa;
+}
+
+.editor-record-graph-panel,
+.record-graph-panel {
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+}
+
+.record-graph-panel .react-flow__node {
+  box-shadow: 0 2px 8px rgba(31, 41, 51, 0.08);
+}
+
+.record-graph-header {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 24px;
+  align-items: start;
+  gap: 8px;
+}
+
+.record-graph-summary {
+  min-width: 0;
+}
+
+.record-graph-summary strong {
+  display: block;
+  margin-bottom: 4px;
+  color: #1f2933;
+  font-size: 12px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.record-graph-summary span {
+  display: block;
+  color: #526070;
+  font-size: 11px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.record-graph-node {
+  position: relative;
+  cursor: pointer;
+  min-height: 0;
+}
+
+.record-graph-node.is-expanded span {
+  white-space: normal;
+}
+
+.record-graph-node.is-json-text-wrapped .record-graph-summary strong,
+.record-graph-node.is-json-text-wrapped .record-graph-summary span {
+  overflow: visible;
+  text-overflow: clip;
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+
+.record-graph-json {
+  margin: 9px 0 0;
+  overflow: visible;
+  border-top: 1px solid #e5e8ec;
+  padding-top: 8px;
+  cursor: default;
+}
+
+.record-graph-json > div {
+  overflow: visible;
+}
+
+.record-graph-json .json-tree {
+  height: auto;
+  max-height: none;
+  padding-bottom: 0;
+  overflow: visible;
+  font-size: 12px;
+}
+
+.record-graph-node.is-json-text-wrapped .record-graph-json .json-tree {
+  max-width: 100%;
+}
+
+.record-graph-wrap-button {
+  position: relative;
+  width: 24px;
+  height: 24px;
+  border: 1px solid #d6d9de;
+  border-radius: 4px;
+  background: #ffffff;
+  cursor: pointer;
+}
+
+.record-graph-wrap-button::before {
+  content: "";
+  position: absolute;
+  inset: 3px;
+  background: #1f2933;
+  mask: center / contain no-repeat url("/assets/wrap.svg");
+  -webkit-mask: center / contain no-repeat url("/assets/wrap.svg");
+}
+
+.record-graph-wrap-button.is-active {
+  background: #1f2933;
+  border-color: #1f2933;
+}
+
+.record-graph-wrap-button.is-active::before {
+  background: #ffffff;
+}
+
+.record-graph-handle {
+  width: 9px;
+  height: 9px;
+  border: 1.5px solid #2f6fed;
+  background: #ffffff;
+}
+
+.record-graph-panel .react-flow__node.selected {
+  box-shadow: 0 0 0 3px rgba(47, 111, 237, 0.18), 0 4px 14px rgba(31, 41, 51, 0.12);
 }
 
 .json-table-action {

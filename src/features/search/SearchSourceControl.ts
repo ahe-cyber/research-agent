@@ -1,10 +1,11 @@
-import { getGoogleMapsApiKey } from "../map/config";
+import { getGoogleMapsApiKey, getMapboxAccessToken } from "../map/config";
 import { suggestGeoSearch } from "./providers/nycGeoSearch";
 import { suggestGooglePlaces } from "./providers/googlePlaces";
+import { suggestMapboxSearch } from "./providers/mapboxSearch";
 import { createSearchWidget } from "./SearchWidget";
 import type { RetrieveHandler, SearchMap } from "./types";
 
-export type AddressSourceType = "geosearch" | "google";
+export type AddressSourceType = "geosearch" | "google" | "mapbox";
 
 export interface SearchSourceConfig {
   id: string;
@@ -21,7 +22,8 @@ type SuggestFn = (
 
 const SUGGEST_MAP: Record<AddressSourceType, { suggest: SuggestFn; hasKey(): boolean }> = {
   geosearch: { suggest: suggestGeoSearch, hasKey: () => true },
-  google: { suggest: suggestGooglePlaces, hasKey: () => !!getGoogleMapsApiKey() }
+  google: { suggest: suggestGooglePlaces, hasKey: () => !!getGoogleMapsApiKey() },
+  mapbox: { suggest: suggestMapboxSearch, hasKey: () => !!getMapboxAccessToken() }
 };
 
 async function loadSources(): Promise<SearchSourceConfig[]> {
@@ -45,7 +47,8 @@ export function createSearchSourceControl(
     sourceId: string,
     sourceLabel: string
   ) => void,
-  container: HTMLElement
+  container: HTMLElement,
+  onEditSources?: () => void
 ) {
   let sources: SearchSourceConfig[] = [];
   let debounceTimer: ReturnType<typeof setTimeout> | null = null;
@@ -62,7 +65,9 @@ export function createSearchSourceControl(
     onSourceChange() {
       cancelSearch();
       widget.clearResults();
-    }
+    },
+    onEditSources,
+    editSourcesLabel: "Edit address sources"
   });
 
   container.replaceChildren(widget.shellElement);

@@ -27,6 +27,13 @@ export interface RetrievedFeatureCollection {
 
 export interface SearchMap {
   flyTo(options: { center: Coordinates; zoom: number; speed: number }): void;
+  getCenter?(): { lng: number; lat: number };
+  getBounds?(): {
+    getWest(): number;
+    getSouth(): number;
+    getEast(): number;
+    getNorth(): number;
+  };
 }
 
 export interface DestroyableSearchBox extends HTMLElement {

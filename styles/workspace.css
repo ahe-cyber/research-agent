@@ -111,6 +111,269 @@
   box-shadow: inset 0 0 0 2px #ffffff;
 }
 
+.pdf-overlay-entry {
+  display: grid;
+  gap: 2px;
+  padding-bottom: 6px;
+}
+
+.pdf-overlay-filter {
+  display: flex;
+  gap: 4px;
+  margin: 0 0 6px;
+}
+
+.pdf-overlay-filter-button {
+  border: 1px solid #d6d9de;
+  border-radius: 4px;
+  background: #ffffff;
+  color: #526070;
+  cursor: pointer;
+  font: inherit;
+  font-size: 11px;
+  padding: 2px 7px;
+  text-transform: capitalize;
+}
+
+.pdf-overlay-filter-button.is-active {
+  border-color: #2f6fed;
+  color: #2f6fed;
+  background: #eef4ff;
+}
+
+.pdf-overlay-header {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 0;
+}
+
+.pdf-overlay-name {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  border: 0;
+  background: transparent;
+  font-size: 12px;
+  color: #1f2933;
+  cursor: pointer;
+  text-align: left;
+  padding: 0;
+}
+
+.pdf-overlay-name::before {
+  content: "▾ ";
+  font-size: 10px;
+  color: #526070;
+}
+
+.pdf-overlay-name.is-collapsed::before {
+  content: "▸ ";
+}
+
+.pdf-overlay-name:hover {
+  color: #2f6fed;
+}
+
+.pdf-overlay-name.is-muted {
+  opacity: 0.4;
+}
+
+.pdf-overlay-toggle {
+  flex-shrink: 0;
+  width: 14px;
+  height: 14px;
+  border-radius: 3px;
+  border: 1.5px solid #9aa5b1;
+  background: transparent;
+  cursor: pointer;
+  padding: 0;
+}
+
+.pdf-overlay-toggle.is-active {
+  border-color: #2f6fed;
+  background: #2f6fed;
+  box-shadow: inset 0 0 0 2px #fff;
+}
+
+[draggable="true"].map-display-option {
+  cursor: grab;
+}
+
+[draggable="true"].map-display-option:active {
+  cursor: grabbing;
+}
+
+.pdf-overlay-action {
+  flex-shrink: 0;
+  border: 0;
+  border-radius: 3px;
+  background: transparent;
+  color: #526070;
+  cursor: pointer;
+  font-size: 11px;
+  padding: 2px 5px;
+}
+
+.pdf-overlay-action:hover {
+  background: #f0f4f8;
+  color: #1f2933;
+}
+
+.pdf-overlay-action.is-active {
+  color: #2f6fed;
+  font-weight: 700;
+}
+
+.pdf-overlay-remove:hover {
+  color: #c0392b;
+}
+
+.pdf-overlay-reload {
+  color: #b7791f;
+  font-weight: 600;
+}
+
+.pdf-overlay-reload:hover {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+.pdf-overlay-load-button::before {
+  content: "+";
+  left: 10px;
+  border: none;
+  font-size: 14px;
+  color: #526070;
+}
+
+.pdf-overlay-page-row {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto auto auto;
+  align-items: center;
+  gap: 4px;
+  min-height: 26px;
+  border-radius: 4px;
+  padding: 3px 4px 3px 18px;
+  color: #1f2933;
+  font-size: 12px;
+}
+
+.pdf-overlay-page-row:hover {
+  background: #f7f9fb;
+}
+
+.pdf-overlay-page-row.is-done {
+  color: #6b7280;
+}
+
+.pdf-overlay-page-title {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.pdf-overlay-page-status {
+  border: 0;
+  border-radius: 3px;
+  background: transparent;
+  color: #526070;
+  cursor: pointer;
+  font-size: 10px;
+  padding: 2px 5px;
+  text-transform: uppercase;
+}
+
+.pdf-overlay-page-status:hover {
+  background: #f0f4f8;
+  color: #1f2933;
+}
+
+.pdf-overlay-delete {
+  position: relative;
+  width: 20px;
+  height: 20px;
+  padding: 0;
+}
+
+.pdf-overlay-delete::before {
+  content: "";
+  position: absolute;
+  inset: 4px;
+  background: currentColor;
+  mask: center / contain no-repeat url("/assets/delete.svg");
+  -webkit-mask: center / contain no-repeat url("/assets/delete.svg");
+}
+
+.custom-layer-edit {
+  position: relative;
+  width: 20px;
+  height: 20px;
+  padding: 0;
+}
+
+.custom-layer-edit::before {
+  content: "";
+  position: absolute;
+  inset: 4px;
+  background: currentColor;
+  mask: center / contain no-repeat url("/assets/edit.svg");
+  -webkit-mask: center / contain no-repeat url("/assets/edit.svg");
+}
+
+.custom-layer-body {
+  display: grid;
+  gap: 2px;
+  padding-left: 14px;
+}
+
+.custom-layer-geom-row {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 1px 0;
+}
+
+.custom-layer-geom-name {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 12px;
+  color: #1f2933;
+  padding: 2px 4px;
+}
+
+.custom-layer-add-geom::before,
+.custom-layer-add-layer::before {
+  content: "+";
+  left: 10px;
+  border: none;
+  font-size: 14px;
+  color: #526070;
+}
+
+.custom-layer-add-geom:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+.custom-layer-draw-active {
+  color: #c0392b;
+}
+
+.custom-layer-draw-active::before {
+  content: "■";
+  left: 9px;
+  border: none;
+  font-size: 9px;
+  color: #c0392b;
+}
+
 
 .section-title-row {
   display: flex;
@@ -275,6 +538,160 @@
   display: grid;
   gap: 10px;
   margin-top: 14px;
+}
+
+.folder-mount-toolbar {
+  margin-bottom: 10px;
+}
+
+.folder-mount-button {
+  height: 28px;
+  padding: 0 12px;
+  border: 1px solid #d6d9de;
+  border-radius: 4px;
+  background: #ffffff;
+  color: #1f2933;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.folder-mount-button:hover {
+  background: #f0f4f8;
+}
+
+.folder-mount {
+  border: 1px solid #d6d9de;
+  border-radius: 6px;
+  background: #ffffff;
+  margin-bottom: 10px;
+  overflow: hidden;
+}
+
+.folder-mount-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 10px;
+  border-bottom: 1px solid #e5e8ec;
+  background: #f7f8fa;
+}
+
+.folder-mount-name {
+  font-size: 12px;
+  font-weight: 700;
+  color: #1f2933;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.folder-mount-remove {
+  flex: 0 0 auto;
+  width: 18px;
+  height: 18px;
+  border: 0;
+  border-radius: 3px;
+  background: transparent;
+  cursor: pointer;
+  position: relative;
+  opacity: 0.5;
+}
+
+.folder-mount-remove:hover {
+  background: #e5e8ec;
+  opacity: 1;
+}
+
+.folder-mount-remove::before,
+.folder-mount-remove::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 10px;
+  height: 1.5px;
+  background: #1f2933;
+  transform-origin: center;
+}
+
+.folder-mount-remove::before { transform: translate(-50%, -50%) rotate(45deg); }
+.folder-mount-remove::after  { transform: translate(-50%, -50%) rotate(-45deg); }
+
+.folder-empty-note {
+  margin: 0;
+  padding: 10px;
+  color: #526070;
+  font-size: 12px;
+}
+
+.folder-file-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.folder-file-item {
+  border-top: 1px solid #eef1f5;
+}
+
+.folder-file-item:first-child {
+  border-top: 0;
+}
+
+.folder-file-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 10px;
+  min-width: 0;
+  width: 100%;
+  border: 0;
+  background: transparent;
+  text-align: left;
+  cursor: pointer;
+}
+
+.folder-file-row:hover {
+  background: #f0f4f8;
+}
+
+.folder-file-badge {
+  flex: 0 0 auto;
+  padding: 1px 5px;
+  border-radius: 3px;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+}
+
+.folder-file-badge--pdf  { background: #fde8e8; color: #c0392b; }
+.folder-file-badge--dxf  { background: #e8f0fe; color: #1a56c4; }
+.folder-file-badge--ifc  { background: #e8f8e8; color: #1a7a2e; }
+
+.folder-file-name {
+  flex: 1;
+  min-width: 0;
+  font-size: 12px;
+  color: #1f2933;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.folder-file-size {
+  flex: 0 0 auto;
+  font-size: 11px;
+  color: #526070;
+}
+
+
+.folder-section-title {
+  margin: 14px 0 8px;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #526070;
 }
 
 #datasetTab {
@@ -655,11 +1072,6 @@
   background: #8a3d3d;
 }
 
-.overview-source-button::before {
-  mask: center / contain no-repeat url("/assets/help.svg");
-  -webkit-mask: center / contain no-repeat url("/assets/help.svg");
-}
-
 .source-editor-side-buttons {
   display: none;
   flex-direction: column;
@@ -672,30 +1084,6 @@
   width: 26px;
   height: 26px;
   min-height: 0;
-}
-
-.source-overview-button {
-  position: relative;
-  flex: 0 0 auto;
-  width: 28px;
-  height: 28px;
-  border: 1px solid #d6d9de;
-  border-radius: 4px;
-  background: #ffffff;
-  cursor: pointer;
-}
-
-.source-overview-button::before {
-  content: "";
-  position: absolute;
-  inset: 5px;
-  background: #000000;
-  mask: center / contain no-repeat url("/assets/help.svg");
-  -webkit-mask: center / contain no-repeat url("/assets/help.svg");
-}
-
-.source-overview-button:hover {
-  background: #f7f8fa;
 }
 
 .source-editor-close-button {

@@ -1,6 +1,10 @@
+import { createElement } from "react";
+import { createRoot } from "react-dom/client";
 import { markdownToHtml } from "../../lib/markdown";
 import { loadWorkspaceState, saveWorkspaceState } from "../../lib/workspaceState.js";
 import { createEmptyPagePanel } from "./EmptyPagePanel.jsx";
+import { FileViewer } from "../folder/FileViewer.tsx";
+import { RecordGraphView } from "../record/RecordGraphView.tsx";
 
 export function createEditorTabController({ onMapActivated = () => {} } = {}) {
   const tabBar = document.getElementById("editorTabBar");
@@ -186,6 +190,27 @@ export function createEditorTabController({ onMapActivated = () => {} } = {}) {
     activateTab(tabId);
   }
 
+  function openRecordGraphTab(record, options = {}) {
+    const tabId = `record-graph-${record.id}`;
+
+    if (tabs.find((t) => t.id === tabId)) {
+      activateTab(tabId);
+      return;
+    }
+
+    tabs.push({ id: tabId, label: `${record.title || record.kind || "Record"} Graph`, closeable: true });
+
+    const panel = document.createElement("div");
+    panel.className = "editor-record-graph-panel";
+    panel.hidden = true;
+    createRoot(panel).render(createElement(RecordGraphView, { record, ...options }));
+    viewport.appendChild(panel);
+    panelMap[tabId] = panel;
+
+    updateTabButtons(tabId, true);
+    activateTab(tabId);
+  }
+
   function updateTabButtons(tabId, isActive) {
     document.querySelectorAll(`[data-tab-id="${tabId}"]`).forEach((button) => {
       button.classList.toggle("is-active", isActive);
@@ -262,6 +287,26 @@ export function createEditorTabController({ onMapActivated = () => {} } = {}) {
     detailPanel.hidden = true;
     viewport.appendChild(detailPanel);
     panelMap[tabId] = detailPanel;
+
+    activateTab(tabId);
+  }
+
+  function openFileViewerTab(entry) {
+    const tabId = `file::${entry.key}`;
+
+    if (tabs.find((t) => t.id === tabId)) {
+      activateTab(tabId);
+      return;
+    }
+
+    tabs.push({ id: tabId, label: entry.name, closeable: true });
+
+    const panel = document.createElement("div");
+    panel.className = "editor-file-panel";
+    panel.hidden = true;
+    createRoot(panel).render(createElement(FileViewer, { entry }));
+    viewport.appendChild(panel);
+    panelMap[tabId] = panel;
 
     activateTab(tabId);
   }
@@ -373,7 +418,7 @@ export function createEditorTabController({ onMapActivated = () => {} } = {}) {
   }
 
   render();
-  return { openTableTab, openPdfTab, openDatasetTab, openPostmanTab, openLayerSourcesTab, openSearchCatalogResultsTab, openSearchCatalogDatasetTab, openReportTab, openAgentTab, openAddressSearchTab, openEmptyPageTab };
+  return { openTableTab, openPdfTab, openRecordGraphTab, openDatasetTab, openPostmanTab, openLayerSourcesTab, openSearchCatalogResultsTab, openSearchCatalogDatasetTab, openReportTab, openAgentTab, openAddressSearchTab, openEmptyPageTab, openFileViewerTab };
 }
 
 function renderHtmlElement(element) {

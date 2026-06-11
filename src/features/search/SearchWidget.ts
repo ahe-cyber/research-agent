@@ -21,12 +21,16 @@ export function createSearchWidget({
   placeholder = "Search",
   onQuery,
   onSubmit,
-  onSourceChange
+  onSourceChange,
+  onEditSources,
+  editSourcesLabel = "Edit sources"
 }: {
   placeholder?: string;
   onQuery?: (query: string, source: SearchWidgetSource | null) => void;
   onSubmit?: (query: string, source: SearchWidgetSource | null) => void;
   onSourceChange?: (source: SearchWidgetSource | null) => void;
+  onEditSources?: () => void;
+  editSourcesLabel?: string;
 } = {}): SearchWidgetInstance {
   let sources: SearchWidgetSource[] = [];
   let currentId = "";
@@ -113,6 +117,20 @@ export function createSearchWidget({
         });
         menu.appendChild(item);
       });
+      if (onEditSources) {
+        const divider = document.createElement("div");
+        divider.className = "search-source-divider";
+        const editItem = document.createElement("button");
+        editItem.className = "search-source-item search-source-item--edit";
+        editItem.type = "button";
+        editItem.textContent = editSourcesLabel;
+        editItem.addEventListener("click", (event) => {
+          event.stopPropagation();
+          closeMenu();
+          onEditSources();
+        });
+        menu.append(divider, editItem);
+      }
       selector.appendChild(menu);
     }
 

@@ -41,3 +41,6 @@ next-env.d.ts
 .agents/
 .claude/
 .codex/
+
+*.png
+*.pdf

@@ -83,7 +83,7 @@ npm run start
 
 ## Current Progress
 
-The project has TypeScript checking, typed framework-neutral map utilities, typed search providers, a Next.js App Router client shell, and typed App Router route handlers for datasets, search, agents, tools, terrain tiles, query proxying, Postman collections, and Gemini agent chat. The workspace runs through Next.js for development, production build, and production start; the legacy Express/Vite server has been removed. The app already includes registry-backed datasets, catalogs, agents, basemaps, and search sources; configurable search-source editing; source cards; map layer source inspection with list and table modes; agents; editor tabs; Postman collections; catalog browsing; and shared editor page primitives. Address and Dataset search now share the same search widget shell/dropdown styling; Dataset exposes catalog choices as a provider dropdown and autocompletes top records for the active catalog. The API folder now separates private `_lib` helpers, `_services` provider/model logic, and thin domain route handlers. The editor shell now uses typed React `PageMenu`, `PageListView`, `PageTableView`, and `PageGraphView` primitives, with remaining imperative panel controls bridged through React roots. Migration is incomplete: several UI controllers remain imperative DOM modules, several files still use JavaScript or JSX, and styles remain plain CSS.
+The project has TypeScript checking, typed framework-neutral map utilities, typed search providers, a Next.js App Router client shell, and typed App Router route handlers for the `dataset`, `search`, `agent`, `tool`, `terrain`, `overlay`, `geometry`, `proxy`, `postman`, and Gemini chat domains. The workspace runs through Next.js for development, production build, and production start; the legacy Express/Vite server has been removed. The app already includes registry-backed dataset entries, catalog entries, agent entries, basemaps, search entries, server-backed PDF overlay references, and custom geometry layers; configurable search-source editing; source cards; map layer source inspection with list and table modes; agent workflows; editor tabs; Postman collections; catalog browsing; and shared editor page primitives. Address and Dataset search now share the same search widget shell/dropdown styling; Dataset exposes catalog choices as a provider dropdown and autocompletes top records for the active catalog. The API folder now separates private `_lib` helpers, `_services` provider/model logic, and thin domain route handlers. The editor shell now uses typed React `PageMenu`, `PageListView`, `PageTableView`, and `PageGraphView` primitives, with remaining imperative panel controls bridged through React roots. Migration is incomplete: several UI controllers remain imperative DOM modules, several files still use JavaScript or JSX, and styles remain plain CSS.
 
 ## TODO
 
@@ -109,9 +109,9 @@ Renamed feature packages, API folders, and exported tab/controller names to alig
 Converted the `folder` and `tool` activities from imperative DOM controllers to typed React modules:
 
 * **folder** — `FolderTab.jsx` replaced by `FolderTab.tsx`. Asset state lives in `useState`. The component is a `forwardRef` that exposes a `FolderController` handle (`addFromRecord`, `addFromValue`) via `useImperativeHandle` so future callers can push assets from records. `hasAssetUrls` remains an exported pure function. The old `createFolderController` (which was never wired) is removed.
-* **tool** — `ToolTab.jsx` replaced by `ToolTab.tsx`. Tool list state lives in `useState`; the API fetch runs in `useEffect`. The component accepts an `onSuggestTool` callback prop instead of a `getAgentController` closure. The built-in tool functions (`applyFormula`, `hasFormula`, and the functions data) are extracted into `src/features/tool/builtins.ts` and imported directly by `initializeMapApp` as a plain `formulaController` object passed to the dataset controller.
+* **tool** — `ToolTab.jsx` replaced by `ToolTab.tsx`. Tool list state lives in `useState`; the API fetch runs in `useEffect`. The component accepts an `onSuggestTool` callback prop instead of a `getAgentController` closure. The built-in tool functions (`applyBuiltin`, `hasBuiltin`, and `BUILTINS`) are extracted into `src/features/tool/builtins.ts` and imported directly by `initializeMapApp` as a plain `builtinController` object passed to the dataset controller.
 * **App.jsx** — Imports the new `.tsx` tab components. Holds a `folderRef` (passed to `FolderTab`) and a `suggestToolRef` (populated by `initializeMapApp` after the agent controller is ready). A stable `onSuggestTool` callback reads from `suggestToolRef` and is passed to `ToolTab`.
-* **initializeMapApp.js** — Accepts `{ folderRef, suggestToolRef }` options. Replaces `createToolController` with direct imports from `formulas.ts`. Sets `suggestToolRef.current` to the agent controller's `suggestTool` method immediately after the agent controller is created.
+* **initializeMapApp.js** — Accepts `{ folderRef, suggestToolRef }` options. Replaces `createToolController` with direct imports from `src/features/tool/builtins.ts`. Sets `suggestToolRef.current` to the agent controller's `suggestTool` method immediately after the agent controller is created.
 
 Remaining activities (`record`, `dataset`, `search`, `agent`) still use imperative DOM controllers and are next in the migration sequence.
 
@@ -126,9 +126,18 @@ Replaced the fixed `grid-template-columns: 48px 360px minmax(360px, 1fr) 380px` 
 * `Separator` elements carry the `workbench-resize-handle` class — a 4 px invisible hit zone that turns `#2f6fed` on hover or while dragging.
 * `height: 100%` was added to `.workspace-sidebar`, `.editor-area`, and `.agent-panel` so they fill their panel containers (the previous CSS grid stretched them automatically; the flex-based Panel layout requires explicit height).
 
-### TODO: Add CAD/BIM Folder Mounts, Import, and Export (Question: why not use ifc.js)
+### DONE: Add CAD/BIM Folder Mounts and File Parsers
 
-Support browser folder mounting through the File System Access API in the Folder activity. Use `dxf-parser` for DXF import, `@tarikjabiri/dxf` for DXF export, and `web-ifc` with `three` for IFC parsing and preview. Keep CAD/BIM records linked to the same project model as datasets and reports. Start with import/inspect before export, and keep geometry conversion isolated from map rendering until coordinate assumptions are explicit.
+Added File System Access API folder mounting and client-side parsers for PDF, DXF, and IFC in `src/features/folder/`:
+
+* **`folderMount.ts`** — `mountFolder()` calls `showDirectoryPicker({ mode: 'read' })`, walks the directory tree up to 5 levels deep, and returns a `MountedFolder` with a `FileEntry[]` filtered to `.pdf`, `.dxf`, and `.ifc`. `parseFile(entry)` dynamically imports the appropriate parser. `isFolderMountSupported()` gates the mount button on browser support.
+* **`parsers/pdf.ts`** — uses `pdfjs-dist` (dynamic import, worker at `/pdf.worker.min.mjs`). Extracts per-page text via `getTextContent()` and concatenates to `fullText`.
+* **`parsers/dxf.ts`** — uses `dxf-parser`. Extracts layer names, entity type counts, and all `TEXT`/`MTEXT` string content.
+* **`parsers/ifc.ts`** — uses `web-ifc` (WASM singleton at `/web-ifc.wasm`, cached across files). Reads schema from raw file text, then queries `GetLineIDsWithType` for project name, storey names, space names, and counts of walls, slabs, columns, beams, doors, windows, stairs, roofs, and furnishings.
+* **`FolderTab.tsx`** — updated with a "Mount folder" button (hidden when the API is unavailable), per-mount file lists, per-file "Parse" buttons, and inline `ParseResultView` components for each type. Existing asset-URL collection from agent records is preserved below the mounts.
+* **`package.json`** — added `pdfjs-dist`, `dxf-parser`, `web-ifc`; `postinstall` script copies the PDF worker and IFC WASM to `public/`.
+
+Scope: read-only import and inspect only; no export, no 3D rendering. Parse results are structured for future AI context attachment.
 
 ### TODO: Add Record Graph and JSON Inspection
 

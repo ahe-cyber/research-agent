@@ -86,6 +86,7 @@ export class SceneLayersControl {
     const button = document.createElement("button");
     button.className = "map-display-option map-display-check" + (this._enabled ? " is-active" : "");
     button.type = "button";
+    button.tabIndex = -1;
     button.textContent = this._loading ? "Loading 3D..." : this._config.label;
     button.title = `${this._enabled ? "Hide" : "Show"} ${this._config.label}`;
     button.setAttribute("aria-pressed", String(this._enabled));

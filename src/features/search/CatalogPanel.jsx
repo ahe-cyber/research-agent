@@ -3,13 +3,14 @@ import { DomSlot } from "../editor/DomSlot";
 import { PageListView } from "../editor/PageListView";
 import { PageMenu } from "../editor/PageMenu";
 
-export function createCatalogController(editorTabController, agentController, getVariables, onAddSource) {
+export function createCatalogController(editorTabController, agentController, getVariables, onAddSource, onCatalogsChanged = () => {}) {
   let catalogs = [];
   let liveSaveTimer = null;
   let liveSaveInFlight = false;
   let liveSaveQueued = false;
   const inlineResultsByBubble = new WeakMap();
   const openCatalogIds = new Set();
+  const catalogFieldElements = new Map();
 
   // ── Catalog registry panel ─────────────────────────────────────────────────
 
@@ -82,6 +83,7 @@ export function createCatalogController(editorTabController, agentController, ge
       }
 
       catalogs = serializedCatalogs;
+      notifyCatalogsChanged();
       saveStatusEl.textContent = "Saved";
       saveStatusEl.classList.add("is-saved");
       setTimeout(() => {
@@ -104,6 +106,7 @@ export function createCatalogController(editorTabController, agentController, ge
 
   function renderCatalogCards() {
     catalogListEl.replaceChildren();
+    catalogFieldElements.clear();
     catalogs.forEach((catalog, index) => catalogListEl.appendChild(createCatalogCard(catalog, index)));
   }
 
@@ -154,6 +157,7 @@ export function createCatalogController(editorTabController, agentController, ge
       catalogs.splice(index, 1);
       openCatalogIds.delete(catalog.id);
       renderCatalogCards();
+      notifyCatalogsChanged();
       queueCatalogSync();
     });
 
@@ -188,17 +192,20 @@ export function createCatalogController(editorTabController, agentController, ge
     nameInput.addEventListener("input", () => {
       catalog.name = nameInput.value;
       title.textContent = catalog.name.trim() || "New catalog";
+      notifyCatalogsChanged();
       queueCatalogSync();
     });
     urlInput.addEventListener("input", () => {
       catalog.url = urlInput.value;
       urlLabel.textContent = catalog.url.trim() || "No URL";
       urlLabel.title = catalog.url.trim();
+      notifyCatalogsChanged();
       queueCatalogSync();
     });
     typeSelect.addEventListener("change", () => {
       catalog.type = typeSelect.value;
       typeLabel.textContent = getCatalogTypeLabel(catalog.type);
+      notifyCatalogsChanged();
       queueCatalogSync();
     });
 
@@ -208,6 +215,7 @@ export function createCatalogController(editorTabController, agentController, ge
       createField("Type", typeSelect)
     );
     card.append(summary, fields);
+    catalogFieldElements.set(catalog.id, { nameInput, urlInput, typeSelect });
     return card;
   }
 
@@ -226,6 +234,7 @@ export function createCatalogController(editorTabController, agentController, ge
     openCatalogIds.add(catalog.id);
     renderCatalogCards();
     catalogListEl.lastElementChild?.querySelector(".search-catalog-name-input")?.focus();
+    notifyCatalogsChanged();
     queueCatalogSync();
   }
 
@@ -234,6 +243,7 @@ export function createCatalogController(editorTabController, agentController, ge
   }
 
   function serializeCatalogs({ onlyValid = false } = {}) {
+    collectCatalogFieldValues();
     const serializedCatalogs = catalogs
       .map((catalog) => ({
         ...catalog,
@@ -244,6 +254,20 @@ export function createCatalogController(editorTabController, agentController, ge
       }));
 
     return onlyValid ? serializedCatalogs.filter((h) => h.name && h.url) : serializedCatalogs;
+  }
+
+  function collectCatalogFieldValues() {
+    catalogs.forEach((catalog) => {
+      const elements = catalogFieldElements.get(catalog.id);
+      if (!elements) return;
+      catalog.name = elements.nameInput.value;
+      catalog.url = elements.urlInput.value;
+      catalog.type = elements.typeSelect.value;
+    });
+  }
+
+  function notifyCatalogsChanged() {
+    onCatalogsChanged(serializeCatalogs({ onlyValid: true }));
   }
 
   // ── Search context and agent events ────────────────────────────────────────
@@ -306,77 +330,7 @@ export function createCatalogController(editorTabController, agentController, ge
   // ── Dataset detail tabs ────────────────────────────────────────────────────
 
   function openDatasetTab(item) {
-    editorTabController.openSearchCatalogDatasetTab(item, buildDatasetDetailPanel(item));
-  }
-
-  function buildDatasetDetailPanel(item) {
-    const panel = document.createElement("div");
-    panel.className = "search-catalog-detail-panel";
-
-    const header = document.createElement("div");
-    header.className = "search-catalog-detail-header";
-
-    const titleWrap = document.createElement("div");
-    const kicker = document.createElement("span");
-    kicker.className = "search-catalog-detail-kicker";
-    kicker.textContent = item.catalogName || "Catalog dataset";
-    const title = document.createElement("h2");
-    title.className = "search-catalog-detail-title";
-    title.textContent = item.title || "Untitled dataset";
-    titleWrap.append(kicker, title);
-
-    const actions = document.createElement("div");
-    actions.className = "search-catalog-detail-actions";
-
-    if (item.url) {
-      const openLink = document.createElement("a");
-      openLink.className = "search-catalog-detail-link";
-      openLink.href = item.url;
-      openLink.target = "_blank";
-      openLink.rel = "noopener noreferrer";
-      openLink.textContent = "Open source";
-      actions.appendChild(openLink);
-    }
-
-    const addBtn = document.createElement("button");
-    addBtn.className = "search-catalog-detail-add";
-    addBtn.type = "button";
-    addBtn.textContent = "Add source";
-    addBtn.addEventListener("click", () => {
-      onAddSource?.(item);
-      addBtn.textContent = "Added";
-      addBtn.disabled = true;
-    });
-    actions.appendChild(addBtn);
-
-    header.append(titleWrap, actions);
-
-    const meta = document.createElement("dl");
-    meta.className = "search-catalog-detail-meta";
-    appendMeta(meta, "Type", item.type || "Dataset");
-    appendMeta(meta, "Portal", item.portalType || "Catalog");
-    appendMeta(meta, "Owner", item.owner || "Unknown");
-    appendMeta(meta, "Identifier", item.id || "Unknown");
-    if (item.url) appendMeta(meta, "URL", item.url);
-
-    const description = document.createElement("section");
-    description.className = "search-catalog-detail-section";
-    const descriptionTitle = document.createElement("h3");
-    descriptionTitle.textContent = "Description";
-    const descriptionText = document.createElement("p");
-    descriptionText.textContent = item.snippet || "No description was provided by the catalog.";
-    description.append(descriptionTitle, descriptionText);
-
-    panel.append(header, meta, description);
-    return panel;
-  }
-
-  function appendMeta(list, label, value) {
-    const term = document.createElement("dt");
-    term.textContent = label;
-    const desc = document.createElement("dd");
-    desc.textContent = value;
-    list.append(term, desc);
+    editorTabController.openSearchCatalogDatasetTab(item, buildSearchCatalogDatasetDetailPanel(item, onAddSource));
   }
 
   // ── Agent thread helpers ───────────────────────────────────────────────────
@@ -405,9 +359,9 @@ export function createCatalogController(editorTabController, agentController, ge
 
   // ── Public API ─────────────────────────────────────────────────────────────
 
-  function open() {
+  function open({ focusAgent = true } = {}) {
     editorTabController.openSearchCatalogResultsTab(resultsPanel);
-    agentController.focusComposer("Ask about this place, records, or datasets");
+    if (focusAgent) agentController.focusComposer("Ask about this place, records, or datasets");
   }
 
   loadCatalogs();
@@ -415,6 +369,76 @@ export function createCatalogController(editorTabController, agentController, ge
   agentController.setCatalogEventHandler(handleCatalogEvent);
 
   return { open };
+}
+
+export function buildSearchCatalogDatasetDetailPanel(item, onAddSource) {
+  const panel = document.createElement("div");
+  panel.className = "search-catalog-detail-panel";
+
+  const header = document.createElement("div");
+  header.className = "search-catalog-detail-header";
+
+  const titleWrap = document.createElement("div");
+  const kicker = document.createElement("span");
+  kicker.className = "search-catalog-detail-kicker";
+  kicker.textContent = item.catalogName || "Catalog dataset";
+  const title = document.createElement("h2");
+  title.className = "search-catalog-detail-title";
+  title.textContent = item.title || "Untitled dataset";
+  titleWrap.append(kicker, title);
+
+  const actions = document.createElement("div");
+  actions.className = "search-catalog-detail-actions";
+
+  if (item.url) {
+    const openLink = document.createElement("a");
+    openLink.className = "search-catalog-detail-link";
+    openLink.href = item.url;
+    openLink.target = "_blank";
+    openLink.rel = "noopener noreferrer";
+    openLink.textContent = "Open source";
+    actions.appendChild(openLink);
+  }
+
+  const addBtn = document.createElement("button");
+  addBtn.className = "search-catalog-detail-add";
+  addBtn.type = "button";
+  addBtn.textContent = "Add source";
+  addBtn.addEventListener("click", () => {
+    onAddSource?.(item);
+    addBtn.textContent = "Added";
+    addBtn.disabled = true;
+  });
+  actions.appendChild(addBtn);
+
+  header.append(titleWrap, actions);
+
+  const meta = document.createElement("dl");
+  meta.className = "search-catalog-detail-meta";
+  appendSearchCatalogMeta(meta, "Type", item.type || "Dataset");
+  appendSearchCatalogMeta(meta, "Portal", item.portalType || "Catalog");
+  appendSearchCatalogMeta(meta, "Owner", item.owner || "Unknown");
+  appendSearchCatalogMeta(meta, "Identifier", item.id || "Unknown");
+  if (item.url) appendSearchCatalogMeta(meta, "URL", item.url);
+
+  const description = document.createElement("section");
+  description.className = "search-catalog-detail-section";
+  const descriptionTitle = document.createElement("h3");
+  descriptionTitle.textContent = "Description";
+  const descriptionText = document.createElement("p");
+  descriptionText.textContent = item.snippet || "No description was provided by the catalog.";
+  description.append(descriptionTitle, descriptionText);
+
+  panel.append(header, meta, description);
+  return panel;
+}
+
+function appendSearchCatalogMeta(list, label, value) {
+  const term = document.createElement("dt");
+  term.textContent = label;
+  const desc = document.createElement("dd");
+  desc.textContent = value;
+  list.append(term, desc);
 }
 
 function normalizeCatalogs(value) {

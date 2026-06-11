@@ -10,6 +10,9 @@ import { applyBuiltin, hasBuiltin } from "../features/tool/builtins.ts";
 import { createPostmanController } from "../features/postman/PostmanTab.jsx";
 import { createDatasetController } from "../features/dataset/DatasetTab.jsx";
 import { createLayerSourcesController } from "../features/map/LayerSourcesPage";
+import { registerMapDropZone } from "../features/map/pdfDrop";
+import { initPdfOverlayRenderer } from "../features/map/pdfOverlayRenderer";
+import { initCustomLayersDraw } from "../features/map/customLayersDraw";
 
 let initialized = false;
 let sourceController;
@@ -37,7 +40,7 @@ async function handlePlaceRetrieved(searchResult, _sourceId, sourceLabel) {
   agentController.attachRecord(record);
 }
 
-export async function initializeMapApp({ folderRef = null, suggestToolRef = null } = {}) {
+export async function initializeMapApp({ folderRef = null, suggestToolRef = null, openFileRef = null } = {}) {
   if (initialized) return;
   initialized = true;
   const searchBoxContainer = document.getElementById("placeSearchBox");
@@ -57,6 +60,9 @@ export async function initializeMapApp({ folderRef = null, suggestToolRef = null
     }
   });
   createLayerSourcesController(editorTabController);
+  if (map) registerMapDropZone(map);
+  if (map) initPdfOverlayRenderer(map);
+  if (map) initCustomLayersDraw(map);
   recordController = createRecordController(recordStore, map, editorTabController, () => agentController);
   addressController = createAddressController({
     onAddressClick: (address) => {
@@ -70,13 +76,16 @@ export async function initializeMapApp({ folderRef = null, suggestToolRef = null
     return editorTabController.openReportTab(address);
   });
   if (suggestToolRef) suggestToolRef.current = (name) => agentController.suggestTool(name);
+  if (openFileRef) openFileRef.current = (entry) => editorTabController.openFileViewerTab(entry);
   sourceController = createDatasetController(recordController, builtinController, editorTabController, agentController);
   catalogController = createCatalogController(
     editorTabController,
     agentController,
     () => sourceController.getVariables(),
-    (item) => sourceController.addSourceFromCatalog(item)
+    (item) => sourceController.addSourceFromCatalog(item),
+    (catalogs) => sourceController.setSearchCatalogs(catalogs)
   );
+  sourceController.setSearchSourcesEditorOpener(() => catalogController.open({ focusAgent: false }));
   createPostmanController(editorTabController);
   const agentTabController = createAgentTabController(editorTabController, agentController);
   agentController.setAttachmentTargetProvider(() => agentTabController.getAttachmentTarget());
@@ -84,7 +93,12 @@ export async function initializeMapApp({ folderRef = null, suggestToolRef = null
 
   let reloadSources;
   const { panel: searchSourcesPanel } = createSearchSourceEditorPanel(() => reloadSources?.());
-  const { element: selectorElement, reload } = createSearchSourceControl(map, handlePlaceRetrieved, searchBoxContainer);
+  const { element: selectorElement, reload } = createSearchSourceControl(
+    map,
+    handlePlaceRetrieved,
+    searchBoxContainer,
+    () => editorTabController.openAddressSearchTab(searchSourcesPanel)
+  );
   reloadSources = reload;
   document.getElementById("searchSourceSelector").appendChild(selectorElement);
   document.getElementById("editSearchSourcesButton")?.addEventListener("click", () => editorTabController.openAddressSearchTab(searchSourcesPanel));
