@@ -33,10 +33,6 @@
   margin: 0;
 }
 
-.agent-instruction-save {
-  flex: 0 0 auto;
-}
-
 .agent-instruction-input {
   width: 100%;
   box-sizing: border-box;
@@ -49,6 +45,24 @@
   font: inherit;
   font-size: 12px;
   line-height: 1.45;
+}
+
+.agent-api-key-field {
+  display: grid;
+  gap: 5px;
+}
+
+.agent-api-key-input,
+.agent-provider-select {
+  width: 100%;
+  box-sizing: border-box;
+  min-height: 32px;
+  border: 1px solid #c9ced6;
+  border-radius: 4px;
+  padding: 6px 9px;
+  color: #1f2933;
+  font: inherit;
+  font-size: 12px;
 }
 
 .agent-thread {
@@ -207,8 +221,8 @@
   position: absolute;
   inset: 3px;
   background: #526070;
-  mask: center / contain no-repeat url("/assets/close.svg");
-  -webkit-mask: center / contain no-repeat url("/assets/close.svg");
+  mask: center / contain no-repeat var(--asset-close);
+  -webkit-mask: center / contain no-repeat var(--asset-close);
 }
 
 .agent-attachment-remove:hover {

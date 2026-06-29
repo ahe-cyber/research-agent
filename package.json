@@ -2,9 +2,9 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
-    "start": "next start",
+    "start": "next start -H 127.0.0.1 -p 3001",
     "typecheck": "tsc --noEmit",
-    "preview": "next start",
+    "preview": "next start -H 127.0.0.1 -p 3001",
     "postinstall": "cp node_modules/pdfjs-dist/build/pdf.worker.min.mjs public/pdf.worker.min.mjs && cp node_modules/web-ifc/web-ifc.wasm public/web-ifc.wasm"
   },
   "dependencies": {

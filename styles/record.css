@@ -87,7 +87,7 @@
   left: 5px;
   width: 18px;
   height: 18px;
-  background: center / contain no-repeat url("/assets/polygon.svg");
+  background: center / contain no-repeat var(--asset-polygon);
   z-index: 1;
 }
 
@@ -154,10 +154,11 @@
 
 .json-node > summary {
   display: flex;
+  width: max-content;
   align-items: center;
   gap: 6px;
   list-style: revert;
-  cursor: pointer;
+  cursor: default;
   color: #1f2933;
   font-weight: 700;
   line-height: 1.45;
@@ -192,7 +193,7 @@
 .json-copy-target {
   border: 0;
   background: transparent;
-  cursor: context-menu;
+  cursor: default;
   font: inherit;
   padding: 0;
   text-align: left;
@@ -208,7 +209,17 @@
 }
 
 .json-key {
+  color: #526070;
+  cursor: default;
+}
+
+.json-key:hover {
+  text-decoration: underline;
+}
+
+.json-key.json-copy-target {
   color: #6f42c1;
+  cursor: default;
 }
 
 .json-value {
@@ -261,8 +272,8 @@
   position: absolute;
   inset: 3px;
   background: #000000;
-  mask: center / contain no-repeat url("/assets/document.svg");
-  -webkit-mask: center / contain no-repeat url("/assets/document.svg");
+  mask: center / contain no-repeat var(--asset-document);
+  -webkit-mask: center / contain no-repeat var(--asset-document);
 }
 
 .json-graph-action::before {
@@ -270,8 +281,8 @@
   position: absolute;
   inset: 3px;
   background: #1f2933;
-  mask: center / contain no-repeat url("/assets/graph.svg");
-  -webkit-mask: center / contain no-repeat url("/assets/graph.svg");
+  mask: center / contain no-repeat var(--asset-graph);
+  -webkit-mask: center / contain no-repeat var(--asset-graph);
 }
 
 .json-file-action::after {
@@ -392,8 +403,8 @@
   position: absolute;
   inset: 3px;
   background: #1f2933;
-  mask: center / contain no-repeat url("/assets/wrap.svg");
-  -webkit-mask: center / contain no-repeat url("/assets/wrap.svg");
+  mask: center / contain no-repeat var(--asset-wrap);
+  -webkit-mask: center / contain no-repeat var(--asset-wrap);
 }
 
 .record-graph-wrap-button.is-active {
@@ -432,8 +443,8 @@
   position: absolute;
   inset: 3px;
   background: #1f2933;
-  mask: center / contain no-repeat url("/assets/table.svg");
-  -webkit-mask: center / contain no-repeat url("/assets/table.svg");
+  mask: center / contain no-repeat var(--asset-table);
+  -webkit-mask: center / contain no-repeat var(--asset-table);
 }
 
 .json-table-action.is-active {

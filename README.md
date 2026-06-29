@@ -4,7 +4,7 @@ The project is an **Agentic AEC IDE**: a visual, extensible environment where AI
 
 ## Overview
 
-The current implementation is intentionally simple. It is an early GIS and data-research workspace for searching addresses and places, inspecting records, running source queries, viewing map results, and using attached records for AI-assisted analysis. The interface is designed to feel closer to an editor than a single-purpose map page, with a narrow activity rail, a left workspace sidebar, a central editor, and a right agent sidebar.
+The current implementation is intentionally simple. It is an early GIS and data-research workspace for searching addresses and places, inspecting records, running source queries, viewing map results, and using attached records for AI-assisted analysis. The interface is designed to feel closer to an editor than a single-purpose map page, with a narrow feature rail, a left workspace sidebar, a central editor, and a right agent sidebar.
 
 Current capabilities include:
 
@@ -17,18 +17,104 @@ Current capabilities include:
 * PDF and image link extraction into the Folder tab.
 * An AI agent panel that can use attached query records as context for analysis.
 
+## User Stories
+
+Use this section to capture the product narrative before translating it into implementation tasks.
+
+### Story Outline
+
+#### Wagner College Zoning Lot and Floor Area Research
+
+1. **Who is the user?**
+   * Primary role: Architect or zoning researcher evaluating an institutional campus.
+   * Secondary roles: Project lead, planner, reviewer, or analyst preparing a zoning due diligence report.
+   * Team or project context: The team is studying Wagner College, a large campus with multiple tax lots that may function as one zoning lot.
+
+2. **What situation are they in?**
+   * Project type: Existing college campus / institutional site research.
+   * Starting material: The user begins with the place name `wagner college`, not a single BBL or known zoning lot boundary.
+   * Urgency or constraint: The team needs zoning lot area and zoning floor area, but the readily available datasets do not directly provide a complete zoning lot outline or official per-building zoning floor area.
+   * What is hard about the current workflow: Address search lands on one larger building within the campus instead of the whole campus; tax lots, buildings, zoning districts, and zoning lot assumptions need to be compared interactively; building-level floor area and floor counts are incomplete or distributed across different public records.
+
+3. **What are they trying to accomplish?**
+   * Main goal: Determine the best-supported zoning lot area and zoning floor area for the campus.
+   * Supporting goals: Identify each relevant tax lot, inspect each building footprint, review available official floor area fields, estimate or explain gaps in per-building breakdowns, and understand how the buildings relate to the larger campus.
+   * Decisions they need to make: Which tax lots should be treated as part of the zoning lot, which public records can support the analysis, and where assumptions or manual verification are required.
+   * Deliverables they need to produce: A research report that states the findings, cites the datasets used, and clearly explains limitations in the available data.
+
+4. **What do they do in the workspace?**
+   * Search: Enter `wagner college` in the Address search bar and compare provider results from NYC GeoSearch, Mapbox Search, and Google Places.
+   * Map: Navigate to the campus, see tax lots, building footprints, zoning district context, and ideally photorealistic 3D buildings.
+   * Records: Query and inspect MAPPLUTO, building footprints, zoning GIS data, and any available building/elevation/floor-area sources.
+   * Folder/files: Attach supporting PDFs, drawings, or exported records if the team has private due diligence material.
+   * Agent: Ask the AI to synthesize the records, calculate or summarize known areas, identify missing information, and distinguish official values from inferred or unavailable values.
+   * Output/report: Generate a report explaining the target zoning question, the datasets reviewed, the calculated or observed values, and the limitations caused by unavailable zoning lot boundaries or per-building zoning floor area.
+
+5. **What does success look like?**
+   * Faster because: The user can start from a campus name and move directly into mapped records instead of manually searching separate GIS portals.
+   * More accurate because: Tax lots, building footprints, zoning data, and source records stay visible and inspectable together.
+   * Easier to explain because: The report separates confirmed public data from assumptions, estimates, and missing official records.
+   * Reusable later because: The records, map layers, and report remain attached to the project for later review or refinement.
+
+1. **Who is the user?**
+   * Primary role:
+   * Secondary roles:
+   * Team or project context:
+
+2. **What situation are they in?**
+   * Project type:
+   * Starting material:
+   * Urgency or constraint:
+   * What is hard about the current workflow:
+
+3. **What are they trying to accomplish?**
+   * Main goal:
+   * Supporting goals:
+   * Decisions they need to make:
+   * Deliverables they need to produce:
+
+4. **What do they do in the workspace?**
+   * Search:
+   * Map:
+   * Records:
+   * Folder/files:
+   * Agent:
+   * Output/report:
+
+5. **What does success look like?**
+   * Faster because:
+   * More accurate because:
+   * Easier to explain because:
+   * Reusable later because:
+
+### User Story Template
+
+```text
+As a [user or role],
+I want to [action or workflow],
+so that [outcome or value].
+```
+
+### Acceptance Criteria Template
+
+```text
+Given [starting context],
+when [user action],
+then [observable result].
+```
+
 ## Engineering Conventions
 
 The project is migrating incrementally to Next.js. New code should follow the intended architecture even while legacy modules remain in place:
 
 * Favor Next.js App Router structure and React components for new UI work.
 * Prefer `.tsx` for components and `.ts` for application logic. Add new `.js` or `.jsx` files only when touching a legacy boundary makes that unavoidable.
-* Keep feature-specific code under `src/features/*`, reusable UI components under an appropriate shared feature folder, and route handlers under `src/app/api/*`.
+* Keep feature-specific code under `features/*`, reusable UI components under an appropriate shared feature folder, and route handlers under `app/api/*`.
 * Prefer data-driven behavior over hard-coded configuration. The current registries are JSON files under `public/data`.
 * Extract reusable components when multiple editor pages share layout or interaction patterns, especially menus, list views, table views, graph views, cards, and action rows.
 * Keep each migration increment buildable. Avoid combining broad file moves, visual redesigns, and behavior changes unless they belong to the same focused task.
 
-Activity nomenclature must stay absolutely consistent. Use the canonical singular activity ids from `public/data/activity.json` everywhere an activity identity appears: `project`, `folder`, `address`, `record`, `dataset`, `tool`, `agent`, and `map`. Folder names, filenames, exported component names, controller/function names, CSS namespace roots, route folders, object keys, and object values should use the same singular activity word when they refer to that activity. Do not reintroduce plural or legacy aliases such as `agents`, `datasets`, `tools`, `sources`, `assets`, `records`, `details`, or `formulas` for activity-owned code.
+Feature nomenclature must stay absolutely consistent. Use the canonical singular feature ids from `public/data/feature.json` everywhere a feature identity appears: `project`, `folder`, `address`, `record`, `dataset`, `tool`, `agent`, and `map`. Folder names, filenames, exported component names, controller/function names, CSS namespace roots, route folders, object keys, and object values should use the same singular feature word when they refer to that feature. Do not reintroduce plural or legacy aliases such as `agents`, `datasets`, `tools`, `sources`, `assets`, `records`, `details`, or `formulas` for feature-owned code.
 
 ## UI Style Guidance
 
@@ -47,10 +133,10 @@ Use:
 The layout should remain fixed:
 
 ```text
-Activity rail → Workspace sidebar → Map editor → Agent sidebar
+Feature rail → Workspace sidebar → Map editor → Agent sidebar
 ```
 
-## Activity Tabs
+## Feature Tabs
 
 ### Address
 
@@ -81,80 +167,71 @@ npm run build
 npm run start
 ```
 
-## Current Progress
+### TODO:
+- [ ] allow more agent only options for modifying map and persist map state
+- [ ] implement workspace logic
+- [ ] Add Multimodal RAG for Building Codes, Drawings, and Models
+- [ ] Migrate CSS to SCSS
+- [ ] Add other options for terrain and 3d
+  https://developers.google.com/maps/documentation/javascript/webgl/webgl-overlay-view
+  https://developers.google.com/maps/documentation/javascript/reference/3d-map
+  https://developers.google.com/maps/documentation/tile/3d-tiles-overview
+  https://gis.ny.gov/lidar
+- [ ] Minor information for map layers: dataset last updated, dataset creation date, dataset descriptio
+- [ ] allow interaction with map elements such as geometry, 3d geometry, elevation, etc. will also show selected value from individual datasets.
 
-The project has TypeScript checking, typed framework-neutral map utilities, typed search providers, a Next.js App Router client shell, and typed App Router route handlers for the `dataset`, `search`, `agent`, `tool`, `terrain`, `overlay`, `geometry`, `proxy`, `postman`, and Gemini chat domains. The workspace runs through Next.js for development, production build, and production start; the legacy Express/Vite server has been removed. The app already includes registry-backed dataset entries, catalog entries, agent entries, basemaps, search entries, server-backed PDF overlay references, and custom geometry layers; configurable search-source editing; source cards; map layer source inspection with list and table modes; agent workflows; editor tabs; Postman collections; catalog browsing; and shared editor page primitives. Address and Dataset search now share the same search widget shell/dropdown styling; Dataset exposes catalog choices as a provider dropdown and autocompletes top records for the active catalog. The API folder now separates private `_lib` helpers, `_services` provider/model logic, and thin domain route handlers. The editor shell now uses typed React `PageMenu`, `PageListView`, `PageTableView`, and `PageGraphView` primitives, with remaining imperative panel controls bridged through React roots. Migration is incomplete: several UI controllers remain imperative DOM modules, several files still use JavaScript or JSX, and styles remain plain CSS.
+### Pending Assignment Plannings:
 
-## TODO
+### Current Plannings:
 
-Complete one TODO block at a time. Before implementing a block, stage all changes and create a Git commit with a message that describes in one or two simple sentences what you are about to do. Keep each increment buildable, prefer typed Next.js components, and preserve existing behavior unless a task explicitly changes it. When a block is complete, change `TODO` to `DONE` and replace its instruction block with a brief summary of what was implemented. Then review the remaining TODO blocks for changed assumptions or dependencies and revise their instructions when the current state has made them outdated. Stage the related changes, but do not commit after completing a TODO. If there are too many DONE items, compact them. If there are TODO items without instruction or detail, populate them based on the title line.
+### Pending Review Issues:
 
-### DONE: Analyze current project against conventional Next.js app
+### Pending Assignment Issues:
+- [x] remove things in /home/django/rampulla/research-agent/public/data for git tracking since we are storing api keys it prevents us from syncing. untrack them. If there are unpushable commits that already contained it, try to deal with them. the goal is to have current changes committed and synced to remote. no file should be changed or removed.
 
-Reviewed the current structure against the current Next.js App Router documentation:
+### Current Issues:
+- [x] I still get error when mounting Browser Drive ![alt text](image-10.png). remove the mount button from the panel. put mount button at the menu section where usually the edit.svg is. create a mount.svg with icon of a usb thumb drive ![alt text](image-11.png), following same principle of human readable preferring whole or half number rule. also create an unmount icon ![alt text](image-12.png). for now, mount and unmount button will only be useful for when local drive is chosen. leave unmount button as a placeholder.
+- [x] when deleting an agent from the agent flow edit page, there should also be a retention period of 10 sec for delecting agent cards. it would look a little different form the list views, but should still have countdown, revert.svg and other existing textural or symbolic elements.
+- [x] The agent sources editor's dropdown menu doesnt work. and make the api key on the same line as the costly checkbox. since there is this descripency, I suggest you check that the address sources and agent sources are actually using the same component. because if they do, there shouldnt be this style mismatch ![alt text](image-8.png) ![alt text](image-9.png) and on the ui do not say if something is not implemented and grey it out. consider everything implemented. Or better yet, implement them "https://developers.openai.com/api/docs" "https://platform.claude.com/docs/en/home". make sure you use as much shared utilities between the agent providers as possible, so when we want to modify the logic, it will be easy. Also, since we are supposed to be using the same EXACT compoenent for the search source selector, there should also be a money icon after the line when clostly is check. i dont see this yet.
 
-* The project is aligned with App Router basics: source lives under the supported `src` folder, `src/app/page.tsx` is a Server Component by default, route handlers live under `src/app/api/*/route.ts`, and the interactive map is isolated behind a client component (`WorkspaceClient`) that loads browser-only scripts with `next/script`.
-* Keep the map/editor shell as a client boundary because it depends on state, effects, `window`, MapLibre, and Mapbox Search. Use Server Components selectively for future non-map routes such as dataset documentation, reports, settings summaries, saved project overviews, and read-only catalog pages.
-* Preserve route handlers for server-side proxying, registry reads/writes, Postman calls, and agent chat. Add explicit cache policy only where a GET endpoint is truly static or safely revalidated; registry-editing endpoints and query proxies should remain request-time behavior.
-* Move toward component-level CSS Modules or SCSS Modules for newly migrated React components, keeping global CSS only for app-wide reset/layout tokens until the SCSS TODO is implemented.
-* Consider adding route groups for future sections such as `(workspace)`, `(reports)`, or `(settings)` once multiple pages exist. Do not split the current single-screen editor into route segments until there is a real navigation or persistence goal.
-* Useful Next.js docs for follow-up decisions: [App Router](https://nextjs.org/docs/app), [Project Structure](https://nextjs.org/docs/app/getting-started/project-structure), [Server and Client Components](https://nextjs.org/docs/app/getting-started/server-and-client-components), [Route Handlers](https://nextjs.org/docs/app/getting-started/route-handlers), [CSS](https://nextjs.org/docs/app/getting-started/css), [Sass](https://nextjs.org/docs/app/guides/sass), and [`fetch`](https://nextjs.org/docs/app/api-reference/functions/fetch).
+# Six-World Semantic Model for Architectural Design
 
-### DONE: Organize Project Structure
+Architecture is analyzed through six complementary semantic worlds. These worlds are not mutually exclusive; they are different perspectives used to describe the same site, building, drawing, design proposal, or urban condition.
 
-Renamed feature packages, API folders, and exported tab/controller names to align with `public/data/activity.json`: `agent`, `dataset`, `folder`, `record`, `search`, and `tool` now replace the prior plural or legacy folders. Address search and catalog browsing now live under `src/features/search`, the old assets tab is represented as `FolderTab`, and the Browser activity was removed because catalog browsing is part of search. The Dataset tab now uses the same `SearchWidget` family as Address: catalog entries are dropdown choices and typed queries autocomplete top records from the selected catalog. The activity rail derives its default labels/icons from `activity.json` so the UI and registry stay synchronized. API routes were reorganized around `/api/search/*`, `/api/agent/*`, `/api/dataset`, and `/api/proxy/query`, with provider logic extracted into private `_services`.
+## Dataworld
 
-### DONE: Convert Activity Controllers to Typed React Packages (folder and tool)
+Represents measurable physical, spatial, environmental, financial, and regulatory properties.
 
-Converted the `folder` and `tool` activities from imperative DOM controllers to typed React modules:
+Examples: lot area, FAR, building height, setbacks, floor area, room area, corridor width, travel distance, occupant load, stair width, structural span, daylight level, solar exposure, slope, flood elevation, noise level, EUI, embodied carbon, cost per square foot.
 
-* **folder** — `FolderTab.jsx` replaced by `FolderTab.tsx`. Asset state lives in `useState`. The component is a `forwardRef` that exposes a `FolderController` handle (`addFromRecord`, `addFromValue`) via `useImperativeHandle` so future callers can push assets from records. `hasAssetUrls` remains an exported pure function. The old `createFolderController` (which was never wired) is removed.
-* **tool** — `ToolTab.jsx` replaced by `ToolTab.tsx`. Tool list state lives in `useState`; the API fetch runs in `useEffect`. The component accepts an `onSuggestTool` callback prop instead of a `getAgentController` closure. The built-in tool functions (`applyBuiltin`, `hasBuiltin`, and `BUILTINS`) are extracted into `src/features/tool/builtins.ts` and imported directly by `initializeMapApp` as a plain `builtinController` object passed to the dataset controller.
-* **App.jsx** — Imports the new `.tsx` tab components. Holds a `folderRef` (passed to `FolderTab`) and a `suggestToolRef` (populated by `initializeMapApp` after the agent controller is ready). A stable `onSuggestTool` callback reads from `suggestToolRef` and is passed to `ToolTab`.
-* **initializeMapApp.js** — Accepts `{ folderRef, suggestToolRef }` options. Replaces `createToolController` with direct imports from `src/features/tool/builtins.ts`. Sets `suggestToolRef.current` to the agent controller's `suggestTool` method immediately after the agent controller is created.
+## Logiworld
 
-Remaining activities (`record`, `dataset`, `search`, `agent`) still use imperative DOM controllers and are next in the migration sequence.
+Represents the conceptual architectural objects present in the project.
 
-### DONE: Add Resizable and Persisted Workbench Layout
+Examples: site, parcel, street, sidewalk, wall, slab, column, beam, core, stair, elevator, corridor, lobby, room, unit, courtyard, atrium, terrace, roof, facade, window, door, zoning district, occupancy group, exit, fire separation, accessible route.
 
-Replaced the fixed `grid-template-columns: 48px 360px minmax(360px, 1fr) 380px` in `layout.css` with `48px 1fr`. The 48 px activity rail stays fixed. The remaining three columns (sidebar, editor, agent panel) are now driven by `react-resizable-panels` v4 through a new `src/features/workspace/WorkbenchLayout.tsx` component:
+## Archiworld
 
-* `Group` wraps the three resizable panels with `orientation="horizontal"`.
-* `Panel` ids are `sidebar`, `editor`, and `agent`; default sizes are 22 / 56 / 22 percent.
-* Sidebar and agent panels set `collapsible` so they can be fully dragged shut.
-* `onLayoutChanged` (fires on pointer-up) saves the `Layout` dict to `workspaceState` under the key `panelLayout`; on next load the saved layout is validated and passed back to `Group` via `defaultLayout`.
-* `Separator` elements carry the `workbench-resize-handle` class — a 4 px invisible hit zone that turns `#2f6fed` on hover or while dragging.
-* `height: 100%` was added to `.workspace-sidebar`, `.editor-area`, and `.agent-panel` so they fill their panel containers (the previous CSS grid stretched them automatically; the flex-based Panel layout requires explicit height).
+Represents relationships, systems, sequences, and constraints between architectural objects.
 
-### DONE: Add CAD/BIM Folder Mounts and File Parsers
+Examples: entry sequence, public-to-private gradient, circulation loop, threshold, spatial hierarchy, served/servant relationship, front/back condition, solid/void rhythm, compression/release, view corridor, program adjacency, structural grid, core organization, egress path, fire separation relationship, setback envelope, height plane, FAR tradeoff, massing transition, phasing dependency, code conflict, zoning opportunity.
 
-Added File System Access API folder mounting and client-side parsers for PDF, DXF, and IFC in `src/features/folder/`:
+## Lifeworld
 
-* **`folderMount.ts`** — `mountFolder()` calls `showDirectoryPicker({ mode: 'read' })`, walks the directory tree up to 5 levels deep, and returns a `MountedFolder` with a `FileEntry[]` filtered to `.pdf`, `.dxf`, and `.ifc`. `parseFile(entry)` dynamically imports the appropriate parser. `isFolderMountSupported()` gates the mount button on browser support.
-* **`parsers/pdf.ts`** — uses `pdfjs-dist` (dynamic import, worker at `/pdf.worker.min.mjs`). Extracts per-page text via `getTextContent()` and concatenates to `fullText`.
-* **`parsers/dxf.ts`** — uses `dxf-parser`. Extracts layer names, entity type counts, and all `TEXT`/`MTEXT` string content.
-* **`parsers/ifc.ts`** — uses `web-ifc` (WASM singleton at `/web-ifc.wasm`, cached across files). Reads schema from raw file text, then queries `GetLineIDsWithType` for project name, storey names, space names, and counts of walls, slabs, columns, beams, doors, windows, stairs, roofs, and furnishings.
-* **`FolderTab.tsx`** — updated with a "Mount folder" button (hidden when the API is unavailable), per-mount file lists, per-file "Parse" buttons, and inline `ParseResultView` components for each type. Existing asset-URL collection from agent records is preserved below the mounts.
-* **`package.json`** — added `pdfjs-dist`, `dxf-parser`, `web-ifc`; `postinstall` script copies the PDF worker and IFC WASM to `public/`.
+Represents direct perceptual and embodied qualities of architecture: how a place is experienced by the body and senses.
 
-Scope: read-only import and inspect only; no export, no 3D rendering. Parse results are structured for future AI context attachment.
+Examples: open, compressed, narrow, wide, tall, low, airy, heavy, light, warm, cold, soft, harsh, bright, dim, shadowy, glare-prone, quiet, echoic, smooth, rough, porous, enclosed, deep, shallow, legible, disorienting, accessible, fatiguing, crowded, exposed, protected.
 
-### TODO: Add Record Graph and JSON Inspection
+## Dreamworld
 
-Add a graph view for records, variables, source queries, attached assets, and agent messages using `@xyflow/react`. Keep the existing JSON accordion for precise inspection, and use the graph for relationships rather than raw JSON rendering. The graph should open from Record and support selecting nodes to reveal the existing record detail/table views.
+Represents the symbolic, atmospheric, or imaginative world evoked by architecture.
 
-### TODO: Give Agents Map, Record, and UI Context (Multimodal, screenshot, extent, records, camera location)
+Examples: sacred, monastic, eerie, ruinous, subterranean, celestial, oceanic, elemental, haunted, utopian, dystopian, nostalgic, ceremonial, mysterious, bunker-like, cave-like, forest-like, machine-dream, abandoned, mythic, otherworldly.
 
-Extend agent context with the current map viewport, visible GeoJSON layers, selected records, active project, and open editor tab metadata. Keep the agent payload compact by sending summaries plus stable record IDs, and let tools fetch full records when needed. Validate tool inputs with `zod` before executing registry edits, source queries, catalog search, or agent-to-agent calls.
+## Fictiworld
 
-### TODO: Persist Project and Editor State
+Represents shared architectural meanings, typologies, styles, precedents, institutions, narratives, and disciplinary conventions.
 
-Consolidate the scattered `localStorage` keys (`workspace-state`, `layer-fields-folded`) into a single typed `ProjectState` object. Create `src/lib/projectStore.ts` with `loadProject`/`saveProject` backed by `localStorage`. Define `ProjectState` in `src/lib/project.ts` covering `activeActivity`, `activityOrder`, `panelLayout`, `openEditorTabs`, `activeEditorTab`, `mapViewport`, `selectedDatasetSourceId`, `selectedAddressSourceId`, and `layerFieldsCollapsed`. Migrate the four callers (`App.jsx`, `EditorTabs.js`, `WorkbenchLayout.tsx`, `DatasetTab.jsx`) then delete `src/lib/workspaceState.js`. No new packages needed.
+Examples: courtyard house, rowhouse, brownstone, loft building, perimeter block, tower-on-podium, mat building, museum, gallery, black-box theater, white-cube gallery, warehouse conversion, campus building, Brutalist, Minimalist, High-tech, Postmodern, Vernacular, Parametric, adaptive reuse, landmark-sensitive intervention, as-of-right development, public-review project, code-minimum solution, sustainability certification, developer pro forma logic, urban lantern, vertical village, interior street, civic condenser.
 
-### TODO: Add Multimodal RAG for Building Codes, Drawings, and Models
-
-Use `@google/genai` for Gemini chat, multimodal inputs, and embeddings, `pdfjs-dist` for PDF text/page extraction, `@lancedb/lancedb` for local vector tables, and the CAD/BIM packages from the Folder TODO for geometric files. Store source chunks, citations, thumbnails, and extracted entities as project records. Start with building-code PDFs and dataset metadata before adding image-heavy sheets or full IFC semantic extraction.
-
-### TODO: Migrate CSS to SCSS
-
-Install `sass` and adopt SCSS incrementally on top of the activity-aligned stylesheet files. Start with shared variables and mixins for colors, spacing, borders, icon masks, and editor surfaces, then migrate `styles/base.css`, `styles/layout.css`, and one activity stylesheet at a time without mixing visual redesign into the stylesheet conversion.
+The analyzer produces descriptors in each world with confidence values, evidence, assumptions, and source references. These descriptors can then support precedent retrieval, zoning/code reasoning, diagram generation, report writing, design critique, and presentation asset selection.

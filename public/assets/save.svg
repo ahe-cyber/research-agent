@@ -1,0 +1,26 @@
+<svg width="20" height="20" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg" aria-label="save">
+  <path
+    d="
+      M5 4
+      H13
+      L15 6
+      V16
+      H5
+      V4
+      Z
+      M7 4
+      V8
+      H12
+      V4
+      M7 16
+      V12
+      H13
+      V16
+    "
+    fill="none"
+    stroke="#000000"
+    stroke-width="1.1"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+  />
+</svg>

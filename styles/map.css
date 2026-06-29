@@ -2,3 +2,7 @@
   position: absolute;
   inset: 0;
 }
+
+#map.is-restoring {
+  opacity: 0;
+}

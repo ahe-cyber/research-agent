@@ -44,3 +44,6 @@ next-env.d.ts
 
 *.png
 *.pdf
+
+# local user/workspace data
+/public/data/

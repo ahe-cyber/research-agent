@@ -31,7 +31,7 @@ mapbox-search-box:focus-within {
   width: 16px;
   height: 16px;
   background: #d4a000;
-  mask: center / contain no-repeat url("/assets/money.svg");
-  -webkit-mask: center / contain no-repeat url("/assets/money.svg");
+  mask: center / contain no-repeat var(--asset-money);
+  -webkit-mask: center / contain no-repeat var(--asset-money);
   pointer-events: none;
 }

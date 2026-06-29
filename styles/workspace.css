@@ -304,8 +304,8 @@
   position: absolute;
   inset: 4px;
   background: currentColor;
-  mask: center / contain no-repeat url("/assets/delete.svg");
-  -webkit-mask: center / contain no-repeat url("/assets/delete.svg");
+  mask: center / contain no-repeat var(--asset-delete);
+  -webkit-mask: center / contain no-repeat var(--asset-delete);
 }
 
 .custom-layer-edit {
@@ -320,8 +320,8 @@
   position: absolute;
   inset: 4px;
   background: currentColor;
-  mask: center / contain no-repeat url("/assets/edit.svg");
-  -webkit-mask: center / contain no-repeat url("/assets/edit.svg");
+  mask: center / contain no-repeat var(--asset-edit);
+  -webkit-mask: center / contain no-repeat var(--asset-edit);
 }
 
 .custom-layer-body {
@@ -417,7 +417,9 @@
 .view-menu-button,
 .layer-sources-button,
 .add-source-button,
-.edit-activity-button,
+.edit-feature-button,
+.mount-folder-button,
+.unmount-folder-button,
 .edit-dataset-button,
 .edit-search-sources-button,
 .edit-agent-button,
@@ -433,7 +435,9 @@
 .view-menu-button::before,
 .layer-sources-button::before,
 .add-source-button::before,
-.edit-activity-button::before,
+.edit-feature-button::before,
+.mount-folder-button::before,
+.unmount-folder-button::before,
 .edit-dataset-button::before,
 .edit-search-sources-button::before,
 .edit-agent-button::before,
@@ -447,45 +451,55 @@
 }
 
 .view-menu-button::before {
-  mask: center / contain no-repeat url("/assets/menu.svg");
-  -webkit-mask: center / contain no-repeat url("/assets/menu.svg");
+  mask: center / contain no-repeat var(--asset-menu);
+  -webkit-mask: center / contain no-repeat var(--asset-menu);
 }
 
 .layer-sources-button::before {
-  mask: center / contain no-repeat url("/assets/edit.svg");
-  -webkit-mask: center / contain no-repeat url("/assets/edit.svg");
+  mask: center / contain no-repeat var(--asset-edit);
+  -webkit-mask: center / contain no-repeat var(--asset-edit);
 }
 
 .add-source-button::before {
-  mask: center / contain no-repeat url("/assets/add.svg");
-  -webkit-mask: center / contain no-repeat url("/assets/add.svg");
+  mask: center / contain no-repeat var(--asset-add);
+  -webkit-mask: center / contain no-repeat var(--asset-add);
 }
 
 .edit-dataset-button::before {
-  mask: center / contain no-repeat url("/assets/edit.svg");
-  -webkit-mask: center / contain no-repeat url("/assets/edit.svg");
+  mask: center / contain no-repeat var(--asset-edit);
+  -webkit-mask: center / contain no-repeat var(--asset-edit);
 }
 
-.edit-activity-button::before,
+.edit-feature-button::before,
 .edit-search-sources-button::before,
 .edit-agent-button::before {
-  mask: center / contain no-repeat url("/assets/edit.svg");
-  -webkit-mask: center / contain no-repeat url("/assets/edit.svg");
+  mask: center / contain no-repeat var(--asset-edit);
+  -webkit-mask: center / contain no-repeat var(--asset-edit);
+}
+
+.mount-folder-button::before {
+  mask: center / contain no-repeat var(--asset-mount);
+  -webkit-mask: center / contain no-repeat var(--asset-mount);
+}
+
+.unmount-folder-button::before {
+  mask: center / contain no-repeat var(--asset-unmount);
+  -webkit-mask: center / contain no-repeat var(--asset-unmount);
 }
 
 .wrap-text-button::before {
-  mask: center / contain no-repeat url("/assets/wrap.svg");
-  -webkit-mask: center / contain no-repeat url("/assets/wrap.svg");
+  mask: center / contain no-repeat var(--asset-wrap);
+  -webkit-mask: center / contain no-repeat var(--asset-wrap);
 }
 
 .cloud-collections-button::before {
-  mask: center / contain no-repeat url("/assets/cloud.svg");
-  -webkit-mask: center / contain no-repeat url("/assets/cloud.svg");
+  mask: center / contain no-repeat var(--asset-cloud);
+  -webkit-mask: center / contain no-repeat var(--asset-cloud);
 }
 
 .agent-more-button::before {
-  mask: center / contain no-repeat url("/assets/more.svg");
-  -webkit-mask: center / contain no-repeat url("/assets/more.svg");
+  mask: center / contain no-repeat var(--asset-more);
+  -webkit-mask: center / contain no-repeat var(--asset-more);
 }
 
 
@@ -501,7 +515,9 @@
 .view-menu-button.is-active,
 .layer-sources-button.is-active,
 .add-source-button.is-active,
-.edit-activity-button.is-active,
+.edit-feature-button.is-active,
+.mount-folder-button.is-active,
+.unmount-folder-button.is-active,
 .edit-dataset-button.is-active,
 .edit-search-sources-button.is-active,
 .edit-agent-button.is-active,
@@ -514,7 +530,9 @@
 .view-menu-button.is-active::before,
 .layer-sources-button.is-active::before,
 .add-source-button.is-active::before,
-.edit-activity-button.is-active::before,
+.edit-feature-button.is-active::before,
+.mount-folder-button.is-active::before,
+.unmount-folder-button.is-active::before,
 .edit-dataset-button.is-active::before,
 .edit-search-sources-button.is-active::before,
 .edit-agent-button.is-active::before,
@@ -541,7 +559,36 @@
 }
 
 .folder-mount-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
   margin-bottom: 10px;
+}
+
+.agent-model-search-widget {
+  margin: 0 0 12px;
+}
+
+.provider-editor-panel {
+  background: #ffffff;
+}
+
+.provider-editor-body {
+  display: grid;
+  gap: 10px;
+}
+
+.provider-editor-field textarea {
+  width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+  border: 1px solid #c9ced6;
+  border-radius: 4px;
+  padding: 6px 9px;
+  color: #1f2933;
+  font: inherit;
+  font-size: 12px;
+  resize: vertical;
 }
 
 .folder-mount-button {
@@ -557,6 +604,12 @@
 
 .folder-mount-button:hover {
   background: #f0f4f8;
+}
+
+.folder-mount-button:disabled {
+  color: #8a95a3;
+  cursor: not-allowed;
+  background: #f6f8fa;
 }
 
 .folder-mount {
@@ -577,12 +630,21 @@
 }
 
 .folder-mount-name {
+  min-width: 0;
   font-size: 12px;
   font-weight: 700;
   color: #1f2933;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+}
+
+.folder-provider-label {
+  margin-left: auto;
+  margin-right: 8px;
+  color: #6b7787;
+  font-size: 12px;
+  white-space: nowrap;
 }
 
 .folder-mount-remove {
@@ -812,6 +874,12 @@
   font-size: 13px;
 }
 
+.tool-signature code,
+.tool-signature span {
+  display: inline;
+  margin-top: 0;
+}
+
 .tool-name {
   font-weight: 700;
   color: #0b5cad;
@@ -999,18 +1067,18 @@
 
 .delete-source-button::before {
   background: #ffffff;
-  mask: center / contain no-repeat url("/assets/delete.svg");
-  -webkit-mask: center / contain no-repeat url("/assets/delete.svg");
+  mask: center / contain no-repeat var(--asset-delete);
+  -webkit-mask: center / contain no-repeat var(--asset-delete);
 }
 
 .revert-source-button::before {
-  mask: center / contain no-repeat url("/assets/revert.svg");
-  -webkit-mask: center / contain no-repeat url("/assets/revert.svg");
+  mask: center / contain no-repeat var(--asset-revert);
+  -webkit-mask: center / contain no-repeat var(--asset-revert);
 }
 
 .sync-source-button::before {
-  mask: center / contain no-repeat url("/assets/sync.svg");
-  -webkit-mask: center / contain no-repeat url("/assets/sync.svg");
+  mask: center / contain no-repeat var(--asset-sync);
+  -webkit-mask: center / contain no-repeat var(--asset-sync);
 }
 
 .sync-source-button.is-success {
@@ -1055,8 +1123,8 @@
   position: absolute;
   inset: 4.5px;
   background: #526070;
-  mask: center / contain no-repeat url("/assets/link.svg");
-  -webkit-mask: center / contain no-repeat url("/assets/link.svg");
+  mask: center / contain no-repeat var(--asset-link);
+  -webkit-mask: center / contain no-repeat var(--asset-link);
 }
 
 .card-attach-button:hover {
@@ -1101,8 +1169,8 @@
 
 .source-editor-close-button::before {
   background: #526070;
-  mask: center / contain no-repeat url("/assets/close.svg");
-  -webkit-mask: center / contain no-repeat url("/assets/close.svg");
+  mask: center / contain no-repeat var(--asset-close);
+  -webkit-mask: center / contain no-repeat var(--asset-close);
 }
 
 .source-editor-close-button:hover {
@@ -1172,6 +1240,19 @@
   white-space: nowrap;
 }
 
+.source-delete-countdown {
+  position: absolute;
+  top: 50%;
+  right: 10px;
+  transform: translateY(-50%);
+  background: #ffffff;
+  color: #b45309;
+  font-size: 10px;
+  font-weight: 700;
+  line-height: 1;
+  padding: 0 5px;
+}
+
 .source-run-button {
   position: relative;
   flex: 0 0 auto;
@@ -1190,8 +1271,8 @@
   position: absolute;
   inset: 5px;
   background: #000000;
-  mask: center / contain no-repeat url("/assets/search.svg");
-  -webkit-mask: center / contain no-repeat url("/assets/search.svg");
+  mask: center / contain no-repeat var(--asset-search);
+  -webkit-mask: center / contain no-repeat var(--asset-search);
 }
 
 .source-run-button:hover {
@@ -1354,8 +1435,8 @@
   position: absolute;
   inset: 5px;
   background: #526070;
-  mask: center / contain no-repeat url("/assets/delete.svg");
-  -webkit-mask: center / contain no-repeat url("/assets/delete.svg");
+  mask: center / contain no-repeat var(--asset-delete);
+  -webkit-mask: center / contain no-repeat var(--asset-delete);
 }
 
 .row-delete-button:hover {
