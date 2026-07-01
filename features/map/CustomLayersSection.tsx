@@ -21,9 +21,12 @@ interface CustomLayer {
   id: string;
   name: string;
   visible: boolean;
+  category?: LayerCategory;
   collapsed?: boolean;
   geometries: Geometry[];
 }
+
+type LayerCategory = "global" | "local" | "manual";
 
 async function loadLayers(): Promise<CustomLayer[]> {
   try {
@@ -197,6 +200,12 @@ export function CustomLayersSection() {
     );
   }
 
+  function setLayerCategory(id: string, category: LayerCategory) {
+    setLayers((prev) =>
+      prev.map((layer) => (layer.id !== id ? layer : { ...layer, category }))
+    );
+  }
+
   function removeGeometry(layerId: string, geomId: string) {
     if (editingGeometryId === geomId) cancelDraw();
     setLayers((prev) =>
@@ -254,6 +263,10 @@ export function CustomLayersSection() {
               >
                 {layer.name}
               </button>
+              <CategorySelect
+                value={layer.category || "manual"}
+                onChange={(category) => setLayerCategory(layer.id, category)}
+              />
               <button
                 className="pdf-overlay-action pdf-overlay-remove pdf-overlay-delete"
                 type="button"
@@ -324,5 +337,26 @@ export function CustomLayersSection() {
         </button>
       </div>
     </div>
+  );
+}
+
+function CategorySelect({
+  value,
+  onChange
+}: {
+  value: LayerCategory;
+  onChange: (category: LayerCategory) => void;
+}) {
+  return (
+    <select
+      className="map-card-category-select"
+      aria-label="Layer category"
+      value={value}
+      onChange={(event) => onChange(event.target.value as LayerCategory)}
+    >
+      <option value="global">Global Overlay</option>
+      <option value="local">Local Overlay</option>
+      <option value="manual">Manual Overlay</option>
+    </select>
   );
 }

@@ -36,10 +36,13 @@ export interface OverlayConfig {
   name: string;
   sourcePath: string;
   createdAt: string;
+  category?: OverlayCategory;
   pages: PageConfig[];
   collapsed?: boolean;
   muted?: boolean;
 }
+
+type OverlayCategory = "global" | "local" | "manual";
 
 type PageRender = {
   page: number;
@@ -229,6 +232,12 @@ export function PdfOverlaySection() {
     ));
   }
 
+  function setOverlayCategory(overlayId: string, category: OverlayCategory) {
+    setOverlays((prev) => prev.map((overlay) =>
+      overlay.id !== overlayId ? overlay : { ...overlay, category }
+    ));
+  }
+
   function togglePageVisibility(overlayId: string, pageNumber: number) {
     setOverlays((prev) => prev.map((overlay) => {
       if (overlay.id !== overlayId) return overlay;
@@ -334,6 +343,10 @@ export function PdfOverlaySection() {
               >
                 {overlay.name}
               </button>
+              <CategorySelect
+                value={overlay.category || "manual"}
+                onChange={(category) => setOverlayCategory(overlay.id, category)}
+              />
               <a className="pdf-overlay-action" href={overlay.sourcePath} target="_blank" rel="noreferrer">PDF</a>
               <button className="pdf-overlay-action pdf-overlay-remove" type="button" title="Remove PDF" onClick={() => removeOverlay(overlay.id)}>
                 x
@@ -380,6 +393,27 @@ export function PdfOverlaySection() {
         <input ref={fileInputRef} type="file" accept=".pdf" style={{ display: "none" }} onChange={handleFileChange} />
       </div>
     </div>
+  );
+}
+
+function CategorySelect({
+  value,
+  onChange
+}: {
+  value: OverlayCategory;
+  onChange: (category: OverlayCategory) => void;
+}) {
+  return (
+    <select
+      className="map-card-category-select"
+      aria-label="Overlay category"
+      value={value}
+      onChange={(event) => onChange(event.target.value as OverlayCategory)}
+    >
+      <option value="global">Global Overlay</option>
+      <option value="local">Local Overlay</option>
+      <option value="manual">Manual Overlay</option>
+    </select>
   );
 }
 

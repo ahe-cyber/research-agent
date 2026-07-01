@@ -181,7 +181,7 @@ export function createEditorTabController({ onMapActivated = () => {} } = {}) {
       return;
     }
 
-    tabs.push({ id: tabId, label: "Layer Sources", closeable: true });
+    tabs.push({ id: tabId, label: "Map Setup", closeable: true });
     layerSourcesPanel.hidden = true;
     viewport.appendChild(layerSourcesPanel);
     panelMap[tabId] = layerSourcesPanel;

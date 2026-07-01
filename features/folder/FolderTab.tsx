@@ -1,6 +1,6 @@
 import { forwardRef, useEffect, useImperativeHandle, useMemo, useState } from "react";
 import type { FileEntry, MountedFolder } from "./folderMount";
-import { formatSize } from "./folderMount";
+import { formatSize, isSupportedParseExtension } from "./folderMount";
 import { folderProviders } from "./providers";
 import type { FolderProvider } from "./providers";
 import { FeatureSourceTab } from "../workspace/FeatureSourceTab";
@@ -49,18 +49,34 @@ export const FolderTab = forwardRef<FolderController, FolderTabProps>(
     const [mounts, setMounts] = useState<MountedFolder[]>([]);
     const [folderQuery, setFolderQuery] = useState("");
     const [selectedProviderId, setSelectedProviderId] = useState("browser-drive");
-    const providerOptions = useMemo(() => folderProviders.map((provider) => ({
-      id: provider.id,
-      label: provider.label,
-      disabled: !provider.isSupported()
-    })), []);
+    const [providerConfigVersion, setProviderConfigVersion] = useState(0);
+    const providerOptions = useMemo(() => {
+      const configs = typeof window !== "undefined"
+        ? loadProviderConfigs(FOLDER_PROVIDER_CONFIG_STORAGE_KEY)
+        : {};
+      return folderProviders.map((provider) => {
+        const config = configs[provider.id] || {};
+        return {
+          id: provider.id,
+          label: config.label || provider.label,
+          costly: Boolean(config.costly || config.apiKey || provider.requiresApiKey),
+          disabled: !provider.isSupported()
+        };
+      });
+    }, [providerConfigVersion]);
+
+    useEffect(() => {
+      const refreshProviderConfigs = () => setProviderConfigVersion((version) => version + 1);
+      window.addEventListener("research-agent:folder-provider-config-changed", refreshProviderConfigs);
+      return () => {
+        window.removeEventListener("research-agent:folder-provider-config-changed", refreshProviderConfigs);
+      };
+    }, []);
 
     useEffect(() => {
       const onMount = () => {
-        const localDriveProvider = folderProviders.find((provider) => provider.id === "local-drive");
-        if (selectedProviderId === "local-drive" && localDriveProvider) {
-          void handleMountFolder(localDriveProvider);
-        }
+        const provider = folderProviders.find((item) => item.id === selectedProviderId);
+        if (provider && provider.isSupported()) void handleMountFolder(provider);
       };
       const onUnmount = () => {
         // Placeholder for provider-aware unmount behavior.
@@ -134,7 +150,7 @@ export const FolderTab = forwardRef<FolderController, FolderTabProps>(
             </div>
 
             {mount.files.length === 0 ? (
-              <p className="folder-empty-note">No supported files found (pdf, dxf, ifc).</p>
+              <p className="folder-empty-note">No files found.</p>
             ) : (
               <FolderTree
                 entries={mount.files.filter((entry) => matchesFolderQuery(entry, folderQuery))}
@@ -219,10 +235,11 @@ function FolderTreeNodeView({
         <button
           className="folder-file-row folder-tree-file"
           type="button"
-          onClick={() => onOpenFile?.(node.entry as FileEntry)}
-          title={node.entry.path}
+          disabled={!isSupportedParseExtension(node.entry.ext)}
+          onClick={() => openMountedFile(node.entry as FileEntry, onOpenFile)}
+          title={isSupportedParseExtension(node.entry.ext) ? node.entry.path : `${node.entry.path} cannot be previewed yet`}
         >
-          <span className={`folder-file-badge folder-file-badge--${node.entry.ext}`}>
+          <span className={`folder-file-badge folder-file-badge--${getExtensionClassName(node.entry.ext)}`}>
             {node.entry.ext.toUpperCase()}
           </span>
           <span className="folder-file-name">{node.entry.name}</span>
@@ -244,6 +261,15 @@ function FolderTreeNodeView({
       </details>
     </li>
   );
+}
+
+function openMountedFile(entry: FileEntry, onOpenFile?: (entry: FileEntry) => void) {
+  if (!isSupportedParseExtension(entry.ext)) return;
+  onOpenFile?.(entry);
+}
+
+function getExtensionClassName(ext: string) {
+  return ext.replace(/[^a-z0-9_-]/gi, "").toLowerCase() || "file";
 }
 
 function buildFolderTree(entries: FileEntry[], rootName: string): FolderTreeNode {
@@ -519,4 +545,7 @@ function loadProviderConfigs(storageKey: string) {
 
 function saveProviderConfigs(storageKey: string, configs: Record<string, unknown>) {
   localStorage.setItem(storageKey, JSON.stringify(configs));
+  if (storageKey === FOLDER_PROVIDER_CONFIG_STORAGE_KEY) {
+    window.dispatchEvent(new CustomEvent("research-agent:folder-provider-config-changed"));
+  }
 }

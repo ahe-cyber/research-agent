@@ -33,10 +33,13 @@ export function createLayerSourcesController(editorTabController: EditorTabContr
   const button = document.getElementById("layerSourcesButton");
   let panel: HTMLElement | null = null;
 
-  button?.addEventListener("click", async () => {
+  const openLayerSources = async () => {
     panel ??= await buildLayerSourcesPanel();
     editorTabController.openLayerSourcesTab(panel);
-  });
+  };
+
+  button?.addEventListener("click", openLayerSources);
+  window.addEventListener("research-agent:edit-map-sources", openLayerSources);
 }
 
 async function buildLayerSourcesPanel() {
@@ -71,8 +74,8 @@ function LayerSourcesPage({ catalog }: { catalog: BasemapCatalog }) {
       />
       <div className="layer-sources-page">
         <header>
-          <h1>Layer Sources</h1>
-          <p>Configured map backgrounds and optional scene details.</p>
+          <h1>Map Setup</h1>
+          <p>Configured map backgrounds and overlays.</p>
         </header>
         <div className="layer-sources-content">
           {view === "table" ? <LayerSourcesTableView groups={groups} /> : <LayerSourcesListView groups={groups} />}
@@ -120,9 +123,24 @@ function LayerSourcesListView({ groups }: { groups: LayerSourceGroup[] }) {
 }
 
 function LayerSourceCard({ source }: { source: LayerSource }) {
+  const [category, setCategory] = useState(getInitialCategory(source));
+
   return (
     <article className="layer-source-card">
-      <h3>{source.label}</h3>
+      <div className="layer-source-card-header">
+        <h3>{source.label}</h3>
+        <select
+          className="map-card-category-select"
+          aria-label="Layer category"
+          value={category}
+          onChange={(event) => setCategory(event.target.value)}
+        >
+          <option value="basemap">Basemap</option>
+          <option value="global">Global Overlay</option>
+          <option value="local">Local Overlay</option>
+          <option value="manual">Manual Overlay</option>
+        </select>
+      </div>
       <dl>
         {Object.entries(getDetails(source)).map(([key, value]) => (
           <Fragment key={key}>
@@ -133,6 +151,12 @@ function LayerSourceCard({ source }: { source: LayerSource }) {
       </dl>
     </article>
   );
+}
+
+function getInitialCategory(source: LayerSource) {
+  if (source.kind === "basemap") return "basemap";
+  if (source.kind === "terrain" || source.kind === "sceneLayer") return "global";
+  return "manual";
 }
 
 function LayerSourcesTableView({ groups }: { groups: LayerSourceGroup[] }) {

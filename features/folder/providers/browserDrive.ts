@@ -1,5 +1,5 @@
 import type { FileEntry, FolderProvider } from "./types";
-import { getSupportedExtension } from "../supportedExtensions";
+import { getFileExtension } from "../supportedExtensions";
 
 const DB_NAME = "research-agent-browser-drive";
 const DB_VERSION = 1;
@@ -30,19 +30,15 @@ export const browserDriveProvider: FolderProvider = {
       id: crypto.randomUUID(),
       name: "Browser Drive",
       providerId: this.id,
-      files: records.flatMap((record) => {
-        const ext = getSupportedExtension(record.name);
-        if (!ext) return [];
-        return [{
-          key: record.key,
-          name: record.name,
-          path: record.path,
-          ext,
-          size: record.size,
-          providerId: this.id,
-          source: { key: record.key }
-        }];
-      }),
+      files: records.map((record) => ({
+        key: record.key,
+        name: record.name,
+        path: record.path,
+        ext: getFileExtension(record.name),
+        size: record.size,
+        providerId: this.id,
+        source: { key: record.key }
+      })),
       source: { store: "indexedDB" }
     };
   },

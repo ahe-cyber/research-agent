@@ -12,8 +12,7 @@ import { SidebarHeader } from "../features/workspace/SidebarHeader.jsx";
 import { WorkbenchLayout } from "../features/workspace/WorkbenchLayout.tsx";
 import { loadWorkspaceState, saveWorkspaceState } from "../lib/workspaceState.js";
 import featureRegistry from "../public/data/feature.json";
-import { PdfOverlaySection } from "../features/map/PdfOverlaySection";
-import { CustomLayersSection } from "../features/map/CustomLayersSection";
+import { MapTab } from "../features/map/MapTab";
 import { withBasePath } from "../lib/basePath";
 
 const EMPTY_EDITOR_ACTIVITY_IDS = new Set(["project", "record", "tool"]);
@@ -239,18 +238,7 @@ export default function App() {
       <ToolTab active={activeTab === "tool"} onSuggestTool={onSuggestTool} />
       <AgentTab active={activeTab === "agent"} />
 
-      <section className="workspace-tab map-display-settings" aria-label="Map display settings" hidden={activeTab !== "map"}>
-        <div className="map-display-group">
-          <h3>Basemap</h3>
-          <div id="mapBasemapOptions" />
-        </div>
-        <div className="map-display-group">
-          <h3>Details</h3>
-          <div id="mapDetailOptions" />
-        </div>
-        <PdfOverlaySection />
-        <CustomLayersSection />
-      </section>
+      <MapTab active={activeTab === "map"} />
     </aside>
   );
 

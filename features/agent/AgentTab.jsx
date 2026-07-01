@@ -1,4 +1,5 @@
 import { createRoot } from "react-dom/client";
+import { useEffect, useMemo, useState } from "react";
 import { withBasePath } from "../../lib/basePath";
 import { DomSlot } from "../editor/DomSlot";
 import { PageMenu } from "../editor/PageMenu";
@@ -16,13 +17,27 @@ const AGENT_PROVIDER_CONFIG_STORAGE_KEY = "research-agent.agentProviderConfig";
 let activeModuleAttachmentTarget = null;
 
 export function AgentTab({ active }) {
-  const providerConfigs = typeof window !== "undefined" ? loadProviderConfigs() : {};
+  const [providerConfigVersion, setProviderConfigVersion] = useState(0);
+  const providerConfigs = useMemo(
+    () => typeof window !== "undefined" ? loadProviderConfigs() : {},
+    [providerConfigVersion]
+  );
   const initialProviderId = typeof window !== "undefined"
     ? localStorage.getItem(AGENT_PROVIDER_STORAGE_KEY) || "gemini"
     : "gemini";
   const initialModel = typeof window !== "undefined"
     ? localStorage.getItem(AGENT_MODEL_STORAGE_KEY) || ""
     : "";
+
+  useEffect(() => {
+    const refreshProviderConfigs = () => setProviderConfigVersion((version) => version + 1);
+    window.addEventListener("research-agent:agent-provider-config-changed", refreshProviderConfigs);
+    window.addEventListener("research-agent:agent-provider-config-saved", refreshProviderConfigs);
+    return () => {
+      window.removeEventListener("research-agent:agent-provider-config-changed", refreshProviderConfigs);
+      window.removeEventListener("research-agent:agent-provider-config-saved", refreshProviderConfigs);
+    };
+  }, []);
 
   return (
     <FeatureSourceTab
@@ -32,8 +47,12 @@ export function AgentTab({ active }) {
       dropdownClassName="agent-provider-dropdown"
       dropdownOptions={AGENT_PROVIDER_OPTIONS.map((provider) => ({
         id: provider.id,
-        label: provider.label,
-        costly: Boolean(providerConfigs[provider.id]?.costly || providerConfigs[provider.id]?.apiKey)
+        label: providerConfigs[provider.id]?.label || provider.label,
+        costly: Boolean(
+          providerConfigs[provider.id]?.costly ||
+          providerConfigs[provider.id]?.apiKey ||
+          getStoredAgentProviderApiKey(provider.id)
+        )
       }))}
       selectedSourceId={initialProviderId}
       onSourceChange={(provider) => {
@@ -1703,4 +1722,5 @@ function getStoredAgentProviderApiKey(providerId) {
 
 function saveProviderConfigs(configs) {
   localStorage.setItem(AGENT_PROVIDER_CONFIG_STORAGE_KEY, JSON.stringify(configs));
+  window.dispatchEvent(new CustomEvent("research-agent:agent-provider-config-changed"));
 }

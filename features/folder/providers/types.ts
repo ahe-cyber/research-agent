@@ -1,4 +1,4 @@
-import type { SupportedExtension } from "../supportedExtensions";
+import type { FolderFileExtension } from "../supportedExtensions";
 
 export type FolderProviderId = "browser-drive" | "local-drive" | "google-drive";
 
@@ -6,7 +6,7 @@ export interface FileEntry {
   key: string;
   name: string;
   path: string;
-  ext: SupportedExtension;
+  ext: FolderFileExtension;
   size: number;
   providerId: FolderProviderId;
   source: unknown;

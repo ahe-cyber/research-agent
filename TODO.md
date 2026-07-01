@@ -1,0 +1,9 @@
+- [x] remove image-[num].png in the root folder that are no longer referenced by /home/django/rampulla/research-agent/README.md
+- [x] ![alt text](image-18.png) there should be a margin between the search bar and the files in the folder sidebar.
+- [x] the folder sidebar should display all files, not just pdf files.
+- [x] when clicking mount button while browser drive is selected, it should create an indexDB based empty fs, and display as a card similar to a local mounted drive.
+- [x] for folder sources, the costly icon is not displaying in the dropdown. please fix, make it same as address source
+- [x] for agent sources, it is also not displaying in the dropdown. please fix, make it same as address source
+- [x] check why Google Drive is greyed out in folder sources. Write the reason under this todo item.
+  - Google Drive is greyed out because `features/folder/providers/googleDrive.ts` is a placeholder provider: `isSupported()` returns `false`, and both `mount()` and `getFile()` throw "Google Drive ... is not configured yet."
+- [x] refactor the map sidebar. the map sidebar should use the same components as other side bar. it should have a Map text on the left, a source selector (with edit that opens the source edit page). a search bar. The categories below can remain similar. we want a basemap section, an global overlay section (currently details), and a local overlay section. then we have manual overlay section (a combination of PDF overlays and custom layers) the edit button in the menu will open the item edit page. reference other item edit pages for the click to expand with delete and close buttons, there should be a dropdown for each card to map to the categories (global overlay, local, etc.) note that what is currently called layer sources is the item edit page. layer sources will become a place that we can search for new layers and add to our setup.

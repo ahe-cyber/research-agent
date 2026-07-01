@@ -1,5 +1,5 @@
 import type { FileEntry, FolderProvider, MountedFolder } from "./types";
-import { getSupportedExtension } from "../supportedExtensions";
+import { getFileExtension } from "../supportedExtensions";
 
 interface LocalFileEntrySource {
   handle: FileSystemFileHandle;
@@ -55,19 +55,16 @@ async function scanDirectory(
       );
       entries.push(...nested);
     } else if (handle.kind === "file") {
-      const ext = getSupportedExtension(name);
-      if (ext) {
-        const file = await (handle as FileSystemFileHandle).getFile();
-        entries.push({
-          key: `${basePath}/${name}`,
-          name,
-          path: `${basePath}/${name}`,
-          ext,
-          size: file.size,
-          providerId: localDriveProvider.id,
-          source: { handle: handle as FileSystemFileHandle } satisfies LocalFileEntrySource
-        });
-      }
+      const file = await (handle as FileSystemFileHandle).getFile();
+      entries.push({
+        key: `${basePath}/${name}`,
+        name,
+        path: `${basePath}/${name}`,
+        ext: getFileExtension(name),
+        size: file.size,
+        providerId: localDriveProvider.id,
+        source: { handle: handle as FileSystemFileHandle } satisfies LocalFileEntrySource
+      });
     }
   }
 

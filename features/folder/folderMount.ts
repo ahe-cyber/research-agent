@@ -11,6 +11,9 @@ export type { FileEntry, MountedFolder } from "./providers";
 export type { SupportedExtension } from "./supportedExtensions";
 
 export async function parseFile(entry: FileEntry): Promise<ParseResult> {
+  if (!isSupportedParseExtension(entry.ext)) {
+    throw new Error(`${entry.name} cannot be previewed yet.`);
+  }
   const file = await getProviderFile(entry);
   switch (entry.ext) {
     case "pdf": {
@@ -26,6 +29,10 @@ export async function parseFile(entry: FileEntry): Promise<ParseResult> {
       return parseIfc(file);
     }
   }
+}
+
+export function isSupportedParseExtension(ext: string): ext is SupportedExtension {
+  return ext === "pdf" || ext === "dxf" || ext === "ifc";
 }
 
 export function formatSize(bytes: number): string {
