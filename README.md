@@ -187,12 +187,79 @@ npm run start
 ### Pending Review Issues:
 
 ### Pending Assignment Issues:
-- [x] remove things in /home/django/rampulla/research-agent/public/data for git tracking since we are storing api keys it prevents us from syncing. untrack them. If there are unpushable commits that already contained it, try to deal with them. the goal is to have current changes committed and synced to remote. no file should be changed or removed.
 
 ### Current Issues:
-- [x] I still get error when mounting Browser Drive ![alt text](image-10.png). remove the mount button from the panel. put mount button at the menu section where usually the edit.svg is. create a mount.svg with icon of a usb thumb drive ![alt text](image-11.png), following same principle of human readable preferring whole or half number rule. also create an unmount icon ![alt text](image-12.png). for now, mount and unmount button will only be useful for when local drive is chosen. leave unmount button as a placeholder.
-- [x] when deleting an agent from the agent flow edit page, there should also be a retention period of 10 sec for delecting agent cards. it would look a little different form the list views, but should still have countdown, revert.svg and other existing textural or symbolic elements.
-- [x] The agent sources editor's dropdown menu doesnt work. and make the api key on the same line as the costly checkbox. since there is this descripency, I suggest you check that the address sources and agent sources are actually using the same component. because if they do, there shouldnt be this style mismatch ![alt text](image-8.png) ![alt text](image-9.png) and on the ui do not say if something is not implemented and grey it out. consider everything implemented. Or better yet, implement them "https://developers.openai.com/api/docs" "https://platform.claude.com/docs/en/home". make sure you use as much shared utilities between the agent providers as possible, so when we want to modify the logic, it will be easy. Also, since we are supposed to be using the same EXACT compoenent for the search source selector, there should also be a money icon after the line when clostly is check. i dont see this yet.
+- [x] this block should be removed "Mount a drive to browse PDF, DXF, and IFC files. Retrieved assets will also appear here."
+- [x] the mount and unmount svgs are not satisfactory. use this :![alt text](image-13.png) for unmount, and ![alt text](image-11.png) for mount. redraw them in svg.
+- [x] after mounting, the panel should show the file system. not just showing available files.
+- [x] I asked many times that things be data driven such as this
+
+```jsx
+    <section
+      className={`workspace-tab${active ? " is-active" : ""}`}
+      id="agentTab"
+      data-tab-panel
+      hidden={!active}
+    >
+      <div className="section-title-row">
+        <h2 className="section-title">Agent</h2>
+        <SourceDropdownSlot
+          className="agent-provider-dropdown"
+          options={AGENT_PROVIDER_OPTIONS.map((provider) => ({
+            id: provider.id,
+            label: provider.label,
+            costly: Boolean(providerConfigs[provider.id]?.costly || providerConfigs[provider.id]?.apiKey)
+          }))}
+          selectedId={initialProviderId}
+          onChange={(provider) => {
+            const providerId = provider?.id || "gemini";
+            localStorage.setItem(AGENT_PROVIDER_STORAGE_KEY, providerId);
+            window.dispatchEvent(new CustomEvent("research-agent:agent-provider-changed", {
+              detail: { providerId }
+            }));
+          }}
+          onEdit={() => window.dispatchEvent(new CustomEvent("research-agent:edit-agent-providers"))}
+          editLabel="Edit agent sources"
+        />
+      </div>
+      <div className="agent-model-search-widget" id="agentSidebarModelSearch" ref={modelSearchRef} />
+      <div id="agentCompact" />
+    </section>
+```
+it should become some new componenet resembling this. this component could just be the "SourceDropdownSlot" expanded to include more elements.
+```jsx
+    <section
+      className={`workspace-tab${active ? " is-active" : ""}`}
+      id={featureName.lower() + "Tab"}
+      data-tab-panel
+      hidden={!active}
+    >
+      <div className="section-title-row">
+        <h2 className="section-title">{featureName.proper()}</h2>
+        <SourceDropdownSlot
+          className="agent-provider-dropdown"
+          options={PROVIDER_OPTIONS.map((provider) => ({
+            id: provider.id,
+            label: provider.label,
+            costly: Boolean(providerConfigs[provider.id]?.costly || providerConfigs[provider.id]?.apiKey)
+          }))}
+          selectedId={initialProviderId}
+          onChange={(provider) => {
+            const providerId = provider?.id || "gemini";
+            localStorage.setItem(AGENT_PROVIDER_STORAGE_KEY, providerId);
+            window.dispatchEvent(new CustomEvent({"research-agent:" + featureName.lower() + "-provider-changed"}, {
+              detail: { providerId }
+            }));
+          }}
+          onEdit={() => window.dispatchEvent(new CustomEvent({"research-agent:edit-" + featureName.lower() + "-providers"}))}
+          editLabel={"Edit " + featureName.lower() + " sources"}
+        />
+      </div>
+      <div className={featureName.lower() + "-search-widget"} id={featureName.lower() + "SidebarSearch"} ref={searchRef} />
+      <div id={featureName.lower() + "Compact"} />
+    </section>
+```
+it was very annoying seeing for address ![alt text](image-14.png) with the costly icon on the selector ![alt text](image-15.png), no costly in the edit page. ![alt text](image-16.png) ![alt text](image-17.png). so many inconsistencies. do you just keep ignoring my request to make common components or what.
 
 # Six-World Semantic Model for Architectural Design
 

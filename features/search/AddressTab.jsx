@@ -2,17 +2,19 @@ import { createRoot } from "react-dom/client";
 import { withBasePath } from "../../lib/basePath";
 import { DomSlot } from "../editor/DomSlot";
 import { PageMenu } from "../editor/PageMenu";
+import { FeatureSourceTab } from "../workspace/FeatureSourceTab";
 
 export function AddressTab({ active }) {
   return (
-    <section className={`workspace-tab${active ? " is-active" : ""}`} id="addressTab" data-tab-panel hidden={!active}>
-      <div className="section-title-row">
-        <h2 className="section-title">Address</h2>
-        <div id="searchSourceSelector" />
-      </div>
+    <FeatureSourceTab
+      active={active}
+      featureId="address"
+      featureLabel="Address"
+      headerAccessory={<div id="searchSourceSelector" />}
+    >
       <div id="placeSearchBox" />
       <div className="address-list" id="addressList" />
-    </section>
+    </FeatureSourceTab>
   );
 }
 
@@ -135,6 +137,7 @@ export function createSearchSourceEditorPanel(onSaved) {
 
     const title = document.createElement("strong");
     title.textContent = source.label || "New source";
+    title.classList.toggle("has-money-icon", Boolean(source.costly || source.apiKey));
 
     const description = document.createElement("span");
     description.textContent = source.description || "New search source description";
@@ -248,6 +251,7 @@ export function createSearchSourceEditorPanel(onSaved) {
     apiKeyInput.placeholder = "Provider API key";
     apiKeyInput.addEventListener("input", () => {
       source.apiKey = apiKeyInput.value;
+      title.classList.toggle("has-money-icon", Boolean(source.costly || source.apiKey));
       scheduleSave();
     });
     apiKeyField.append(apiKeyText, apiKeyInput);
@@ -258,6 +262,7 @@ export function createSearchSourceEditorPanel(onSaved) {
 
     costlyCheck.addEventListener("change", () => {
       source.costly = costlyCheck.checked;
+      title.classList.toggle("has-money-icon", Boolean(source.costly || source.apiKey));
       updateApiKeyVisibility();
       scheduleSave();
     });

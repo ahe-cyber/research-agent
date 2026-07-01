@@ -1,10 +1,9 @@
-import { forwardRef, useEffect, useImperativeHandle, useMemo, useRef, useState } from "react";
+import { forwardRef, useEffect, useImperativeHandle, useMemo, useState } from "react";
 import type { FileEntry, MountedFolder } from "./folderMount";
 import { formatSize } from "./folderMount";
 import { folderProviders } from "./providers";
 import type { FolderProvider } from "./providers";
-import { createSearchWidget } from "../search/SearchWidget";
-import { SourceDropdownSlot } from "../workspace/SourceDropdownSlot";
+import { FeatureSourceTab } from "../workspace/FeatureSourceTab";
 
 const FOLDER_PROVIDER_CONFIG_STORAGE_KEY = "research-agent.folderProviderConfig";
 
@@ -50,29 +49,11 @@ export const FolderTab = forwardRef<FolderController, FolderTabProps>(
     const [mounts, setMounts] = useState<MountedFolder[]>([]);
     const [folderQuery, setFolderQuery] = useState("");
     const [selectedProviderId, setSelectedProviderId] = useState("browser-drive");
-    const folderSearchRef = useRef<HTMLDivElement | null>(null);
     const providerOptions = useMemo(() => folderProviders.map((provider) => ({
       id: provider.id,
       label: provider.label,
       disabled: !provider.isSupported()
     })), []);
-    const selectedProvider = folderProviders.find((provider) => provider.id === selectedProviderId)
-      || folderProviders[0];
-
-    useEffect(() => {
-      if (!folderSearchRef.current) return;
-      const widget = createSearchWidget({
-        placeholder: "Search mounted folders",
-        inputName: "folder-file-query",
-        onQuery(query) {
-          setFolderQuery(query.trim().toLowerCase());
-        },
-        onSubmit(query) {
-          setFolderQuery(query.trim().toLowerCase());
-        }
-      });
-      folderSearchRef.current.replaceChildren(widget.shellElement);
-    }, []);
 
     useEffect(() => {
       const onMount = () => {
@@ -121,26 +102,22 @@ export const FolderTab = forwardRef<FolderController, FolderTabProps>(
     }
 
     return (
-      <section
-        className={`workspace-tab${active ? " is-active" : ""}`}
-        id="folderTab"
-        data-tab-panel
-        hidden={!active}
+      <FeatureSourceTab
+        active={active}
+        featureId="folder"
+        featureLabel="Folder"
+        dropdownClassName="folder-provider-dropdown"
+        dropdownOptions={providerOptions}
+        selectedSourceId={selectedProviderId}
+        onSourceChange={(provider) => setSelectedProviderId(provider?.id || "")}
+        onEditSources={() => window.dispatchEvent(new CustomEvent("research-agent:edit-folder-providers"))}
+        editSourcesLabel="Edit folder sources"
+        searchClassName="folder-search-widget"
+        searchId="folderSidebarSearch"
+        searchPlaceholder="Search mounted folders"
+        searchInputName="folder-file-query"
+        onSearchQuery={(query) => setFolderQuery(query.trim().toLowerCase())}
       >
-        <div className="section-title-row">
-          <h2 className="section-title">Folder</h2>
-          <SourceDropdownSlot
-            className="folder-provider-dropdown"
-            options={providerOptions}
-            selectedId={selectedProviderId}
-            onChange={(provider) => setSelectedProviderId(provider?.id || "")}
-            onEdit={() => window.dispatchEvent(new CustomEvent("research-agent:edit-folder-providers"))}
-            editLabel="Edit folder sources"
-          />
-        </div>
-
-        <div className="folder-search-widget" ref={folderSearchRef} />
-
         {mounts.map((mount) => (
           <div key={mount.id} className="folder-mount">
             <div className="folder-mount-header">
@@ -159,24 +136,11 @@ export const FolderTab = forwardRef<FolderController, FolderTabProps>(
             {mount.files.length === 0 ? (
               <p className="folder-empty-note">No supported files found (pdf, dxf, ifc).</p>
             ) : (
-              <ul className="folder-file-list">
-                {mount.files.filter((entry) => matchesFolderQuery(entry, folderQuery)).map((entry) => (
-                  <li key={entry.key}>
-                    <button
-                      className="folder-file-row"
-                      type="button"
-                      onClick={() => onOpenFile?.(entry)}
-                      title={entry.path}
-                    >
-                      <span className={`folder-file-badge folder-file-badge--${entry.ext}`}>
-                        {entry.ext.toUpperCase()}
-                      </span>
-                      <span className="folder-file-name">{entry.name}</span>
-                      <span className="folder-file-size">{formatSize(entry.size)}</span>
-                    </button>
-                  </li>
-                ))}
-              </ul>
+              <FolderTree
+                entries={mount.files.filter((entry) => matchesFolderQuery(entry, folderQuery))}
+                rootName={mount.name}
+                onOpenFile={onOpenFile}
+              />
             )}
           </div>
         ))}
@@ -206,13 +170,7 @@ export const FolderTab = forwardRef<FolderController, FolderTabProps>(
           </>
         )}
 
-        {mounts.length === 0 && assets.length === 0 && (
-          <div className="agent-message agent-message-system">
-            Mount a drive to browse PDF, DXF, and IFC files.
-            Retrieved assets will also appear here.
-          </div>
-        )}
-      </section>
+      </FeatureSourceTab>
     );
   }
 );
@@ -220,6 +178,99 @@ export const FolderTab = forwardRef<FolderController, FolderTabProps>(
 function matchesFolderQuery(entry: FileEntry, query: string) {
   if (!query) return true;
   return `${entry.name} ${entry.path} ${entry.ext}`.toLowerCase().includes(query);
+}
+
+interface FolderTreeNode {
+  name: string;
+  path: string;
+  entry?: FileEntry;
+  children: Map<string, FolderTreeNode>;
+}
+
+function FolderTree({
+  entries,
+  rootName,
+  onOpenFile
+}: {
+  entries: FileEntry[];
+  rootName: string;
+  onOpenFile?: (entry: FileEntry) => void;
+}) {
+  const root = buildFolderTree(entries, rootName);
+  return (
+    <ul className="folder-tree">
+      {Array.from(root.children.values()).map((node) => (
+        <FolderTreeNodeView key={node.path} node={node} onOpenFile={onOpenFile} />
+      ))}
+    </ul>
+  );
+}
+
+function FolderTreeNodeView({
+  node,
+  onOpenFile
+}: {
+  node: FolderTreeNode;
+  onOpenFile?: (entry: FileEntry) => void;
+}) {
+  if (node.entry) {
+    return (
+      <li>
+        <button
+          className="folder-file-row folder-tree-file"
+          type="button"
+          onClick={() => onOpenFile?.(node.entry as FileEntry)}
+          title={node.entry.path}
+        >
+          <span className={`folder-file-badge folder-file-badge--${node.entry.ext}`}>
+            {node.entry.ext.toUpperCase()}
+          </span>
+          <span className="folder-file-name">{node.entry.name}</span>
+          <span className="folder-file-size">{formatSize(node.entry.size)}</span>
+        </button>
+      </li>
+    );
+  }
+
+  return (
+    <li>
+      <details className="folder-tree-directory" open>
+        <summary>{node.name}</summary>
+        <ul className="folder-tree">
+          {Array.from(node.children.values()).map((child) => (
+            <FolderTreeNodeView key={child.path} node={child} onOpenFile={onOpenFile} />
+          ))}
+        </ul>
+      </details>
+    </li>
+  );
+}
+
+function buildFolderTree(entries: FileEntry[], rootName: string): FolderTreeNode {
+  const root: FolderTreeNode = { name: rootName, path: rootName, children: new Map() };
+
+  entries.forEach((entry) => {
+    const parts = entry.path.split("/").filter(Boolean);
+    if (parts[0] === rootName) parts.shift();
+    let current = root;
+
+    parts.forEach((part, index) => {
+      const path = [current.path, part].filter(Boolean).join("/");
+      const isFile = index === parts.length - 1;
+      if (!current.children.has(part)) {
+        current.children.set(part, {
+          name: part,
+          path,
+          entry: isFile ? entry : undefined,
+          children: new Map()
+        });
+      }
+      current = current.children.get(part) as FolderTreeNode;
+      if (isFile) current.entry = entry;
+    });
+  });
+
+  return root;
 }
 
 export function createFolderProviderEditorPanel() {

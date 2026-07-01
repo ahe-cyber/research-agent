@@ -1,10 +1,8 @@
 import { createRoot } from "react-dom/client";
-import { useEffect, useRef } from "react";
 import { withBasePath } from "../../lib/basePath";
 import { DomSlot } from "../editor/DomSlot";
 import { PageMenu } from "../editor/PageMenu";
-import { createSearchWidget } from "../search/SearchWidget";
-import { SourceDropdownSlot } from "../workspace/SourceDropdownSlot";
+import { FeatureSourceTab } from "../workspace/FeatureSourceTab";
 import { AGENT_PROVIDER_OPTIONS } from "./providers";
 
 const CARD_WIDTH = 220;
@@ -18,7 +16,6 @@ const AGENT_PROVIDER_CONFIG_STORAGE_KEY = "research-agent.agentProviderConfig";
 let activeModuleAttachmentTarget = null;
 
 export function AgentTab({ active }) {
-  const modelSearchRef = useRef(null);
   const providerConfigs = typeof window !== "undefined" ? loadProviderConfigs() : {};
   const initialProviderId = typeof window !== "undefined"
     ? localStorage.getItem(AGENT_PROVIDER_STORAGE_KEY) || "gemini"
@@ -27,61 +24,41 @@ export function AgentTab({ active }) {
     ? localStorage.getItem(AGENT_MODEL_STORAGE_KEY) || ""
     : "";
 
-  useEffect(() => {
-    if (!modelSearchRef.current) return;
-    const widget = createSearchWidget({
-      placeholder: "Search custom models",
-      inputName: "agent-model-query",
-      onQuery(query) {
-        const model = query.trim();
-        localStorage.setItem(AGENT_MODEL_STORAGE_KEY, model);
-        window.dispatchEvent(new CustomEvent("research-agent:agent-model-changed", {
-          detail: { model }
-        }));
-      },
-      onSubmit(query) {
-        const model = query.trim();
-        localStorage.setItem(AGENT_MODEL_STORAGE_KEY, model);
-        window.dispatchEvent(new CustomEvent("research-agent:agent-model-changed", {
-          detail: { model }
-        }));
-      }
-    });
-    widget.setQuery(initialModel);
-    modelSearchRef.current.replaceChildren(widget.shellElement);
-  }, [initialModel]);
-
   return (
-    <section
-      className={`workspace-tab${active ? " is-active" : ""}`}
-      id="agentTab"
-      data-tab-panel
-      hidden={!active}
-    >
-      <div className="section-title-row">
-        <h2 className="section-title">Agent</h2>
-        <SourceDropdownSlot
-          className="agent-provider-dropdown"
-          options={AGENT_PROVIDER_OPTIONS.map((provider) => ({
-            id: provider.id,
-            label: provider.label,
-            costly: Boolean(providerConfigs[provider.id]?.costly || providerConfigs[provider.id]?.apiKey)
-          }))}
-          selectedId={initialProviderId}
-          onChange={(provider) => {
-            const providerId = provider?.id || "gemini";
-            localStorage.setItem(AGENT_PROVIDER_STORAGE_KEY, providerId);
-            window.dispatchEvent(new CustomEvent("research-agent:agent-provider-changed", {
-              detail: { providerId }
-            }));
-          }}
-          onEdit={() => window.dispatchEvent(new CustomEvent("research-agent:edit-agent-providers"))}
-          editLabel="Edit agent sources"
-        />
-      </div>
-      <div className="agent-model-search-widget" id="agentSidebarModelSearch" ref={modelSearchRef} />
-      <div id="agentCompact" />
-    </section>
+    <FeatureSourceTab
+      active={active}
+      featureId="agent"
+      featureLabel="Agent"
+      dropdownClassName="agent-provider-dropdown"
+      dropdownOptions={AGENT_PROVIDER_OPTIONS.map((provider) => ({
+        id: provider.id,
+        label: provider.label,
+        costly: Boolean(providerConfigs[provider.id]?.costly || providerConfigs[provider.id]?.apiKey)
+      }))}
+      selectedSourceId={initialProviderId}
+      onSourceChange={(provider) => {
+        const providerId = provider?.id || "gemini";
+        localStorage.setItem(AGENT_PROVIDER_STORAGE_KEY, providerId);
+        window.dispatchEvent(new CustomEvent("research-agent:agent-provider-changed", {
+          detail: { providerId }
+        }));
+      }}
+      onEditSources={() => window.dispatchEvent(new CustomEvent("research-agent:edit-agent-providers"))}
+      editSourcesLabel="Edit agent sources"
+      searchClassName="agent-model-search-widget"
+      searchId="agentSidebarModelSearch"
+      searchPlaceholder="Search custom models"
+      searchInputName="agent-model-query"
+      initialSearchQuery={initialModel}
+      onSearchQuery={(query) => {
+        const model = query.trim();
+        localStorage.setItem(AGENT_MODEL_STORAGE_KEY, model);
+        window.dispatchEvent(new CustomEvent("research-agent:agent-model-changed", {
+          detail: { model }
+        }));
+      }}
+      compactId="agentCompact"
+    />
   );
 }
 

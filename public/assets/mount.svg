@@ -1,23 +1,23 @@
 <svg width="20" height="20" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg" aria-label="mount drive">
   <path
     d="
-      M7 4
-      H13
-      V11
-      A3 3 0 0 1 10 14
-      A3 3 0 0 1 7 11
-      V4
-      Z
-      M8.5 4
-      V2.5
-      M11.5 4
-      V2.5
-      M8 8
+      M8 2.5
       H12
-      M9 14
-      V17
-      H11
-      V14
+      V5
+      H14
+      V11
+      L10 16
+      L6 11
+      V5
+      H8
+      V2.5
+      Z
+      M8 6.5
+      H12
+      M8 9
+      H12
+      M10 16
+      V18
     "
     fill="none"
     stroke="#000000"

@@ -1,21 +1,19 @@
 <svg width="20" height="20" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg" aria-label="unmount drive">
   <path
     d="
-      M7 4
-      H13
-      V11
-      A3 3 0 0 1 10 14
-      A3 3 0 0 1 7 11
-      V4
+      M5 14
+      H15
+      L13 17
+      H7
+      L5 14
       Z
-      M8.5 4
-      V2.5
-      M11.5 4
-      V2.5
-      M8 8
-      H12
-      M7 17
-      H13
+      M10 3
+      V12
+      M7 6
+      L10 3
+      L13 6
+      M7.5 9
+      H12.5
     "
     fill="none"
     stroke="#000000"

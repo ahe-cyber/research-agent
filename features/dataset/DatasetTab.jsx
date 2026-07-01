@@ -6,6 +6,7 @@ import { PageMenu } from "../editor/PageMenu";
 import { createSearchWidget } from "../search/SearchWidget";
 import { searchCatalog } from "../search/catalogSearch";
 import { buildSearchCatalogDatasetDetailPanel } from "../search/CatalogPanel.jsx";
+import { FeatureSourceTab } from "../workspace/FeatureSourceTab";
 
 const LAYER_FIELDS_FOLDED_STORAGE_KEY = "research-agent.layerFieldsFolded";
 const SOURCE_DELETE_GRACE_MS = 10_000;
@@ -43,14 +44,15 @@ const DEFAULT_SUPPORTED_INPUT_PARAMS_BY_TYPE = {
 
 export function DatasetTab({ active }) {
   return (
-    <section className={`workspace-tab${active ? " is-active" : ""}`} id="datasetTab" data-tab-panel hidden={!active}>
-      <div className="section-title-row">
-        <h2 className="section-title">Dataset</h2>
-        <div id="datasetCatalogSelector" />
-      </div>
+    <FeatureSourceTab
+      active={active}
+      featureId="dataset"
+      featureLabel="Dataset"
+      headerAccessory={<div id="datasetCatalogSelector" />}
+    >
       <div id="datasetCatalogSearchBox" />
       <div id="sourcesCompact" />
-    </section>
+    </FeatureSourceTab>
   );
 }
 
