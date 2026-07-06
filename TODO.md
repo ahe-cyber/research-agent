@@ -1,9 +1,12 @@
 - [x] remove image-[num].png in the root folder that are no longer referenced by /home/django/rampulla/research-agent/README.md
-- [x] ![alt text](image-18.png) there should be a margin between the search bar and the files in the folder sidebar.
-- [x] the folder sidebar should display all files, not just pdf files.
-- [x] when clicking mount button while browser drive is selected, it should create an indexDB based empty fs, and display as a card similar to a local mounted drive.
-- [x] for folder sources, the costly icon is not displaying in the dropdown. please fix, make it same as address source
-- [x] for agent sources, it is also not displaying in the dropdown. please fix, make it same as address source
-- [x] check why Google Drive is greyed out in folder sources. Write the reason under this todo item.
-  - Google Drive is greyed out because `features/folder/providers/googleDrive.ts` is a placeholder provider: `isSupported()` returns `false`, and both `mount()` and `getFile()` throw "Google Drive ... is not configured yet."
-- [x] refactor the map sidebar. the map sidebar should use the same components as other side bar. it should have a Map text on the left, a source selector (with edit that opens the source edit page). a search bar. The categories below can remain similar. we want a basemap section, an global overlay section (currently details), and a local overlay section. then we have manual overlay section (a combination of PDF overlays and custom layers) the edit button in the menu will open the item edit page. reference other item edit pages for the click to expand with delete and close buttons, there should be a dropdown for each card to map to the categories (global overlay, local, etc.) note that what is currently called layer sources is the item edit page. layer sources will become a place that we can search for new layers and add to our setup.
+- [x] implement google drive folder mount. put the steps i need to do to make it working under this todo item, such as how to create the api keys, do i need to create service account, etc. just the simplest steps that will make it work
+  - Use a normal OAuth web app setup. A service account is not needed for mounting a user's own Drive folder in the browser.
+  - In Google Cloud Console, create/select a project and enable the Google Drive API.
+  - Configure the OAuth consent screen for the project. For local testing, add yourself as a test user if the app is external/testing.
+  - Create an API key under APIs & Services > Credentials.
+  - Create an OAuth 2.0 Client ID with application type "Web application".
+  - Add the local dev origin, for example `http://localhost:3000` or whichever origin Next.js prints, under Authorized JavaScript origins.
+  - Copy the API key, OAuth client ID, and project number into Folder > source dropdown > Edit folder sources > Google Drive.
+  - Select Google Drive in the Folder source dropdown and use the mount button. The app will ask for read-only Drive access, open the Google Picker, and mount the selected folder.
+- [x] in the map sidebar there should be gap between the searchbar and other components.
+

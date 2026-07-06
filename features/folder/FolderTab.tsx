@@ -315,6 +315,22 @@ export function createFolderProviderEditorPanel() {
       description: provider.description || "",
       requiresApiKey: provider.requiresApiKey,
       apiKeyLabel: "API key",
+      extraFields: provider.id === "google-drive"
+        ? [
+          {
+            key: "clientId",
+            label: "OAuth client ID",
+            type: "password",
+            placeholder: "1234567890-abc.apps.googleusercontent.com"
+          },
+          {
+            key: "appId",
+            label: "Project number",
+            type: "text",
+            placeholder: "1234567890"
+          }
+        ]
+        : [],
       configs,
       storageKey: FOLDER_PROVIDER_CONFIG_STORAGE_KEY
     }));
@@ -329,6 +345,7 @@ function createProviderCard({
   description,
   requiresApiKey = false,
   apiKeyLabel = "API key",
+  extraFields = [],
   configs,
   storageKey
 }: {
@@ -337,7 +354,8 @@ function createProviderCard({
   description: string;
   requiresApiKey?: boolean;
   apiKeyLabel?: string;
-  configs: Record<string, { label?: string; description?: string; apiKey?: string; costly?: boolean }>;
+  extraFields?: Array<{ key: string; label: string; type: "text" | "password"; placeholder?: string }>;
+  configs: Record<string, { label?: string; description?: string; apiKey?: string; costly?: boolean; [key: string]: unknown }>;
   storageKey: string;
 }) {
   const config = configs[id] || {};
@@ -451,6 +469,18 @@ function createProviderCard({
     saveProviderConfigs(storageKey, configs);
   }));
 
+  extraFields.forEach((field) => {
+    const storedValue = config[field.key];
+    const value = typeof storedValue === "string" ? storedValue : "";
+    const onInput = (nextValue: string) => {
+      configs[id] = { ...(configs[id] || {}), [field.key]: nextValue };
+      saveProviderConfigs(storageKey, configs);
+    };
+    body.appendChild(field.type === "password"
+      ? createPasswordField(field.label, value, onInput, field.placeholder)
+      : createTextField(field.label, value, onInput, field.placeholder));
+  });
+
   card.append(summary, body);
   return card;
 }
@@ -494,13 +524,14 @@ function replaceWithDeletedSourceRow(card: HTMLElement, label: string) {
   });
 }
 
-function createTextField(label: string, value: string, onInput: (value: string) => void) {
+function createTextField(label: string, value: string, onInput: (value: string) => void, placeholder = "") {
   const field = document.createElement("label");
   field.className = "search-source-row-api-key provider-editor-field";
   const text = document.createElement("span");
   text.textContent = label;
   const input = document.createElement("input");
   input.type = "text";
+  input.placeholder = placeholder;
   input.value = value;
   input.addEventListener("input", () => onInput(input.value));
   field.append(text, input);
@@ -520,7 +551,7 @@ function createTextAreaField(label: string, value: string, onInput: (value: stri
   return field;
 }
 
-function createPasswordField(label: string, value: string, onInput: (value: string) => void) {
+function createPasswordField(label: string, value: string, onInput: (value: string) => void, placeholder = "") {
   const field = document.createElement("label");
   field.className = "search-source-row-api-key provider-editor-field";
   const text = document.createElement("span");
@@ -529,6 +560,7 @@ function createPasswordField(label: string, value: string, onInput: (value: stri
   input.type = "password";
   input.autocomplete = "off";
   input.spellcheck = false;
+  input.placeholder = placeholder;
   input.value = value;
   input.addEventListener("input", () => onInput(input.value));
   field.append(text, input);
