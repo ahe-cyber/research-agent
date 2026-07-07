@@ -1,4 +1,3 @@
-- [x] remove image-[num].png in the root folder that are no longer referenced by /home/django/rampulla/research-agent/README.md
 - [x] implement google drive folder mount. put the steps i need to do to make it working under this todo item, such as how to create the api keys, do i need to create service account, etc. just the simplest steps that will make it work
   - Use a normal OAuth web app setup. A service account is not needed for mounting a user's own Drive folder in the browser.
   - In Google Cloud Console, create/select a project and enable the Google Drive API.
@@ -8,6 +7,3 @@
   - Add the local dev origin, for example `http://localhost:3000` or whichever origin Next.js prints, under Authorized JavaScript origins.
   - Copy the API key, OAuth client ID, and project number into Folder > source dropdown > Edit folder sources > Google Drive.
   - Select Google Drive in the Folder source dropdown and use the mount button. The app will ask for read-only Drive access, open the Google Picker, and mount the selected folder.
-- [x] if we are using oauth, then add an oauth button next to costly checkbox when we check the costly box. it should open the oauth flow from there.
-- [x] in the map sidebar there should be gap between the searchbar and other components.
-- [x] please check that the new changes are built and served, because i still see then very close together and google drive greyed out
