@@ -26,6 +26,7 @@ export interface FolderProvider {
   description?: string;
   requiresApiKey?: boolean;
   isSupported(): boolean;
+  authorize?(config?: unknown): Promise<boolean>;
   mount(): Promise<MountedFolder | null>;
   getFile(entry: FileEntry): Promise<File>;
 }

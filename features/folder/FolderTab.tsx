@@ -314,6 +314,7 @@ export function createFolderProviderEditorPanel() {
       label: provider.label,
       description: provider.description || "",
       requiresApiKey: provider.requiresApiKey,
+      supportsOAuth: Boolean(provider.authorize),
       apiKeyLabel: "API key",
       extraFields: provider.id === "google-drive"
         ? [
@@ -344,6 +345,7 @@ function createProviderCard({
   label,
   description,
   requiresApiKey = false,
+  supportsOAuth = false,
   apiKeyLabel = "API key",
   extraFields = [],
   configs,
@@ -353,6 +355,7 @@ function createProviderCard({
   label: string;
   description: string;
   requiresApiKey?: boolean;
+  supportsOAuth?: boolean;
   apiKeyLabel?: string;
   extraFields?: Array<{ key: string; label: string; type: "text" | "password"; placeholder?: string }>;
   configs: Record<string, { label?: string; description?: string; apiKey?: string; costly?: boolean; [key: string]: unknown }>;
@@ -460,10 +463,14 @@ function createProviderCard({
   costlyCheck.checked = Boolean(config.costly || requiresApiKey);
   costlyCheck.addEventListener("change", () => {
     configs[id] = { ...(configs[id] || {}), costly: costlyCheck.checked };
+    if (oauthButton) oauthButton.hidden = !costlyCheck.checked;
     saveProviderConfigs(storageKey, configs);
   });
   costlyLabel.append(costlyCheck, " Costly");
+  const oauthButton = supportsOAuth ? createOAuthButton(id, configs, storageKey) : null;
+  if (oauthButton) oauthButton.hidden = !costlyCheck.checked;
   typeRow.append(typeSelect, costlyLabel);
+  if (oauthButton) typeRow.appendChild(oauthButton);
   body.append(typeRow, createPasswordField(apiKeyLabel, config.apiKey || "", (value) => {
     configs[id] = { ...(configs[id] || {}), apiKey: value };
     saveProviderConfigs(storageKey, configs);
@@ -522,6 +529,42 @@ function replaceWithDeletedSourceRow(card: HTMLElement, label: string) {
     window.clearInterval(timer);
     parent.replaceChild(card, row);
   });
+}
+
+function createOAuthButton(
+  providerId: string,
+  configs: Record<string, { label?: string; description?: string; apiKey?: string; costly?: boolean; [key: string]: unknown }>,
+  storageKey: string
+) {
+  const provider = folderProviders.find((item) => item.id === providerId);
+  const button = document.createElement("button");
+  button.className = "provider-oauth-button";
+  button.type = "button";
+  button.textContent = "OAuth";
+  button.title = "Authorize this source";
+  button.disabled = !provider?.authorize;
+  button.addEventListener("click", async (event) => {
+    event.preventDefault();
+    event.stopPropagation();
+    if (!provider?.authorize) return;
+
+    saveProviderConfigs(storageKey, configs);
+    button.disabled = true;
+    button.textContent = "OAuth...";
+    try {
+      await provider.authorize(configs[providerId] || {});
+      button.textContent = "OAuth connected";
+    } catch (error) {
+      console.error("[Folder] OAuth authorization failed", error);
+      button.textContent = "OAuth failed";
+      window.setTimeout(() => {
+        button.textContent = "OAuth";
+      }, 2500);
+    } finally {
+      button.disabled = false;
+    }
+  });
+  return button;
 }
 
 function createTextField(label: string, value: string, onInput: (value: string) => void, placeholder = "") {

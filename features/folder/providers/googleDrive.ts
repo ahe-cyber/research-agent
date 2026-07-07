@@ -45,6 +45,16 @@ export const googleDriveProvider: FolderProvider = {
   isSupported() {
     return typeof window !== "undefined";
   },
+  async authorize(configOverride) {
+    const config = {
+      ...getGoogleDriveConfig(),
+      ...normalizeGoogleDriveConfig(configOverride)
+    };
+    validateConfig(config);
+    await loadGoogleLibraries();
+    await requestAccessToken(config);
+    return true;
+  },
   async mount() {
     const config = getGoogleDriveConfig();
     validateConfig(config);
@@ -84,6 +94,16 @@ function getGoogleDriveConfig(): GoogleDriveConfig {
   } catch {
     return {};
   }
+}
+
+function normalizeGoogleDriveConfig(config: unknown): GoogleDriveConfig {
+  if (!config || typeof config !== "object") return {};
+  const raw = config as Record<string, unknown>;
+  return {
+    apiKey: typeof raw.apiKey === "string" ? raw.apiKey.trim() : undefined,
+    clientId: typeof raw.clientId === "string" ? raw.clientId.trim() : undefined,
+    appId: typeof raw.appId === "string" ? raw.appId.trim() : undefined
+  };
 }
 
 function validateConfig(config: GoogleDriveConfig) {

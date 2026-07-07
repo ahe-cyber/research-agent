@@ -21,6 +21,7 @@
   display: flex;
   flex-direction: column;
   gap: 12px;
+  margin-top: 20px;
 }
 
 .map-display-group + .map-display-group {
@@ -605,7 +606,7 @@
 }
 
 .map-search-widget {
-  margin: 0 0 12px;
+  margin: 0 0 18px;
 }
 
 .provider-editor-panel {
@@ -615,6 +616,27 @@
 .provider-editor-body {
   display: grid;
   gap: 10px;
+}
+
+.provider-oauth-button {
+  height: 26px;
+  border: 1px solid #c9ced6;
+  border-radius: 4px;
+  background: #ffffff;
+  color: #1f2933;
+  cursor: pointer;
+  font: inherit;
+  font-size: 12px;
+  padding: 0 10px;
+}
+
+.provider-oauth-button:hover:not(:disabled) {
+  background: #f0f4f8;
+}
+
+.provider-oauth-button:disabled {
+  color: #8a96a3;
+  cursor: not-allowed;
 }
 
 .provider-editor-field textarea {

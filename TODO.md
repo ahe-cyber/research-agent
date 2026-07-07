@@ -8,5 +8,6 @@
   - Add the local dev origin, for example `http://localhost:3000` or whichever origin Next.js prints, under Authorized JavaScript origins.
   - Copy the API key, OAuth client ID, and project number into Folder > source dropdown > Edit folder sources > Google Drive.
   - Select Google Drive in the Folder source dropdown and use the mount button. The app will ask for read-only Drive access, open the Google Picker, and mount the selected folder.
+- [x] if we are using oauth, then add an oauth button next to costly checkbox when we check the costly box. it should open the oauth flow from there.
 - [x] in the map sidebar there should be gap between the searchbar and other components.
-
+- [x] please check that the new changes are built and served, because i still see then very close together and google drive greyed out
