@@ -57,6 +57,19 @@
   border-left-color: #2f6fed;
 }
 
+.feature-button.is-fixed {
+  flex: 0 0 auto;
+}
+
+.feature-button.is-fixed::after {
+  content: "";
+  position: absolute;
+  left: 8px;
+  right: 8px;
+  bottom: -3px;
+  border-bottom: 1px solid #d6d9de;
+}
+
 .feature-button.is-drag-over {
   border-top: 2px solid #2f6fed;
 }

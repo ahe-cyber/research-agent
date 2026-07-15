@@ -26,7 +26,6 @@
   },
   "include": [
     "app",
-    "features",
     "lib",
     "types",
     ".next/types/**/*.ts",

@@ -1,5 +1,5 @@
 import { jsonResponse } from "../../_lib/files";
-import { STATEN_ISLAND_CENTER } from "../../../../features/map/config";
+import { STATEN_ISLAND_CENTER } from "../../../features/map/config";
 
 const AUTOCOMPLETE_URL = "https://geosearch.planninglabs.nyc/v2/autocomplete";
 

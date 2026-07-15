@@ -1,9 +1,3 @@
-- [x] implement google drive folder mount. put the steps i need to do to make it working under this todo item, such as how to create the api keys, do i need to create service account, etc. just the simplest steps that will make it work
-  - Use a normal OAuth web app setup. A service account is not needed for mounting a user's own Drive folder in the browser.
-  - In Google Cloud Console, create/select a project and enable the Google Drive API.
-  - Configure the OAuth consent screen for the project. For local testing, add yourself as a test user if the app is external/testing.
-  - Create an API key under APIs & Services > Credentials.
-  - Create an OAuth 2.0 Client ID with application type "Web application".
-  - Add the local dev origin, for example `http://localhost:3000` or whichever origin Next.js prints, under Authorized JavaScript origins.
-  - Copy the API key, OAuth client ID, and project number into Folder > source dropdown > Edit folder sources > Google Drive.
-  - Select Google Drive in the Folder source dropdown and use the mount button. The app will ask for read-only Drive access, open the Google Picker, and mount the selected folder.
+this project is large, so building might take a long time, be patient
+- [x] we want to start utilizing the workspace concept. create an svg in /home/django/rampulla/research-agent/public/assets. reference adjacent svg, it should be human readable, prefer whole or half numbers. this svg should be a Home button, so name it home.svg. put Home onto the sidebar, fixed on top, not reorderable like the rest. leave the rest empty for now.
+- [x] in "/home/django/rampulla/research-agent/features" many items are not actually a feature as listed in "/home/django/rampulla/research-agent/public/data/feature.json" move them under a folder "/home/django/rampulla/research-agent/app/components" for now, we will reorganize later. if there are features in feature.json that doesnt have a folder under features, create an empty one for each. move the features folder itself into app folder too. make sure to resolve all links that need to change due to this reorganization.

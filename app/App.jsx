@@ -1,20 +1,27 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { AgentPanel } from "../features/agent/AgentPanel.jsx";
+import { AgentPanel } from "./features/agent/AgentPanel.jsx";
 import { initializeMapApp } from "./initializeMapApp.js";
-import { AddressTab } from "../features/search/AddressTab.jsx";
-import { AgentTab } from "../features/agent/AgentTab.jsx";
-import { FolderTab } from "../features/folder/FolderTab.tsx";
-import { RecordTab } from "../features/record/RecordTab.jsx";
-import { ToolTab } from "../features/tool/ToolTab.tsx";
-import { DatasetTab } from "../features/dataset/DatasetTab.jsx";
-import { FeatureTab } from "../features/workspace/FeatureTab.jsx";
-import { SidebarHeader } from "../features/workspace/SidebarHeader.jsx";
-import { WorkbenchLayout } from "../features/workspace/WorkbenchLayout.tsx";
+import { AddressTab } from "./components/search/AddressTab.jsx";
+import { AgentTab } from "./features/agent/AgentTab.jsx";
+import { FolderTab } from "./features/folder/FolderTab.tsx";
+import { RecordTab } from "./features/record/RecordTab.jsx";
+import { ToolTab } from "./features/tool/ToolTab.tsx";
+import { DatasetTab } from "./features/dataset/DatasetTab.jsx";
+import { FeatureTab } from "./components/workspace/FeatureTab.jsx";
+import { SidebarHeader } from "./components/workspace/SidebarHeader.jsx";
+import { WorkbenchLayout } from "./components/workspace/WorkbenchLayout.tsx";
 import { loadWorkspaceState, saveWorkspaceState } from "../lib/workspaceState.js";
 import featureRegistry from "../public/data/feature.json";
-import { MapTab } from "../features/map/MapTab";
+import { MapTab } from "./features/map/MapTab";
 import { withBasePath } from "../lib/basePath";
 
+const HOME_TAB = {
+  id: "home",
+  label: "Home",
+  iconSrc: withBasePath("/assets/home.svg"),
+  workspaceLabel: "Home Workspace",
+  emptyEditor: true
+};
 const EMPTY_EDITOR_ACTIVITY_IDS = new Set(["project", "record", "tool"]);
 const DEFAULT_TABS = featureRegistry.map(({ id, label, icon, workspaceLabel }) => ({
   id,
@@ -49,7 +56,9 @@ export default function App() {
   const openFileRef = useRef(null);
   const onSuggestTool = useCallback((name) => suggestToolRef.current?.(name), []);
   const onOpenFile = useCallback((entry) => openFileRef.current?.(entry), []);
-  const activeTabMeta = tabs.find((tab) => tab.id === activeTab) ?? DEFAULT_TABS.find((tab) => tab.id === activeTab);
+  const activeTabMeta = activeTab === HOME_TAB.id
+    ? HOME_TAB
+    : tabs.find((tab) => tab.id === activeTab) ?? DEFAULT_TABS.find((tab) => tab.id === activeTab);
 
   useEffect(() => {
     initializeMapApp({ folderRef, suggestToolRef, openFileRef });
@@ -105,6 +114,15 @@ export default function App() {
 
   const featureBar = (
     <nav className="feature-bar" aria-label="Feature Bar">
+      <FeatureTab
+        tab={HOME_TAB.id}
+        label={HOME_TAB.label}
+        iconSrc={HOME_TAB.iconSrc}
+        active={activeTab === HOME_TAB.id}
+        draggable={false}
+        fixed
+        onClick={setActiveTab}
+      />
       {tabs.map(({ id, label, iconSrc }) => (
         <FeatureTab
           key={id}
@@ -230,6 +248,7 @@ export default function App() {
         />
       </div>
 
+      <section className="workspace-tab" id="homeTab" aria-label="Home" hidden={activeTab !== "home"} />
       <section className="workspace-tab" id="projectTab" aria-label="Project" hidden={activeTab !== "project"} />
       <FolderTab ref={folderRef} active={activeTab === "folder"} onOpenFile={onOpenFile} />
       <AddressTab active={activeTab === "address"} />
