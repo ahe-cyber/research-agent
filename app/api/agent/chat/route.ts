@@ -1,4 +1,4 @@
-import { handleAgentChat } from "../../_services/agentChat";
+import { handleAgentChat } from "./service";
 
 export async function POST(request: Request) {
   return handleAgentChat(request);

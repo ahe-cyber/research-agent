@@ -1,15 +1,15 @@
 import { readFile } from "node:fs/promises";
 import { dataPath, jsonResponse, writeJsonFile } from "../_lib/files";
 import { isCatalogRegistry, normalizeCatalogRegistry } from "../_lib/searchRegistries";
-import { SearchCatalog, searchCatalog } from "../_services/catalogSearch";
+import { SearchCatalog, searchCatalog } from "./catalogSearch";
 
 const searchPath = dataPath("search.json");
-const SUPPORTED_FEATURES = new Set(["address", "dataset"]);
+const SUPPORTED_FEATURES = new Set(["address", "dataset", "skill"]);
 
 export async function GET(request: Request) {
   const feature = getFeature(request);
   if (!feature) {
-    return jsonResponse({ error: "Search feature must be one of: address, dataset." }, { status: 400 });
+    return jsonResponse({ error: "Search feature must be one of: address, dataset, skill." }, { status: 400 });
   }
 
   try {
@@ -48,7 +48,7 @@ export async function POST(request: Request) {
 export async function PUT(request: Request) {
   const feature = getFeature(request);
   if (!feature) {
-    return jsonResponse({ error: "Search feature must be one of: address, dataset." }, { status: 400 });
+    return jsonResponse({ error: "Search feature must be one of: address, dataset, skill." }, { status: 400 });
   }
 
   const body = await request.json().catch(() => null);

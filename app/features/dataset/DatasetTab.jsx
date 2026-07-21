@@ -295,7 +295,7 @@ export function createDatasetController(recordController, builtinController, edi
 
   async function loadStaticDatasetSources() {
     try {
-      const response = await fetch(withBasePath("/data/dataset.json"));
+      const response = await fetch(withBasePath("/data/features/dataset.json"));
 
       if (!response.ok) {
         throw new Error(`Static dataset registry failed with status ${response.status}`);

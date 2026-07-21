@@ -1,16 +1,16 @@
 import { readFile, writeFile } from "node:fs/promises";
-import { dataPath, jsonResponse } from "../_lib/files";
-import { errorMessage, isHttpUrl, isJsonContentType } from "../_lib/http";
-import { TOOL_DECLARATIONS } from "../tool/route";
-import { getAgentModelProvider } from "./agent/providers";
-import type { AgentModelProvider } from "./agent/providers";
+import { dataPath, jsonResponse } from "../../_lib/files";
+import { errorMessage, isHttpUrl, isJsonContentType } from "../../_lib/http";
+import { TOOL_DECLARATIONS } from "../../tool/route";
+import { getAgentModelProvider } from "../providers/index";
+import type { AgentModelProvider } from "../providers/index";
 
 const DEFAULT_AGENT_SYSTEM_INSTRUCTION = "You are a GIS research assistant.";
 const AGENT_ATTACHMENT_CONTEXT_MAX_CHARS = 8_000;
 
-const datasetPath = dataPath("dataset.json");
+const datasetPath = dataPath("features", "dataset.json");
 const searchRegistryPath = dataPath("search.json");
-const agentPath = dataPath("agent.json");
+const agentPath = dataPath("features", "agent.json");
 
 const agentInteractionIds = new Map<string, string>();
 

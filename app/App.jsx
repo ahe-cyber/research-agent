@@ -7,10 +7,12 @@ import { FolderTab } from "./features/folder/FolderTab.tsx";
 import { RecordTab } from "./features/record/RecordTab.jsx";
 import { ToolTab } from "./features/tool/ToolTab.tsx";
 import { DatasetTab } from "./features/dataset/DatasetTab.jsx";
+import { SkillTab } from "./features/skill/SkillTab.tsx";
 import { FeatureTab } from "./components/workspace/FeatureTab.jsx";
 import { SidebarHeader } from "./components/workspace/SidebarHeader.jsx";
 import { WorkbenchLayout } from "./components/workspace/WorkbenchLayout.tsx";
 import { loadWorkspaceState, saveWorkspaceState } from "../lib/workspaceState.js";
+import { APP_VERSION } from "../lib/appVersion";
 import featureRegistry from "../public/data/feature.json";
 import { MapTab } from "./features/map/MapTab";
 import { withBasePath } from "../lib/basePath";
@@ -54,14 +56,16 @@ export default function App() {
   const folderRef = useRef(null);
   const suggestToolRef = useRef(null);
   const openFileRef = useRef(null);
+  const openPageRef = useRef(null);
   const onSuggestTool = useCallback((name) => suggestToolRef.current?.(name), []);
   const onOpenFile = useCallback((entry) => openFileRef.current?.(entry), []);
+  const onOpenPage = useCallback((id, label) => openPageRef.current?.(id, label), []);
   const activeTabMeta = activeTab === HOME_TAB.id
     ? HOME_TAB
     : tabs.find((tab) => tab.id === activeTab) ?? DEFAULT_TABS.find((tab) => tab.id === activeTab);
 
   useEffect(() => {
-    initializeMapApp({ folderRef, suggestToolRef, openFileRef });
+    initializeMapApp({ folderRef, suggestToolRef, openFileRef, openPageRef });
   }, []);
 
   useEffect(() => {
@@ -145,6 +149,7 @@ export default function App() {
     <aside className="workspace-sidebar" aria-label="Primary Side Bar">
       <SidebarHeader
         kicker="Research Agent"
+        version={APP_VERSION}
         dropdown={
           <select
             aria-label="Workspace"
@@ -197,14 +202,6 @@ export default function App() {
           hidden={activeTab !== "record"}
         />
         <button
-          className="section-tool-button cloud-collections-button"
-          type="button"
-          id="postmanCollectionsButton"
-          aria-label="Postman collections"
-          title="Postman collections"
-          hidden={activeTab !== "dataset"}
-        />
-        <button
           className="section-tool-button mount-folder-button"
           type="button"
           id="mountFolderButton"
@@ -254,10 +251,11 @@ export default function App() {
       <AddressTab active={activeTab === "address"} />
       <RecordTab active={activeTab === "record"} />
       <DatasetTab active={activeTab === "dataset"} />
-      <ToolTab active={activeTab === "tool"} onSuggestTool={onSuggestTool} />
+      <ToolTab active={activeTab === "tool"} onSuggestTool={onSuggestTool} onOpenPage={onOpenPage} />
       <AgentTab active={activeTab === "agent"} />
 
       <MapTab active={activeTab === "map"} />
+      <SkillTab active={activeTab === "skill"} onOpenPage={onOpenPage} />
     </aside>
   );
 

@@ -93,7 +93,6 @@ export function createEditorTabController({ onMapActivated = () => {} } = {}) {
     if (panelMap[id]) {
       if (
         id === "dataset-editor" ||
-        id === "postman-collections" ||
         id === "search-catalog-results" ||
         id === "agent-editor" ||
         id === "folder-provider-editor" ||
@@ -149,25 +148,6 @@ export function createEditorTabController({ onMapActivated = () => {} } = {}) {
       editorPanel.hidden = true;
       viewport.appendChild(editorPanel);
       panelMap[tabId] = editorPanel;
-    }
-
-    activateTab(tabId);
-  }
-
-  function openPostmanTab(postmanPanel) {
-    const tabId = "postman-collections";
-
-    if (tabs.find((t) => t.id === tabId)) {
-      activateTab(tabId);
-      return;
-    }
-
-    tabs.push({ id: tabId, label: "Collections", closeable: true });
-
-    if (!panelMap[tabId]) {
-      postmanPanel.hidden = true;
-      viewport.appendChild(postmanPanel);
-      panelMap[tabId] = postmanPanel;
     }
 
     activateTab(tabId);
@@ -702,7 +682,7 @@ export function createEditorTabController({ onMapActivated = () => {} } = {}) {
   }
 
   render();
-  return { openTableTab, openPdfTab, openRecordGraphTab, openDatasetTab, openPostmanTab, openLayerSourcesTab, openSearchCatalogResultsTab, openSearchCatalogDatasetTab, openReportTab, openAgentTab, openFolderProviderTab, openAgentProviderTab, openAddressSearchTab, openEmptyPageTab, openFileViewerTab, getPageStatus };
+  return { openTableTab, openPdfTab, openRecordGraphTab, openDatasetTab, openLayerSourcesTab, openSearchCatalogResultsTab, openSearchCatalogDatasetTab, openReportTab, openAgentTab, openFolderProviderTab, openAgentProviderTab, openAddressSearchTab, openEmptyPageTab, openFileViewerTab, getPageStatus };
 }
 
 function renderHtmlElement(element) {

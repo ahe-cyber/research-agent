@@ -1,6 +1,6 @@
 import { dataPath, jsonResponse, readJsonFileResponse, writeJsonFile } from "../_lib/files";
 
-const datasetPath = dataPath("dataset.json");
+const datasetPath = dataPath("features", "dataset.json");
 
 export async function GET() {
   return readJsonFileResponse(datasetPath, undefined, "Failed to read datasets.");

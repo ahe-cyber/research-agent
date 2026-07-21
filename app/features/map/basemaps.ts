@@ -73,7 +73,7 @@ interface BasemapMap {
 let catalogPromise: Promise<BasemapCatalogItem[]> | null = null;
 
 function getCatalog() {
-  catalogPromise ??= fetch(withBasePath("/data/basemap.json"))
+  catalogPromise ??= fetch(withBasePath("/data/features/map.json"))
     .then((response) => {
       if (!response.ok) throw new Error(`Failed to load basemaps: ${response.status}`);
       return response.json() as Promise<BasemapCatalogItem[]>;
@@ -84,9 +84,7 @@ function getCatalog() {
 export function getBasemaps() {
   return getCatalog()
     .then((catalog) => {
-      const token = getMapboxAccessToken();
-      const basemaps = catalog.filter((item): item is Basemap => item.kind === "basemap");
-      return basemaps.filter((basemap) => !basemap.requiresMapboxAccessToken || token);
+      return catalog.filter((item): item is Basemap => item.kind === "basemap");
     });
 }
 
@@ -203,8 +201,11 @@ export class BasemapControl {
     this._container!.innerHTML = "";
     this._basemaps.forEach((basemap) => {
       const item = document.createElement("button");
+      const missingToken = basemap.requiresMapboxAccessToken && !getMapboxAccessToken();
       item.className = "map-display-option map-display-radio" + (basemap.id === this._currentId ? " is-active" : "");
       item.type = "button";
+      item.disabled = missingToken;
+      item.title = missingToken ? "Mapbox access token required" : "";
       item.setAttribute("aria-pressed", String(basemap.id === this._currentId));
       appendLabel(item, basemap);
       item.addEventListener("click", () => this._select(basemap.id));

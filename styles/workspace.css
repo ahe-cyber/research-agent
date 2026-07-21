@@ -460,7 +460,6 @@
 .edit-search-sources-button,
 .edit-agent-button,
 .wrap-text-button,
-.cloud-collections-button,
 .agent-more-button {
   position: relative;
   width: 30px;
@@ -478,7 +477,6 @@
 .edit-search-sources-button::before,
 .edit-agent-button::before,
 .wrap-text-button::before,
-.cloud-collections-button::before,
 .agent-more-button::before {
   content: "";
   position: absolute;
@@ -528,11 +526,6 @@
   -webkit-mask: center / contain no-repeat var(--asset-wrap);
 }
 
-.cloud-collections-button::before {
-  mask: center / contain no-repeat var(--asset-cloud);
-  -webkit-mask: center / contain no-repeat var(--asset-cloud);
-}
-
 .agent-more-button::before {
   mask: center / contain no-repeat var(--asset-more);
   -webkit-mask: center / contain no-repeat var(--asset-more);
@@ -558,7 +551,6 @@
 .edit-search-sources-button.is-active,
 .edit-agent-button.is-active,
 .wrap-text-button.is-active,
-.cloud-collections-button.is-active,
 .agent-more-button.is-active {
   background: #000000;
 }
@@ -573,7 +565,6 @@
 .edit-search-sources-button.is-active::before,
 .edit-agent-button.is-active::before,
 .wrap-text-button.is-active::before,
-.cloud-collections-button.is-active::before,
 .agent-more-button.is-active::before {
   background: #ffffff;
 }
@@ -588,6 +579,7 @@
 
 .address-list,
 .folder-asset-list,
+.skill-list,
 .tool-list {
   display: grid;
   gap: 10px;
@@ -868,8 +860,7 @@
   display: none;
 }
 
-#sourceList,
-#postmanCollectionList {
+#sourceList {
   display: flex;
   flex-direction: column;
   gap: 10px;
@@ -923,6 +914,26 @@
   color: #1f2933;
   font-size: 13px;
   line-height: 1.35;
+}
+
+.sidebar-card {
+  cursor: pointer;
+  outline: none;
+  transition: border-color 120ms ease, box-shadow 120ms ease, background 120ms ease;
+}
+
+.sidebar-card:hover {
+  border-color: #aeb6c2;
+}
+
+.sidebar-card.is-selected {
+  border-color: #2f6fed;
+  box-shadow: 0 0 0 2px rgba(47, 111, 237, 0.24), 0 0 14px rgba(47, 111, 237, 0.2);
+}
+
+.sidebar-card:focus-visible {
+  border-color: #2f6fed;
+  box-shadow: 0 0 0 2px rgba(47, 111, 237, 0.28);
 }
 
 .address-item,
@@ -1008,6 +1019,12 @@
   color: #526070;
   font-size: 12px;
   line-height: 1.45;
+}
+
+.skill-card-meta {
+  margin: 0;
+  color: #526070;
+  font-size: 12px;
 }
 
 .source-editor-summary {

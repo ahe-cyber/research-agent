@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { withBasePath } from "../../../lib/basePath";
+import { SidebarCard } from "../../components/workspace/SidebarCard";
 
 interface ToolParam {
   name: string;
@@ -26,9 +27,10 @@ interface ToolDeclaration {
 interface ToolTabProps {
   active: boolean;
   onSuggestTool?: (name: string) => void;
+  onOpenPage?: (id: string, label: string) => void;
 }
 
-export function ToolTab({ active, onSuggestTool }: ToolTabProps) {
+export function ToolTab({ active, onSuggestTool, onOpenPage }: ToolTabProps) {
   const [tools, setTools] = useState<Tool[]>([]);
 
   useEffect(() => {
@@ -48,13 +50,23 @@ export function ToolTab({ active, onSuggestTool }: ToolTabProps) {
       <h2 className="section-title">Tool</h2>
       <div className="tool-list">
         {tools.map((tool) => (
-          <article key={tool.name} className="tool-item tool-card">
+          <SidebarCard
+            key={tool.name}
+            className="tool-item tool-card"
+            ariaLabel={tool.name}
+            openLabel={`Open ${tool.name}`}
+            onOpen={() => onOpenPage?.(`tool-${tool.name}`, tool.name)}
+          >
             <button
               className="card-attach-button"
               type="button"
               aria-label={`Suggest ${tool.name} to agent`}
               title={`Suggest ${tool.name} to agent`}
-              onClick={() => onSuggestTool?.(tool.name)}
+              onClick={(event) => {
+                event.preventDefault();
+                event.stopPropagation();
+                onSuggestTool?.(tool.name);
+              }}
             />
             <div className="tool-signature">
               <code className="tool-name">{tool.name}</code>
@@ -81,7 +93,7 @@ export function ToolTab({ active, onSuggestTool }: ToolTabProps) {
               )}
             </div>
             <p className="tool-card-description">{tool.description}</p>
-          </article>
+          </SidebarCard>
         ))}
       </div>
     </section>

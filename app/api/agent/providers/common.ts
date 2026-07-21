@@ -1,4 +1,4 @@
-import { errorMessage } from "../../../_lib/http";
+import { errorMessage } from "../../_lib/http";
 
 const RETRYABLE_STATUSES = new Set([429, 502, 503, 504]);
 

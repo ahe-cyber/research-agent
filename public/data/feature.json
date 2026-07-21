@@ -1,0 +1,56 @@
+[
+  {
+    "id": "project",
+    "label": "Project",
+    "icon": "/assets/features/project.svg",
+    "workspaceLabel": "Project Workspace"
+  },
+  {
+    "id": "folder",
+    "label": "Folder",
+    "icon": "/assets/features/folder.svg",
+    "workspaceLabel": "Folder Workspace"
+  },
+  {
+    "id": "address",
+    "label": "Address",
+    "icon": "/assets/features/address.svg",
+    "workspaceLabel": "Address Workspace"
+  },
+  {
+    "id": "record",
+    "label": "Record",
+    "icon": "/assets/features/record.svg",
+    "workspaceLabel": "Record Workspace"
+  },
+  {
+    "id": "dataset",
+    "label": "Dataset",
+    "icon": "/assets/features/dataset.svg",
+    "workspaceLabel": "Dataset Workspace"
+  },
+  {
+    "id": "tool",
+    "label": "Tool",
+    "icon": "/assets/features/tool.svg",
+    "workspaceLabel": "Tool Workspace"
+  },
+  {
+    "id": "agent",
+    "label": "Agent",
+    "icon": "/assets/features/agent.svg",
+    "workspaceLabel": "Agent Workspace"
+  },
+  {
+    "id": "map",
+    "label": "Map",
+    "icon": "/assets/features/map.svg",
+    "workspaceLabel": "Map Workspace"
+  },
+  {
+    "id": "skill",
+    "label": "Skill",
+    "icon": "/assets/features/skill.svg",
+    "workspaceLabel": "Skill Workspace"
+  }
+]

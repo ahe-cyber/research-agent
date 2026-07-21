@@ -2,6 +2,8 @@
 
 The project is an **Agentic AEC IDE**: a visual, extensible environment where AI agents, tools, skills, MCP servers, project data, and human workflows come together to support architectural work across research, schematic design, filing, reporting, presentations, estimating, and project management.
 
+Latest version: `v0.0.1`
+
 ## Development
 
 Run the Next.js development server:

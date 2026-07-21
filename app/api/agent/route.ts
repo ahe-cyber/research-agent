@@ -1,6 +1,6 @@
 import { dataPath, jsonResponse, readJsonFileResponse, writeJsonFile } from "../_lib/files";
 
-const agentPath = dataPath("agent.json");
+const agentPath = dataPath("features", "agent.json");
 
 export async function GET() {
   return readJsonFileResponse(agentPath, []);

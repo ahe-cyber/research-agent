@@ -65,7 +65,7 @@ export function CustomLayersSection() {
   const saveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const initialLoad = useRef(false);
 
-  // Load from geometry.json on mount
+  // Load from feature geometry data on mount
   useEffect(() => {
     loadLayers().then((loaded) => {
       initialLoad.current = true;
@@ -73,7 +73,7 @@ export function CustomLayersSection() {
     });
   }, []);
 
-  // Debounced save to geometry.json (skip the very first setState from load)
+  // Debounced save to feature geometry data (skip the very first setState from load)
   useEffect(() => {
     if (!initialLoad.current) return;
     if (saveTimer.current) clearTimeout(saveTimer.current);

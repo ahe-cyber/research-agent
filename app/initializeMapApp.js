@@ -7,7 +7,6 @@ import { createCatalogController } from "./components/search/CatalogPanel.jsx";
 import { createRecordController, createRecordStore } from "./features/record/RecordTab.jsx";
 import { createEditorTabController } from "./components/editor/EditorTabs.js";
 import { applyBuiltin, hasBuiltin } from "./features/tool/builtins.ts";
-import { createPostmanController } from "./components/postman/PostmanTab.jsx";
 import { createDatasetController } from "./features/dataset/DatasetTab.jsx";
 import { createFolderProviderEditorPanel } from "./features/folder/FolderTab.tsx";
 import { createLayerSourcesController } from "./features/map/LayerSourcesPage";
@@ -41,7 +40,7 @@ async function handlePlaceRetrieved(searchResult, _sourceId, sourceLabel) {
   agentController.attachRecord(record);
 }
 
-export async function initializeMapApp({ folderRef = null, suggestToolRef = null, openFileRef = null } = {}) {
+export async function initializeMapApp({ folderRef = null, suggestToolRef = null, openFileRef = null, openPageRef = null } = {}) {
   if (initialized) return;
   initialized = true;
   const searchBoxContainer = document.getElementById("placeSearchBox");
@@ -85,6 +84,7 @@ export async function initializeMapApp({ folderRef = null, suggestToolRef = null
   const editorTabController = createEditorTabController({
     onMapActivated: () => refreshMapView({ mask: true })
   });
+  if (openPageRef) openPageRef.current = (id, label) => editorTabController.openEmptyPageTab(id, label);
 
   window.addEventListener("focus", refreshMapView);
   document.addEventListener("visibilitychange", () => {
@@ -119,7 +119,6 @@ export async function initializeMapApp({ folderRef = null, suggestToolRef = null
     (catalogs) => sourceController.setSearchCatalogs(catalogs)
   );
   sourceController.setSearchSourcesEditorOpener(() => catalogController.open({ focusAgent: false }));
-  createPostmanController(editorTabController);
   const agentTabController = createAgentTabController(editorTabController, agentController);
   agentController.setAttachmentTargetProvider(() => agentTabController.getAttachmentTarget());
   agentController.setModulesRefresher(() => agentTabController.reload());

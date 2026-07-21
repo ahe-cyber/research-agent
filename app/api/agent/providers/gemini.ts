@@ -1,4 +1,4 @@
-import { errorMessage } from "../../../_lib/http";
+import { errorMessage } from "../../_lib/http";
 import type { AgentModelProvider } from "./types";
 
 const RETRYABLE_STATUSES = new Set([429, 502, 503, 504]);
