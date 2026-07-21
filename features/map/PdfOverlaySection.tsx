@@ -122,7 +122,7 @@ export function PdfOverlaySection() {
 
   async function loadOverlays() {
     try {
-      const res = await fetch(withBasePath("/api/overlay"));
+      const res = await fetch(withBasePath("/api/map/overlay"));
       if (!res.ok) throw new Error(`Overlay registry returned ${res.status}`);
       const data = await res.json();
       const loaded = normalizeOverlays(Array.isArray(data?.overlays) ? data.overlays : []);
@@ -143,7 +143,7 @@ export function PdfOverlaySection() {
 
   async function saveOverlays(nextOverlays: OverlayConfig[]) {
     try {
-      await fetch(withBasePath("/api/overlay"), {
+      await fetch(withBasePath("/api/map/overlay"), {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ overlays: nextOverlays })
@@ -168,7 +168,7 @@ export function PdfOverlaySection() {
         form.append(`page-${page.page}`, page.blob, `page-${String(page.page).padStart(3, "0")}.png`);
       }
 
-      const res = await fetch(withBasePath("/api/overlay"), { method: "POST", body: form });
+      const res = await fetch(withBasePath("/api/map/overlay"), { method: "POST", body: form });
       const data = await res.json();
       if (!res.ok) throw new Error(data?.error || `Overlay upload returned ${res.status}`);
       setOverlays((prev) => [...prev, data]);

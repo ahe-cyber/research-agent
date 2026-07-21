@@ -1,4 +1,4 @@
-import { STATEN_ISLAND_CENTER, getMapboxAccessToken } from "../../../features/map/config";
+import { STATEN_ISLAND_CENTER, getMapboxAccessToken } from "@/features/map/config";
 import type { RetrievedFeature, RetrieveHandler, SearchMap } from "../types";
 
 const GEOCODE_URL = "https://api.mapbox.com/search/geocode/v6/forward";

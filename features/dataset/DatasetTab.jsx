@@ -128,7 +128,7 @@ export function createDatasetController(recordController, builtinController, edi
 
   async function loadCatalogSearchSources(widget) {
     try {
-      const response = await fetch(withBasePath("/api/search?feature=dataset"));
+      const response = await fetch(withBasePath("/api/dataset/search"));
       if (!response.ok) throw new Error(`Catalog registry failed with status ${response.status}`);
       setSearchCatalogs(await response.json(), widget);
     } catch (error) {
@@ -295,7 +295,7 @@ export function createDatasetController(recordController, builtinController, edi
 
   async function loadStaticDatasetSources() {
     try {
-      const response = await fetch(withBasePath("/api/data/features/dataset.json"));
+      const response = await fetch(withBasePath("/api/dataset"));
 
       if (!response.ok) {
         throw new Error(`Static dataset registry failed with status ${response.status}`);
@@ -744,9 +744,9 @@ export function createDatasetController(recordController, builtinController, edi
 
   async function loadSupportedInputParams() {
     try {
-      let res = await fetch(withBasePath("/api/search?feature=dataset"));
+      let res = await fetch(withBasePath("/api/dataset/search"));
       if (!res.ok) {
-        res = await fetch(withBasePath("/api/data/search.json"));
+        res = await fetch(withBasePath("/api/dataset/search"));
       }
       if (!res.ok) return;
       const searchItems = await res.json();
@@ -885,7 +885,7 @@ export function createDatasetController(recordController, builtinController, edi
     if (!sourceId) return null;
 
     try {
-      const response = await fetch(withBasePath("/api/search?feature=address"));
+      const response = await fetch(withBasePath("/api/address/search"));
       if (!response.ok) throw new Error(`Search source registry failed with status ${response.status}`);
       const sources = await response.json();
       return Array.isArray(sources) ? sources.find((source) => source.id === sourceId) : null;

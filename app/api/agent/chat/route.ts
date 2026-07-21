@@ -1,5 +1,3 @@
-import { handleAgentChat } from "./service";
+import { handleAgentChat } from "@/features/agent/server/chatService";
 
-export async function POST(request: Request) {
-  return handleAgentChat(request);
-}
+export const POST = handleAgentChat;

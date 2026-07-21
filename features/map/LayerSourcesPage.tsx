@@ -43,7 +43,7 @@ export function createLayerSourcesController(editorTabController: EditorTabContr
 }
 
 async function buildLayerSourcesPanel() {
-  const response = await fetch(withBasePath("/api/data/features/map.json"));
+  const response = await fetch(withBasePath("/api/map"));
   if (!response.ok) throw new Error(`Failed to load layer sources: ${response.status}`);
   const catalog = await response.json() as BasemapCatalog;
   const panel = document.createElement("div");

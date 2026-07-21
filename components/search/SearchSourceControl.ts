@@ -1,5 +1,5 @@
-import { withBasePath } from "../../lib/basePath";
-import { getGoogleMapsApiKey, getMapboxAccessToken } from "../../features/map/config";
+import { withBasePath } from "@/lib/basePath";
+import { getGoogleMapsApiKey, getMapboxAccessToken } from "@/features/map/config";
 import { suggestGeoSearch } from "./providers/nycGeoSearch";
 import { suggestGooglePlaces } from "./providers/googlePlaces";
 import { suggestMapboxSearch } from "./providers/mapboxSearch";
@@ -31,7 +31,7 @@ const SUGGEST_MAP: Record<AddressSourceType, { suggest: SuggestFn; hasKey(source
 
 async function loadSources(): Promise<SearchSourceConfig[]> {
   try {
-    const res = await fetch(withBasePath("/api/search?feature=address"));
+    const res = await fetch(withBasePath("/api/address/search"));
     if (!res.ok) throw new Error("Failed to load");
     const all = (await res.json()) as SearchSourceConfig[];
     return all.filter(

@@ -1,7 +1,7 @@
-import { withBasePath } from "../../../lib/basePath";
+import { withBasePath } from "@/lib/basePath";
 import type { Coordinates, RetrievedFeature, RetrieveHandler, SearchMap } from "../types";
 
-const AUTOCOMPLETE_URL = withBasePath("/api/search/geosearch");
+const AUTOCOMPLETE_URL = withBasePath("/api/address/geosearch");
 
 interface GeoSearchFeature extends RetrievedFeature {
   geometry: RetrievedFeature["geometry"] & { coordinates: Coordinates };

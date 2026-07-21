@@ -3,7 +3,9 @@ research-agent/
 ├── app/
 │   ├── api/
 │   │   ├── this-feature/
-│   │   │   └── route.ts                     # API endpoint for one feature
+│   │   │   └── route.ts                     # Thin adapter importing feature/server handlers
+│   │   │   ├── search/
+│   │   │   │   └── route.ts                 # Feature-owned sub-endpoint
 │   │   ├── another-feature/
 │   │   │   └── route.ts
 │   │   └── ...
@@ -12,6 +14,10 @@ research-agent/
 │   ├── global.d.ts                          # App-wide global type declarations
 │   ├── layout.tsx                           # Root HTML and global setup
 │   └── page.tsx                             # Main application entry
+│
+│   # API route files stay thin: bind HTTP verbs to named feature/server or lib/server functions.
+│   # Avoid top-level technical routes such as /api/data, /api/proxy, /api/overlay, or /api/geometry.
+│   # Mount behavior under the owning feature, e.g. /api/map/geometry or /api/address/search.
 │
 ├── components/
 │   ├── Application.tsx                      # Main interactive application
@@ -66,7 +72,7 @@ research-agent/
 │   └── ...
 │
 ├── data/
-│   ├── features.json                        # Available feature definitions
+│   ├── feature.json                         # Available feature definitions
 │   ├── documents.json                       # Available document definitions
 │   ├── search-sources.json                  # Search sources assigned to features
 │   │
@@ -109,5 +115,5 @@ research-agent/
 │
 ├── next.config.ts
 ├── package.json
-└── tsconfig.json
+└── tsconfig.json                            # Defines @/* project-root imports
 ```

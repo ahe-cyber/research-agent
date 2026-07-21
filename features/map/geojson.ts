@@ -68,7 +68,7 @@ export async function queryUrl(url: string) {
   let proxyResponse;
 
   try {
-    proxyResponse = await fetch(withBasePath("/api/proxy/query"), {
+    proxyResponse = await fetch(withBasePath("/api/map/query"), {
       method: "POST",
       headers: {
         "Content-Type": "application/json"

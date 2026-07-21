@@ -1,4 +1,4 @@
-import { withBasePath } from "../../../lib/basePath";
+import { withBasePath } from "@/lib/basePath";
 
 export interface PdfParseResult {
   type: "pdf";

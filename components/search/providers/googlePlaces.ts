@@ -1,4 +1,4 @@
-import { STATEN_ISLAND_BBOX, getGoogleMapsApiKey } from "../../../features/map/config";
+import { STATEN_ISLAND_BBOX, getGoogleMapsApiKey } from "@/features/map/config";
 import type { Coordinates, RetrievedFeature, RetrieveHandler, SearchMap } from "../types";
 
 const AUTOCOMPLETE_URL = "https://places.googleapis.com/v1/places:autocomplete";

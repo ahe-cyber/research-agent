@@ -23,12 +23,12 @@ export function SkillTab({ active, onOpenPage }: { active: boolean; onOpenPage?:
   const [query, setQuery] = useState("");
 
   useEffect(() => {
-    fetch(withBasePath("/api/data/features/skill.json"))
+    fetch(withBasePath("/api/skill"))
       .then((res) => (res.ok ? res.json() : []))
       .then((data) => setSkills(Array.isArray(data) ? data : []))
       .catch(() => setSkills([]));
 
-    fetch(withBasePath("/api/search?feature=skill"))
+    fetch(withBasePath("/api/skill/search"))
       .then((res) => (res.ok ? res.json() : []))
       .then((data) => setSources(Array.isArray(data) ? data.map(normalizeSource) : []))
       .catch(() => setSources([{ id: "project-skills", label: "Project Skills" }]));
