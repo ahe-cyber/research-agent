@@ -1,7 +1,7 @@
 import { createAgentController } from "../features/agent/AgentPanel.jsx";
 import { createMap } from "../features/map/createMap";
-import { createSearchSourceControl } from "./search/SearchSourceControl";
-import { createAddressController, createSearchSourceEditorPanel } from "./search/AddressTab.jsx";
+import { createSearchSourceControl } from "../features/address/components/SearchSourceControl";
+import { createAddressController, createSearchSourceEditorPanel } from "../features/address/AddressTab.jsx";
 import { createAgentTabController } from "../features/agent/AgentTab.jsx";
 import { createCatalogController } from "./search/CatalogPanel.jsx";
 import { createRecordController, createRecordStore } from "../features/record/RecordTab.jsx";

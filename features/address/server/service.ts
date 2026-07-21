@@ -1,12 +1,13 @@
 import { jsonResponse } from "@/lib/server/files";
 import { STATEN_ISLAND_CENTER } from "@/features/map/config";
+import type { AddressSearchSource } from "../address.schema";
 import { getAddressSearchSources, getGeoSearchSource, saveAddressSearchSources } from "./repository";
 
 export async function listAddressSearchSources() {
   return jsonResponse(await getAddressSearchSources());
 }
 
-export async function updateAddressSearchSources(sources: unknown[]) {
+export async function updateAddressSearchSources(sources: AddressSearchSource[]) {
   await saveAddressSearchSources(sources);
   return jsonResponse({ ok: true });
 }

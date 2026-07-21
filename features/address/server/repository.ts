@@ -1,4 +1,5 @@
 import { getSearchItems, putSearchItems } from "@/lib/server/searchRepository";
+import type { AddressSearchSource } from "../address.schema";
 
 const FEATURE_ID = "address";
 
@@ -6,7 +7,7 @@ export function getAddressSearchSources() {
   return getSearchItems(FEATURE_ID);
 }
 
-export function saveAddressSearchSources(sources: unknown[]) {
+export function saveAddressSearchSources(sources: AddressSearchSource[]) {
   return putSearchItems(FEATURE_ID, sources);
 }
 

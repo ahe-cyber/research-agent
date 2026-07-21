@@ -18,8 +18,9 @@ research-agent/
 │   # Use request body or URL parameters for more detailed feature control.
 │   # Avoid top-level technical routes such as /api/data, /api/proxy, /api/overlay, or /api/geometry.
 │   # Mount behavior under the owning feature, e.g. /api/map?resource=geometry or /api/address.
-│   # Frontend code calls feature APIs through features/<feature>/client/api.ts.
+│   # Frontend code calls feature APIs through features/<feature>/<feature>.api.ts.
 │   # Server handlers parse request params/body, services own operations, and repositories own data access.
+│   # Feature schemas live at features/<feature>/<feature>.schema.ts, use Zod, and export inferred types.
 │   # Feature endpoint URLs and source configuration belong in data/search.json or feature data files, not constants in server handlers.
 │
 ├── components/
@@ -59,7 +60,7 @@ research-agent/
 │   │   │   └── repository.ts                # Reads and writes feature-owned data
 │   │   │
 │   │   ├── this-feature.api.ts              # Browser calls to the feature API
-│   │   ├── this-feature.schema.ts           # Use Zod to define schema and infer types
+│   │   ├── this-feature.schema.ts           # Zod schemas and inferred types
 │   │   ├── this-feature.icon.svg 
 │   │   └── this-feature.module.css
 │   │

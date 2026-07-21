@@ -1,6 +1,6 @@
 import { buildUrlWithParams, queryUrl } from "../map/geojson";
 import { createRoot } from "react-dom/client";
-import { getAddressSearchSources } from "@/features/address/client/api";
+import { getAddressSearchSources } from "@/features/address/address.api";
 import { getDatasetSearchSources, getDatasetSources, saveDatasetSources } from "./client/api";
 import { DomSlot } from "../../components/editor/DomSlot";
 import { PageMenu } from "../../components/editor/PageMenu";

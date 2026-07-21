@@ -1,9 +1,9 @@
 import { getGoogleMapsApiKey, getMapboxAccessToken } from "@/features/map/config";
-import { getAddressSearchSources } from "@/features/address/client/api";
+import { getAddressSearchSources } from "@/features/address/address.api";
 import { suggestGeoSearch } from "./providers/nycGeoSearch";
 import { suggestGooglePlaces } from "./providers/googlePlaces";
 import { suggestMapboxSearch } from "./providers/mapboxSearch";
-import { createSearchWidget, type SearchWidgetInstance } from "./SearchWidget";
+import { createSearchWidget, type SearchWidgetInstance } from "@/components/search/SearchWidget";
 import type { RetrieveHandler, SearchMap } from "./types";
 
 export type AddressSourceType = "geosearch" | "google" | "mapbox";

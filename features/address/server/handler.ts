@@ -1,4 +1,5 @@
 import { jsonResponse } from "@/lib/server/files";
+import { addressSearchSourcesSchema } from "../address.schema";
 import {
   listAddressSearchSources,
   suggestAddressFromGeoSearch,
@@ -14,8 +15,9 @@ export function GET(request: Request) {
 
 export async function PUT(request: Request) {
   const body = await request.json().catch(() => null);
-  if (!Array.isArray(body)) {
-    return jsonResponse({ error: "Search sources payload must be an array." }, { status: 400 });
+  const result = addressSearchSourcesSchema.safeParse(body);
+  if (!result.success) {
+    return jsonResponse({ error: "Invalid address search sources payload.", issues: result.error.issues }, { status: 400 });
   }
-  return updateAddressSearchSources(body);
+  return updateAddressSearchSources(result.data);
 }

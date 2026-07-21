@@ -1,4 +1,4 @@
-import { getAddressGeoSearchSuggestions } from "@/features/address/client/api";
+import { getAddressGeoSearchSuggestions } from "@/features/address/address.api";
 import type { Coordinates, RetrievedFeature, RetrieveHandler, SearchMap } from "../types";
 
 interface GeoSearchFeature extends RetrievedFeature {

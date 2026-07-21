@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { AgentPanel } from "../features/agent/AgentPanel.jsx";
 import { initializeMapApp } from "./initializeMapApp.js";
-import { AddressTab } from "./search/AddressTab.jsx";
+import { AddressTab } from "../features/address/AddressTab.jsx";
 import { AgentTab } from "../features/agent/AgentTab.jsx";
 import { FolderTab } from "../features/folder/FolderTab.tsx";
 import { RecordTab } from "../features/record/RecordTab.jsx";
@@ -16,6 +16,7 @@ import { APP_VERSION } from "../lib/appVersion";
 import featureRegistry from "../data/feature.json";
 import { MapTab } from "../features/map/MapTab";
 import { withBasePath } from "../lib/basePath";
+import addressIcon from "../features/address/address.icon.svg";
 
 const HOME_TAB = {
   id: "home",
@@ -28,10 +29,14 @@ const EMPTY_EDITOR_ACTIVITY_IDS = new Set(["project", "record", "tool"]);
 const DEFAULT_TABS = featureRegistry.map(({ id, label, icon, workspaceLabel }) => ({
   id,
   label,
-  iconSrc: withBasePath(icon),
+  iconSrc: id === "address" ? getStaticAssetSrc(addressIcon) : withBasePath(icon),
   workspaceLabel,
   emptyEditor: EMPTY_EDITOR_ACTIVITY_IDS.has(id)
 }));
+
+function getStaticAssetSrc(asset) {
+  return typeof asset === "string" ? asset : asset?.src || "";
+}
 
 function getInitialTabs() {
   const state = loadWorkspaceState();

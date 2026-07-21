@@ -1,8 +1,9 @@
 import { createRoot } from "react-dom/client";
-import { getAddressSearchSources, saveAddressSearchSources } from "@/features/address/client/api";
-import { DomSlot } from "../editor/DomSlot";
-import { PageMenu } from "../editor/PageMenu";
-import { FeatureSourceTab } from "../workspace/FeatureSourceTab";
+import { getAddressSearchSources, saveAddressSearchSources } from "./address.api";
+import { DomSlot } from "@/components/editor/DomSlot";
+import { PageMenu } from "@/components/editor/PageMenu";
+import { FeatureSourceTab } from "@/components/workspace/FeatureSourceTab";
+import "./address.module.css";
 
 export function AddressTab({ active }) {
   return (

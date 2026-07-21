@@ -14,7 +14,7 @@
   {
     "id": "address",
     "label": "Address",
-    "icon": "/assets/features/address.svg",
+    "icon": null,
     "workspaceLabel": "Address Workspace"
   },
   {
