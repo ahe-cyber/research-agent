@@ -1,11 +1,23 @@
 import { createRoot } from "react-dom/client";
-import { getAddressSearchSources, saveAddressSearchSources } from "./address.api";
+import type { AddressSearchSource } from "../address.schema";
+import { getAddressSearchSources, saveAddressSearchSources } from "../address.api";
 import { DomSlot } from "@/components/editor/DomSlot";
 import { PageMenu } from "@/components/editor/PageMenu";
 import { FeatureSourceTab } from "@/components/workspace/FeatureSourceTab";
-import "./address.module.css";
+import "../address.module.css";
 
-export function AddressTab({ active }) {
+type AddressRecord = {
+  title: string;
+  subtitle: string;
+};
+
+type EditableAddressSearchSource = AddressSearchSource & {
+  isDeleted?: boolean;
+  deletePendingUntil?: number;
+  outputs: NonNullable<AddressSearchSource["outputs"]>;
+};
+
+export function AddressTab({ active }: { active: boolean }) {
   return (
     <FeatureSourceTab
       active={active}
@@ -19,11 +31,11 @@ export function AddressTab({ active }) {
   );
 }
 
-export function createAddressController({ onAddressClick } = {}) {
+export function createAddressController({ onAddressClick }: { onAddressClick?: (address: AddressRecord) => void } = {}) {
   const addressList = document.getElementById("addressList");
-  const addresses = [];
+  const addresses: AddressRecord[] = [];
 
-  function add(searchResult) {
+  function add(searchResult: any) {
     const feature = searchResult.features && searchResult.features[0];
     const properties = feature && feature.properties ? feature.properties : {};
     const title = properties.full_address || properties.name || properties.address || "Selected place";
@@ -40,6 +52,7 @@ export function createAddressController({ onAddressClick } = {}) {
   }
 
   function render() {
+    if (!addressList) return;
     addressList.replaceChildren();
 
     addresses.forEach((address) => {
@@ -67,15 +80,15 @@ export function createAddressController({ onAddressClick } = {}) {
   return { add, getCurrentAddress };
 }
 
-export function createSearchSourceEditorPanel(onSaved) {
+export function createSearchSourceEditorPanel(onSaved?: () => void) {
   const panel = document.createElement("div");
   panel.className = "editor-sources-panel search-sources-editor-panel";
 
-  let sources = [];
-  let saveTimer = null;
+  let sources: EditableAddressSearchSource[] = [];
+  let saveTimer: ReturnType<typeof setTimeout> | undefined;
   let sourceIdToOpen = "";
-  const deleteTimers = {};
-  const deleteCountdownTimers = {};
+  const deleteTimers: Record<string, ReturnType<typeof setTimeout>> = {};
+  const deleteCountdownTimers: Record<string, ReturnType<typeof setInterval>> = {};
 
   const addBtn = document.createElement("button");
   addBtn.className = "section-tool-button add-source-button";
@@ -102,7 +115,7 @@ export function createSearchSourceEditorPanel(onSaved) {
       if (res.ok) {
         const data = await res.json();
         sources = Array.isArray(data)
-          ? data.map(s => ({ ...s, apiKey: s.apiKey || "", outputs: Array.isArray(s.outputs) ? s.outputs.map(o => ({ ...o })) : [] }))
+          ? data.map((s) => ({ ...s, apiKey: s.apiKey || "", outputs: Array.isArray(s.outputs) ? s.outputs.map((o) => ({ ...o })) : [] }))
           : [];
         render();
       }
@@ -118,7 +131,7 @@ export function createSearchSourceEditorPanel(onSaved) {
     });
   }
 
-  function createCard(source, i) {
+  function createCard(source: EditableAddressSearchSource, i: number) {
     const card = document.createElement("details");
     card.className = "source-editor search-source-card";
     card.open = source.id === sourceIdToOpen;
@@ -161,18 +174,20 @@ export function createSearchSourceEditorPanel(onSaved) {
     [titleInput, descInput].forEach((input) => {
       input.addEventListener("click", (event) => event.stopPropagation());
       input.addEventListener("keydown", (event) => {
+        const keyboardEvent = event as KeyboardEvent;
         event.stopPropagation();
 
-        if (event.key === " ") {
+        if (keyboardEvent.key === " ") {
           event.preventDefault();
           insertTextAtCursor(input, " ");
           input.dispatchEvent(new Event("input", { bubbles: true }));
         }
       });
       input.addEventListener("keyup", (event) => {
+        const keyboardEvent = event as KeyboardEvent;
         event.stopPropagation();
 
-        if (event.key === " ") event.preventDefault();
+        if (keyboardEvent.key === " ") event.preventDefault();
       });
       input.addEventListener("input", () => {
         source.label = titleInput.value;
@@ -231,7 +246,7 @@ export function createSearchSourceEditorPanel(onSaved) {
       opt.value = value; opt.textContent = label; opt.selected = value === source.type;
       typeSelect.appendChild(opt);
     });
-    typeSelect.addEventListener("change", () => { source.type = typeSelect.value; scheduleSave(); });
+    typeSelect.addEventListener("change", () => { source.type = typeSelect.value as EditableAddressSearchSource["type"]; scheduleSave(); });
 
     const costlyLabel = document.createElement("label");
     costlyLabel.className = "search-source-row-costly";
@@ -290,7 +305,7 @@ export function createSearchSourceEditorPanel(onSaved) {
       scheduleSave();
     };
 
-    source.outputs.forEach(outputObj => appendOutputRow(gridRows, outputObj, source, onOutputChange));
+    source.outputs.forEach((outputObj) => appendOutputRow(gridRows, outputObj, source, onOutputChange));
 
     const addOutputBtn = document.createElement("button");
     addOutputBtn.className = "record-action";
@@ -309,14 +324,14 @@ export function createSearchSourceEditorPanel(onSaved) {
     return card;
   }
 
-  function createOutputVariableFooter(source) {
+  function createOutputVariableFooter(source: EditableAddressSearchSource) {
     const footer = document.createElement("div");
     footer.className = "source-variable-footer search-source-variable-footer";
     updateOutputVariableFooter(footer, source);
     return footer;
   }
 
-  function updateOutputVariableFooter(footer, source) {
+  function updateOutputVariableFooter(footer: HTMLDivElement, source: EditableAddressSearchSource) {
     const outputList = document.createElement("div");
     outputList.className = "source-variable-list";
 
@@ -336,7 +351,12 @@ export function createSearchSourceEditorPanel(onSaved) {
     footer.replaceChildren(outputList);
   }
 
-  function appendOutputRow(gridRows, outputObj, source, onChange) {
+  function appendOutputRow(
+    gridRows: HTMLDivElement,
+    outputObj: NonNullable<AddressSearchSource["outputs"]>[number],
+    source: EditableAddressSearchSource,
+    onChange: () => void
+  ) {
     const varInput = document.createElement("input");
     const pathInput = document.createElement("input");
     const deleteBtn = document.createElement("button");
@@ -376,7 +396,7 @@ export function createSearchSourceEditorPanel(onSaved) {
     } catch {}
   }
 
-  function createDeletedSourceRow(source) {
+  function createDeletedSourceRow(source: EditableAddressSearchSource) {
     const row = document.createElement("div");
     const line = document.createElement("div");
     const label = document.createElement("span");
@@ -401,7 +421,7 @@ export function createSearchSourceEditorPanel(onSaved) {
     return row;
   }
 
-  function markSourceDeleted(source) {
+  function markSourceDeleted(source: EditableAddressSearchSource) {
     source.isDeleted = true;
     source.deletePendingUntil = Date.now() + 10_000;
     clearTimeout(deleteTimers[source.id]);
@@ -410,7 +430,7 @@ export function createSearchSourceEditorPanel(onSaved) {
     scheduleSave();
   }
 
-  function revertSourceDelete(sourceId) {
+  function revertSourceDelete(sourceId: string) {
     const source = sources.find((candidate) => candidate.id === sourceId);
     if (!source) return;
     delete source.isDeleted;
@@ -423,7 +443,7 @@ export function createSearchSourceEditorPanel(onSaved) {
     scheduleSave();
   }
 
-  function permanentlyDeleteSource(sourceId) {
+  function permanentlyDeleteSource(sourceId: string) {
     clearTimeout(deleteTimers[sourceId]);
     clearInterval(deleteCountdownTimers[sourceId]);
     delete deleteTimers[sourceId];
@@ -432,24 +452,24 @@ export function createSearchSourceEditorPanel(onSaved) {
     render();
   }
 
-  function updateDeleteCountdown(source, element) {
+  function updateDeleteCountdown(source: EditableAddressSearchSource, element: HTMLSpanElement) {
     const remainingMs = Math.max(0, Number(source.deletePendingUntil || 0) - Date.now());
     element.textContent = `${Math.ceil(remainingMs / 1000)}s`;
   }
 
   addBtn.addEventListener("click", () => {
-    const source = { id: `src-${Date.now()}`, label: "New source", type: "geosearch", costly: false, apiKey: "", description: "", outputs: [] };
+    const source: EditableAddressSearchSource = { id: `src-${Date.now()}`, label: "New source", type: "geosearch", costly: false, apiKey: "", description: "", outputs: [] };
     sources.push(source);
     sourceIdToOpen = source.id;
     render();
-    list.querySelectorAll(".source-editor").item(sources.length - 1)?.querySelector(".source-title-input")?.focus();
+    (list.querySelectorAll(".source-editor").item(sources.length - 1)?.querySelector(".source-title-input") as HTMLElement | null)?.focus();
     scheduleSave();
   });
 
   return { panel };
 }
 
-function insertTextAtCursor(input, text) {
+function insertTextAtCursor(input: HTMLInputElement | HTMLTextAreaElement, text: string) {
   const start = input.selectionStart ?? input.value.length;
   const end = input.selectionEnd ?? input.value.length;
   input.setRangeText(text, start, end, "end");

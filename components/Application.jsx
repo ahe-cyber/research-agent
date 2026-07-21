@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { AgentPanel } from "../features/agent/AgentPanel.jsx";
 import { initializeMapApp } from "./initializeMapApp.js";
-import { AddressTab } from "../features/address/AddressTab.jsx";
+import { AddressTab } from "../features/address/components/AddressTab";
 import { AgentTab } from "../features/agent/AgentTab.jsx";
 import { FolderTab } from "../features/folder/FolderTab.tsx";
 import { RecordTab } from "../features/record/RecordTab.jsx";
