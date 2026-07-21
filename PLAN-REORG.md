@@ -14,10 +14,13 @@ research-agent/
 │   └── page.tsx                             # Main application entry
 │
 │   # Each feature in app/api has exactly one route.ts with one set of HTTP methods.
-│   # Route files stay thin: bind HTTP verbs to named feature/server or lib/server functions.
+│   # Route files stay thin: import HTTP verbs from features/<feature>/server/handler.ts.
 │   # Use request body or URL parameters for more detailed feature control.
 │   # Avoid top-level technical routes such as /api/data, /api/proxy, /api/overlay, or /api/geometry.
 │   # Mount behavior under the owning feature, e.g. /api/map?resource=geometry or /api/address.
+│   # Frontend code calls feature APIs through features/<feature>/client/api.ts.
+│   # Server handlers parse request params/body, services own operations, and repositories own data access.
+│   # Feature endpoint URLs and source configuration belong in data/search.json or feature data files, not constants in server handlers.
 │
 ├── components/
 │   ├── Application.tsx                      # Main interactive application
@@ -50,20 +53,14 @@ research-agent/
 │   │   │   ├── ThisFeatureEditor.tsx
 │   │   │   └── ...
 │   │   │
-│   │   ├── client/
-│   │   │   └── api.ts                       # Browser calls to the feature API
-│   │   │
 │   │   ├── server/
 │   │   │   ├── handler.ts                   # HTTP request handling
 │   │   │   ├── service.ts                   # Feature operations and logic
 │   │   │   └── repository.ts                # Reads and writes feature-owned data
 │   │   │
-│   │   ├── shared/
-│   │   │   ├── schemas.ts                   # Runtime validation
-│   │   │   └── types.ts                     # Shared TypeScript types
-│   │   │
-│   │   ├── this-feature-types.d.ts
-│   │   ├── this-feature-icon.svg
+│   │   ├── this-feature.api.ts              # Browser calls to the feature API
+│   │   ├── this-feature.schema.ts           # Use Zod to define schema and infer types
+│   │   ├── this-feature.icon.svg 
 │   │   └── this-feature.module.css
 │   │
 │   ├── another-feature/

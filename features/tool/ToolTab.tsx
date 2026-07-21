@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
-import { withBasePath } from "../../lib/basePath";
 import { SidebarCard } from "../../components/workspace/SidebarCard";
+import { getToolDeclarations } from "./client/api";
 
 interface ToolParam {
   name: string;
@@ -34,7 +34,7 @@ export function ToolTab({ active, onSuggestTool, onOpenPage }: ToolTabProps) {
   const [tools, setTools] = useState<Tool[]>([]);
 
   useEffect(() => {
-    fetch(withBasePath("/api/tool"))
+    getToolDeclarations()
       .then((res) => (res.ok ? res.json() : []))
       .then((data: ToolDeclaration[]) => setTools(normalizeToolDeclarations(data)))
       .catch(() => {});

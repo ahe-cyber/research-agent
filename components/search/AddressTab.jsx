@@ -1,5 +1,5 @@
 import { createRoot } from "react-dom/client";
-import { withBasePath } from "../../lib/basePath";
+import { getAddressSearchSources, saveAddressSearchSources } from "@/features/address/client/api";
 import { DomSlot } from "../editor/DomSlot";
 import { PageMenu } from "../editor/PageMenu";
 import { FeatureSourceTab } from "../workspace/FeatureSourceTab";
@@ -97,7 +97,7 @@ export function createSearchSourceEditorPanel(onSaved) {
 
   async function loadSources() {
     try {
-      const res = await fetch(withBasePath("/api/address"));
+      const res = await getAddressSearchSources();
       if (res.ok) {
         const data = await res.json();
         sources = Array.isArray(data)
@@ -365,11 +365,7 @@ export function createSearchSourceEditorPanel(onSaved) {
 
   async function save() {
     try {
-      const res = await fetch(withBasePath("/api/address"), {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(sources.filter((source) => !source.isDeleted).map(({ isDeleted, deletePendingUntil, ...sourceForSave }) => sourceForSave))
-      });
+      const res = await saveAddressSearchSources(sources.filter((source) => !source.isDeleted).map(({ isDeleted, deletePendingUntil, ...sourceForSave }) => sourceForSave));
       if (res.ok) {
         statusEl.textContent = "Saved";
         statusEl.classList.add("is-saved");

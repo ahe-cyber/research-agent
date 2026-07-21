@@ -1,5 +1,6 @@
 import { markdownToHtml } from "../../lib/markdown";
 import { withBasePath } from "../../lib/basePath";
+import { chatWithAgent, getAgents } from "./client/api";
 import { AGENT_PROVIDER_OPTIONS } from "./providers";
 import { SidebarHeader } from "../../components/workspace/SidebarHeader.jsx";
 
@@ -340,16 +341,12 @@ export function createAgentController() {
         return;
       }
 
-      const response = await fetch(withBasePath("/api/agent?resource=chat"), {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          apiKey,
-          provider: provider.id,
-          model,
-          messages: requestMessages,
-          systemInstruction
-        })
+      const response = await chatWithAgent({
+        apiKey,
+        provider: provider.id,
+        model,
+        messages: requestMessages,
+        systemInstruction
       });
 
       if (!response.ok) {
@@ -709,7 +706,7 @@ export function createAgentController() {
   async function refreshAgentTargets() {
     const current = selectedAgentId || agentSelect.value;
     try {
-      const res = await fetch(withBasePath("/api/agent"));
+      const res = await getAgents();
       if (!res.ok) return;
       const registry = await res.json();
       const agents = Array.isArray(registry) ? registry : [];

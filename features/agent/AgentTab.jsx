@@ -1,6 +1,6 @@
 import { createRoot } from "react-dom/client";
 import { useEffect, useMemo, useState } from "react";
-import { withBasePath } from "../../lib/basePath";
+import { getAgents, saveAgents } from "./client/api";
 import { DomSlot } from "../../components/editor/DomSlot";
 import { PageMenu } from "../../components/editor/PageMenu";
 import { FeatureSourceTab } from "../../components/workspace/FeatureSourceTab";
@@ -234,7 +234,7 @@ export function createAgentTabController(editorTabController, agentController = 
   async function loadAgents() {
     let needsSave = false;
     try {
-      const res = await fetch(withBasePath("/api/agent"));
+      const res = await getAgents();
       if (res.ok) {
         const loaded = await res.json();
         const loadedAgents = Array.isArray(loaded) ? loaded : (loaded.agents || []);
@@ -278,11 +278,7 @@ export function createAgentTabController(editorTabController, agentController = 
     liveSaveQueued = false;
     liveSaveInFlight = true;
     try {
-      const res = await fetch(withBasePath("/api/agent"), {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data.agents)
-      });
+      const res = await saveAgents(data.agents);
       if (!res.ok) throw new Error("Sync failed");
       agentController?.refreshAgentTargets?.();
     } catch (error) {

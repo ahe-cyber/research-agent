@@ -1,4 +1,5 @@
 import { withBasePath } from "../../lib/basePath";
+import { getMapSources } from "./client/api";
 import { getMapboxAccessToken } from "./config";
 
 type Style = string | Record<string, any>;
@@ -73,7 +74,7 @@ interface BasemapMap {
 let catalogPromise: Promise<BasemapCatalogItem[]> | null = null;
 
 function getCatalog() {
-  catalogPromise ??= fetch(withBasePath("/api/map"))
+  catalogPromise ??= getMapSources()
     .then((response) => {
       if (!response.ok) throw new Error(`Failed to load basemaps: ${response.status}`);
       return response.json() as Promise<BasemapCatalogItem[]>;

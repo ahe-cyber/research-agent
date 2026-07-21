@@ -1,6 +1,6 @@
 import { Fragment, useRef, useState, type ReactNode } from "react";
 import { createRoot } from "react-dom/client";
-import { withBasePath } from "../../lib/basePath";
+import { getMapSources } from "./client/api";
 import { PageListView } from "../../components/editor/PageListView";
 import { PageMenu } from "../../components/editor/PageMenu";
 import { PageTableView } from "../../components/editor/PageTableView";
@@ -43,7 +43,7 @@ export function createLayerSourcesController(editorTabController: EditorTabContr
 }
 
 async function buildLayerSourcesPanel() {
-  const response = await fetch(withBasePath("/api/map"));
+  const response = await getMapSources();
   if (!response.ok) throw new Error(`Failed to load layer sources: ${response.status}`);
   const catalog = await response.json() as BasemapCatalog;
   const panel = document.createElement("div");

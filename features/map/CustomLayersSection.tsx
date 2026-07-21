@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { withBasePath } from "../../lib/basePath";
+import { getGeometryLayers, saveGeometryLayers } from "./client/api";
 import {
   CUSTOM_START_DRAW,
   CUSTOM_CANCEL_DRAW,
@@ -30,7 +30,7 @@ type LayerCategory = "global" | "local" | "manual";
 
 async function loadLayers(): Promise<CustomLayer[]> {
   try {
-    const r = await fetch(withBasePath("/api/map?resource=geometry"));
+    const r = await getGeometryLayers();
     const d = await r.json();
     return Array.isArray(d?.layers)
       ? d.layers.map((layer: CustomLayer) => ({
@@ -48,11 +48,7 @@ async function loadLayers(): Promise<CustomLayer[]> {
 
 async function saveLayers(layers: CustomLayer[]) {
   try {
-    await fetch(withBasePath("/api/map?resource=geometry"), {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ layers }),
-    });
+    await saveGeometryLayers(layers);
   } catch (err) {
     console.error("[Custom layers] Save failed:", err);
   }

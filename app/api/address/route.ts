@@ -1,7 +1,3 @@
-import {
-  getAddressRouteData,
-  saveAddressRouteData
-} from "@/features/address/server/searchRoute";
+import { GET, PUT } from "@/features/address/server/handler";
 
-export const GET = getAddressRouteData;
-export const PUT = saveAddressRouteData;
+export { GET, PUT };

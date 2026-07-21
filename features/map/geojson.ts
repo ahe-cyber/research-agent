@@ -1,4 +1,5 @@
 import { withBasePath } from "../../lib/basePath";
+import { queryMapSource } from "./client/api";
 
 const GEOJSON_LAYER_PREFIX = "record-geojson";
 
@@ -68,13 +69,7 @@ export async function queryUrl(url: string) {
   let proxyResponse;
 
   try {
-    proxyResponse = await fetch(withBasePath("/api/map?resource=query"), {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({ url })
-    });
+    proxyResponse = await queryMapSource(url);
   } catch (error) {
     throw createQueryError("Query proxy request failed.", {
       url,

@@ -1,3 +1,3 @@
-import { getToolDeclarations } from "@/features/tool/server/toolRoute";
+import { GET } from "@/features/tool/server/handler";
 
-export const GET = getToolDeclarations;
+export { GET };

@@ -1,6 +1,7 @@
 import { buildUrlWithParams, queryUrl } from "../map/geojson";
 import { createRoot } from "react-dom/client";
-import { withBasePath } from "../../lib/basePath";
+import { getAddressSearchSources } from "@/features/address/client/api";
+import { getDatasetSearchSources, getDatasetSources, saveDatasetSources } from "./client/api";
 import { DomSlot } from "../../components/editor/DomSlot";
 import { PageMenu } from "../../components/editor/PageMenu";
 import { createSearchWidget } from "../../components/search/SearchWidget";
@@ -128,7 +129,7 @@ export function createDatasetController(recordController, builtinController, edi
 
   async function loadCatalogSearchSources(widget) {
     try {
-      const response = await fetch(withBasePath("/api/dataset?resource=search"));
+      const response = await getDatasetSearchSources();
       if (!response.ok) throw new Error(`Catalog registry failed with status ${response.status}`);
       setSearchCatalogs(await response.json(), widget);
     } catch (error) {
@@ -277,7 +278,7 @@ export function createDatasetController(recordController, builtinController, edi
 
   async function loadDatasetSources() {
     try {
-      const response = await fetch(withBasePath("/api/dataset"));
+      const response = await getDatasetSources();
 
       if (!response.ok) {
         throw new Error(`Dataset registry failed with status ${response.status}`);
@@ -295,7 +296,7 @@ export function createDatasetController(recordController, builtinController, edi
 
   async function loadStaticDatasetSources() {
     try {
-      const response = await fetch(withBasePath("/api/dataset"));
+      const response = await getDatasetSources();
 
       if (!response.ok) {
         throw new Error(`Static dataset registry failed with status ${response.status}`);
@@ -323,13 +324,7 @@ export function createDatasetController(recordController, builtinController, edi
     liveSaveInFlight = true;
 
     try {
-      const response = await fetch(withBasePath("/api/dataset"), {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify(serializedSources)
-      });
+      const response = await saveDatasetSources(serializedSources);
 
       if (!response.ok) {
         throw new Error(`Dataset save failed with status ${response.status}`);
@@ -744,9 +739,9 @@ export function createDatasetController(recordController, builtinController, edi
 
   async function loadSupportedInputParams() {
     try {
-      let res = await fetch(withBasePath("/api/dataset?resource=search"));
+      let res = await getDatasetSearchSources();
       if (!res.ok) {
-        res = await fetch(withBasePath("/api/dataset?resource=search"));
+        res = await getDatasetSearchSources();
       }
       if (!res.ok) return;
       const searchItems = await res.json();
@@ -885,7 +880,7 @@ export function createDatasetController(recordController, builtinController, edi
     if (!sourceId) return null;
 
     try {
-      const response = await fetch(withBasePath("/api/address"));
+      const response = await getAddressSearchSources();
       if (!response.ok) throw new Error(`Search source registry failed with status ${response.status}`);
       const sources = await response.json();
       return Array.isArray(sources) ? sources.find((source) => source.id === sourceId) : null;

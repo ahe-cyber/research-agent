@@ -1,5 +1,5 @@
 import { createRoot } from "react-dom/client";
-import { withBasePath } from "../../lib/basePath";
+import { getDatasetSearchSources, saveDatasetSearchSources } from "@/features/dataset/client/api";
 import { DomSlot } from "../editor/DomSlot";
 import { PageListView } from "../editor/PageListView";
 import { PageMenu } from "../editor/PageMenu";
@@ -48,7 +48,7 @@ export function createCatalogController(editorTabController, agentController, ge
 
   async function loadCatalogs() {
     try {
-      const res = await fetch(withBasePath("/api/dataset?resource=search"));
+      const res = await getDatasetSearchSources();
       if (res.ok) {
         catalogs = normalizeCatalogs(await res.json());
         renderCatalogCards();
@@ -73,11 +73,7 @@ export function createCatalogController(editorTabController, agentController, ge
     liveSaveInFlight = true;
 
     try {
-      const res = await fetch(withBasePath("/api/dataset?resource=search"), {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(serializedCatalogs)
-      });
+      const res = await saveDatasetSearchSources(serializedCatalogs);
 
       if (!res.ok) {
         throw new Error(`Catalog save failed with status ${res.status}`);

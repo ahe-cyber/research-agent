@@ -1,7 +1,5 @@
-import { withBasePath } from "@/lib/basePath";
+import { getAddressGeoSearchSuggestions } from "@/features/address/client/api";
 import type { Coordinates, RetrievedFeature, RetrieveHandler, SearchMap } from "../types";
-
-const AUTOCOMPLETE_URL = withBasePath("/api/address?resource=geosearch");
 
 interface GeoSearchFeature extends RetrievedFeature {
   geometry: RetrievedFeature["geometry"] & { coordinates: Coordinates };
@@ -13,16 +11,14 @@ export async function suggestGeoSearch(
   map: SearchMap | null,
   onRetrieve: RetrieveHandler
 ): Promise<HTMLElement[]> {
-  const url = new URL(AUTOCOMPLETE_URL, window.location.origin);
-  url.searchParams.set("text", query);
-  url.searchParams.set("size", "6");
+  const params = new URLSearchParams({ text: query, size: "6" });
   const center = map?.getCenter?.();
   if (center) {
-    url.searchParams.set("focus.point.lat", String(center.lat));
-    url.searchParams.set("focus.point.lon", String(center.lng));
+    params.set("focus.point.lat", String(center.lat));
+    params.set("focus.point.lon", String(center.lng));
   }
 
-  const res = await fetch(url);
+  const res = await getAddressGeoSearchSuggestions(params);
   if (!res.ok) {
     throw new Error(`NYC GeoSearch is unavailable (${res.status}). Try another search source or search again shortly.`);
   }

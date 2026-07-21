@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
-import { withBasePath } from "../../lib/basePath";
 import { FeatureSourceTab } from "../../components/workspace/FeatureSourceTab";
 import { SidebarCard } from "../../components/workspace/SidebarCard";
+import { getSkillSearchSources, getSkills } from "./client/api";
 
 interface SkillItem {
   id: string;
@@ -23,12 +23,12 @@ export function SkillTab({ active, onOpenPage }: { active: boolean; onOpenPage?:
   const [query, setQuery] = useState("");
 
   useEffect(() => {
-    fetch(withBasePath("/api/skill"))
+    getSkills()
       .then((res) => (res.ok ? res.json() : []))
       .then((data) => setSkills(Array.isArray(data) ? data : []))
       .catch(() => setSkills([]));
 
-    fetch(withBasePath("/api/skill?resource=search"))
+    getSkillSearchSources()
       .then((res) => (res.ok ? res.json() : []))
       .then((data) => setSources(Array.isArray(data) ? data.map(normalizeSource) : []))
       .catch(() => setSources([{ id: "project-skills", label: "Project Skills" }]));

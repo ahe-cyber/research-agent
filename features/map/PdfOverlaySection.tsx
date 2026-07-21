@@ -11,6 +11,7 @@ import {
   PDF_BOUNDS_UPDATED
 } from "./pdfOverlayRenderer";
 import { withBasePath } from "../../lib/basePath";
+import { getPdfOverlays, savePdfOverlays, uploadPdfOverlay } from "./client/api";
 
 pdfjsLib.GlobalWorkerOptions.workerSrc = withBasePath("/pdf.worker.min.mjs");
 
@@ -122,7 +123,7 @@ export function PdfOverlaySection() {
 
   async function loadOverlays() {
     try {
-      const res = await fetch(withBasePath("/api/map?resource=overlay"));
+      const res = await getPdfOverlays();
       if (!res.ok) throw new Error(`Overlay registry returned ${res.status}`);
       const data = await res.json();
       const loaded = normalizeOverlays(Array.isArray(data?.overlays) ? data.overlays : []);
@@ -143,11 +144,7 @@ export function PdfOverlaySection() {
 
   async function saveOverlays(nextOverlays: OverlayConfig[]) {
     try {
-      await fetch(withBasePath("/api/map?resource=overlay"), {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ overlays: nextOverlays })
-      });
+      await savePdfOverlays(nextOverlays);
     } catch (error) {
       console.error("[PDF overlay] Failed to save overlays", error);
     }
@@ -168,7 +165,7 @@ export function PdfOverlaySection() {
         form.append(`page-${page.page}`, page.blob, `page-${String(page.page).padStart(3, "0")}.png`);
       }
 
-      const res = await fetch(withBasePath("/api/map?resource=overlay"), { method: "POST", body: form });
+      const res = await uploadPdfOverlay(form);
       const data = await res.json();
       if (!res.ok) throw new Error(data?.error || `Overlay upload returned ${res.status}`);
       setOverlays((prev) => [...prev, data]);

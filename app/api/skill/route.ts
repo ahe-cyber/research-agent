@@ -1,4 +1,3 @@
-import { getSkillRouteData, saveSkillRouteData } from "@/features/skill/server/skillRoute";
+import { GET, PUT } from "@/features/skill/server/handler";
 
-export const GET = getSkillRouteData;
-export const PUT = saveSkillRouteData;
+export { GET, PUT };

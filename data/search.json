@@ -100,6 +100,7 @@
     "id": "src-geosearch",
     "label": "NYC GeoSearch",
     "type": "geosearch",
+    "url": "https://geosearch.planninglabs.nyc/v2/autocomplete",
     "costly": false,
     "description": "Searches NYC addresses and places using the NYC GeoSearch API.",
     "outputs": [
