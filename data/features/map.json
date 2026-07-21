@@ -157,7 +157,7 @@
     "id": "nyc-topobathymetric-2017",
     "label": "NYC Topobathymetric 2017 DEM",
     "tiles": [
-      "/api/map/terrain/{z}/{x}/{y}.png"
+      "/api/map?resource=terrain&z={z}&x={x}&y={y}.png"
     ],
     "tileSize": 256,
     "maxZoom": 16,

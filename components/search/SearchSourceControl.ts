@@ -31,7 +31,7 @@ const SUGGEST_MAP: Record<AddressSourceType, { suggest: SuggestFn; hasKey(source
 
 async function loadSources(): Promise<SearchSourceConfig[]> {
   try {
-    const res = await fetch(withBasePath("/api/address/search"));
+    const res = await fetch(withBasePath("/api/address"));
     if (!res.ok) throw new Error("Failed to load");
     const all = (await res.json()) as SearchSourceConfig[];
     return all.filter(

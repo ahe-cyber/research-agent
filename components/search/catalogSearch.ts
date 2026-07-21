@@ -19,7 +19,7 @@ export interface CatalogSearchResult {
 }
 
 export async function searchCatalog(catalog: SearchCatalog, query: string, limit = 5): Promise<CatalogSearchResult[]> {
-  const response = await fetch(withBasePath("/api/dataset/search"), {
+  const response = await fetch(withBasePath("/api/dataset?resource=search"), {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ catalog, query, limit })

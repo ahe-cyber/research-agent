@@ -1,3 +1,5 @@
-import { getMapSources } from "@/features/map/server/mapRoute";
+import { getMapRouteData, postMapRouteData, putMapRouteData } from "@/features/map/server/mapRoute";
 
-export const GET = getMapSources;
+export const GET = getMapRouteData;
+export const POST = postMapRouteData;
+export const PUT = putMapRouteData;

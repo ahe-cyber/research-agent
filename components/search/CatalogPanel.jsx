@@ -48,7 +48,7 @@ export function createCatalogController(editorTabController, agentController, ge
 
   async function loadCatalogs() {
     try {
-      const res = await fetch(withBasePath("/api/dataset/search"));
+      const res = await fetch(withBasePath("/api/dataset?resource=search"));
       if (res.ok) {
         catalogs = normalizeCatalogs(await res.json());
         renderCatalogCards();
@@ -73,7 +73,7 @@ export function createCatalogController(editorTabController, agentController, ge
     liveSaveInFlight = true;
 
     try {
-      const res = await fetch(withBasePath("/api/dataset/search"), {
+      const res = await fetch(withBasePath("/api/dataset?resource=search"), {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(serializedCatalogs)

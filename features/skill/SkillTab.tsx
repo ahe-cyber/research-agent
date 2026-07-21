@@ -28,7 +28,7 @@ export function SkillTab({ active, onOpenPage }: { active: boolean; onOpenPage?:
       .then((data) => setSkills(Array.isArray(data) ? data : []))
       .catch(() => setSkills([]));
 
-    fetch(withBasePath("/api/skill/search"))
+    fetch(withBasePath("/api/skill?resource=search"))
       .then((res) => (res.ok ? res.json() : []))
       .then((data) => setSources(Array.isArray(data) ? data.map(normalizeSource) : []))
       .catch(() => setSources([{ id: "project-skills", label: "Project Skills" }]));

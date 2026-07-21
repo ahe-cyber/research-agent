@@ -1,4 +1,5 @@
-import { getAgents, saveAgents } from "@/features/agent/server/agentsRoute";
+import { getAgentRouteData, postAgentRouteData, saveAgentRouteData } from "@/features/agent/server/agentsRoute";
 
-export const GET = getAgents;
-export const PUT = saveAgents;
+export const GET = getAgentRouteData;
+export const POST = postAgentRouteData;
+export const PUT = saveAgentRouteData;

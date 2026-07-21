@@ -97,7 +97,7 @@ export function createSearchSourceEditorPanel(onSaved) {
 
   async function loadSources() {
     try {
-      const res = await fetch(withBasePath("/api/address/search"));
+      const res = await fetch(withBasePath("/api/address"));
       if (res.ok) {
         const data = await res.json();
         sources = Array.isArray(data)
@@ -365,7 +365,7 @@ export function createSearchSourceEditorPanel(onSaved) {
 
   async function save() {
     try {
-      const res = await fetch(withBasePath("/api/address/search"), {
+      const res = await fetch(withBasePath("/api/address"), {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(sources.filter((source) => !source.isDeleted).map(({ isDeleted, deletePendingUntil, ...sourceForSave }) => sourceForSave))

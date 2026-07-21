@@ -128,7 +128,7 @@ export function createDatasetController(recordController, builtinController, edi
 
   async function loadCatalogSearchSources(widget) {
     try {
-      const response = await fetch(withBasePath("/api/dataset/search"));
+      const response = await fetch(withBasePath("/api/dataset?resource=search"));
       if (!response.ok) throw new Error(`Catalog registry failed with status ${response.status}`);
       setSearchCatalogs(await response.json(), widget);
     } catch (error) {
@@ -744,9 +744,9 @@ export function createDatasetController(recordController, builtinController, edi
 
   async function loadSupportedInputParams() {
     try {
-      let res = await fetch(withBasePath("/api/dataset/search"));
+      let res = await fetch(withBasePath("/api/dataset?resource=search"));
       if (!res.ok) {
-        res = await fetch(withBasePath("/api/dataset/search"));
+        res = await fetch(withBasePath("/api/dataset?resource=search"));
       }
       if (!res.ok) return;
       const searchItems = await res.json();
@@ -885,7 +885,7 @@ export function createDatasetController(recordController, builtinController, edi
     if (!sourceId) return null;
 
     try {
-      const response = await fetch(withBasePath("/api/address/search"));
+      const response = await fetch(withBasePath("/api/address"));
       if (!response.ok) throw new Error(`Search source registry failed with status ${response.status}`);
       const sources = await response.json();
       return Array.isArray(sources) ? sources.find((source) => source.id === sourceId) : null;

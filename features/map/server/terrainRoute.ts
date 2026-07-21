@@ -21,8 +21,8 @@ interface RouteContext {
   }>;
 }
 
-export async function getTerrainTile(_request: Request, context: RouteContext) {
-  const params = await context.params;
+export async function getTerrainTile(request: Request, context?: RouteContext) {
+  const params = context ? await context.params : getTerrainParams(request);
   const z = Number(params.z);
   const x = Number(params.x);
   const y = Number(params.y.replace(/\.png$/i, ""));
@@ -103,6 +103,15 @@ export async function getTerrainTile(_request: Request, context: RouteContext) {
       return jsonResponse({ error: "Failed to build terrain tile." }, { status: 502 });
     }
   }
+}
+
+function getTerrainParams(request: Request) {
+  const params = new URL(request.url).searchParams;
+  return {
+    z: params.get("z") || "",
+    x: params.get("x") || "",
+    y: params.get("y") || ""
+  };
 }
 
 function terrainPngResponse(tile: Buffer, maxAge: number) {

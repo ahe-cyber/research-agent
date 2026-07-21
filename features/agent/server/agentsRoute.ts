@@ -1,6 +1,22 @@
 import { dataPath, jsonResponse, readJsonFileResponse, writeJsonFile } from "@/lib/server/files";
+import { handleAgentChat } from "./chatService";
+import { getAgentInstruction, saveAgentInstruction } from "./instructionRoute";
 
 const agentPath = dataPath("features", "agent.json");
+
+export function getAgentRouteData(request: Request) {
+  return isInstructionRequest(request) ? getAgentInstruction() : getAgents();
+}
+
+export function postAgentRouteData(request: Request) {
+  return isChatRequest(request)
+    ? handleAgentChat(request)
+    : jsonResponse({ error: "Unsupported agent operation." }, { status: 400 });
+}
+
+export function saveAgentRouteData(request: Request) {
+  return isInstructionRequest(request) ? saveAgentInstruction(request) : saveAgents(request);
+}
 
 export async function getAgents() {
   return readJsonFileResponse(agentPath, []);
@@ -20,4 +36,16 @@ export async function saveAgents(request: Request) {
     console.error(error);
     return jsonResponse({ error: "Failed to write agents." }, { status: 500 });
   }
+}
+
+function getResource(request: Request) {
+  return new URL(request.url).searchParams.get("resource") || "";
+}
+
+function isChatRequest(request: Request) {
+  return getResource(request) === "chat";
+}
+
+function isInstructionRequest(request: Request) {
+  return getResource(request) === "instruction";
 }

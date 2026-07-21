@@ -1,3 +1,4 @@
-import { getSkills } from "@/features/skill/server/skillRoute";
+import { getSkillRouteData, saveSkillRouteData } from "@/features/skill/server/skillRoute";
 
-export const GET = getSkills;
+export const GET = getSkillRouteData;
+export const PUT = saveSkillRouteData;

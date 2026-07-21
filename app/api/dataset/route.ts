@@ -1,4 +1,9 @@
-import { getDatasetSources, saveDatasetSources } from "@/features/dataset/server/datasetRoute";
+import {
+  findDatasetCatalogItems,
+  getDatasetRouteData,
+  saveDatasetRouteData
+} from "@/features/dataset/server/datasetRoute";
 
-export const GET = getDatasetSources;
-export const PUT = saveDatasetSources;
+export const GET = getDatasetRouteData;
+export const POST = findDatasetCatalogItems;
+export const PUT = saveDatasetRouteData;

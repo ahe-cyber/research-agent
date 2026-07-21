@@ -30,7 +30,7 @@ type LayerCategory = "global" | "local" | "manual";
 
 async function loadLayers(): Promise<CustomLayer[]> {
   try {
-    const r = await fetch(withBasePath("/api/map/geometry"));
+    const r = await fetch(withBasePath("/api/map?resource=geometry"));
     const d = await r.json();
     return Array.isArray(d?.layers)
       ? d.layers.map((layer: CustomLayer) => ({
@@ -48,7 +48,7 @@ async function loadLayers(): Promise<CustomLayer[]> {
 
 async function saveLayers(layers: CustomLayer[]) {
   try {
-    await fetch(withBasePath("/api/map/geometry"), {
+    await fetch(withBasePath("/api/map?resource=geometry"), {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ layers }),

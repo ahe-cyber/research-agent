@@ -3,9 +3,7 @@ research-agent/
 ├── app/
 │   ├── api/
 │   │   ├── this-feature/
-│   │   │   └── route.ts                     # Thin adapter importing feature/server handlers
-│   │   │   ├── search/
-│   │   │   │   └── route.ts                 # Feature-owned sub-endpoint
+│   │   │   └── route.ts                     # Only API route for this feature
 │   │   ├── another-feature/
 │   │   │   └── route.ts
 │   │   └── ...
@@ -15,9 +13,11 @@ research-agent/
 │   ├── layout.tsx                           # Root HTML and global setup
 │   └── page.tsx                             # Main application entry
 │
-│   # API route files stay thin: bind HTTP verbs to named feature/server or lib/server functions.
+│   # Each feature in app/api has exactly one route.ts with one set of HTTP methods.
+│   # Route files stay thin: bind HTTP verbs to named feature/server or lib/server functions.
+│   # Use request body or URL parameters for more detailed feature control.
 │   # Avoid top-level technical routes such as /api/data, /api/proxy, /api/overlay, or /api/geometry.
-│   # Mount behavior under the owning feature, e.g. /api/map/geometry or /api/address/search.
+│   # Mount behavior under the owning feature, e.g. /api/map?resource=geometry or /api/address.
 │
 ├── components/
 │   ├── Application.tsx                      # Main interactive application

@@ -1,6 +1,17 @@
 import { dataPath, jsonResponse, readJsonFileResponse, writeJsonFile } from "@/lib/server/files";
+import { getDatasetSearchSources, saveDatasetSearchSources, findDatasetCatalogItems } from "./searchRoute";
 
 const datasetPath = dataPath("features", "dataset.json");
+
+export { findDatasetCatalogItems };
+
+export function getDatasetRouteData(request: Request) {
+  return isSearchRequest(request) ? getDatasetSearchSources() : getDatasetSources();
+}
+
+export function saveDatasetRouteData(request: Request) {
+  return isSearchRequest(request) ? saveDatasetSearchSources(request) : saveDatasetSources(request);
+}
 
 export async function getDatasetSources() {
   return readJsonFileResponse(datasetPath, undefined, "Failed to read datasets.");
@@ -20,4 +31,8 @@ export async function saveDatasetSources(request: Request) {
     console.error(error);
     return jsonResponse({ error: "Failed to write dataset." }, { status: 500 });
   }
+}
+
+function isSearchRequest(request: Request) {
+  return new URL(request.url).searchParams.get("resource") === "search";
 }
