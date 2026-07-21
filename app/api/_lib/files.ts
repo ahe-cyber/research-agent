@@ -2,7 +2,7 @@ import { readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { NextResponse } from "next/server";
 
-export const dataPath = (...segments: string[]) => path.join(process.cwd(), "public", "data", ...segments);
+export const dataPath = (...segments: string[]) => path.join(process.cwd(), "data", ...segments);
 
 export function jsonResponse(body: unknown, init?: ResponseInit) {
   return NextResponse.json(body, init);

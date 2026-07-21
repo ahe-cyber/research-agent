@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import "../styles.css";
+import "./globals.css";
 
 const assetNames = [
   "add", "close", "cloud", "delete", "document", "edit", "graph", "link", "list", "menu", "money", "more",

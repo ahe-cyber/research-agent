@@ -9,6 +9,7 @@ research-agent/
 │   │   └── ...
 │   │
 │   ├── globals.css                          # Global styles and shared variables
+│   ├── global.d.ts                          # App-wide global type declarations
 │   ├── layout.tsx                           # Root HTML and global setup
 │   └── page.tsx                             # Main application entry
 │
@@ -55,6 +56,7 @@ research-agent/
 │   │   │   ├── schemas.ts                   # Runtime validation
 │   │   │   └── types.ts                     # Shared TypeScript types
 │   │   │
+│   │   ├── this-feature-types.d.ts
 │   │   ├── this-feature-icon.svg
 │   │   └── this-feature.module.css
 │   │
@@ -104,8 +106,6 @@ research-agent/
 │   └── server/                              # Shared server-only utilities
 │
 ├── public/                                  # Static files served directly by URL
-│
-├── types/                                   # Application-wide type declarations
 │
 ├── next.config.ts
 ├── package.json

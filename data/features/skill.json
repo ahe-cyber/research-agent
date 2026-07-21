@@ -1,0 +1,23 @@
+[
+  {
+    "id": "query-selected-datasets",
+    "name": "Query Selected Datasets",
+    "source": "Project",
+    "path": "data/skills/query-selected-datasets/SKILL.md",
+    "description": "Query selected datasets in dependency order, allowing later query parameters to use previous outputs."
+  },
+  {
+    "id": "compare-map-layers",
+    "name": "Compare Map Layers",
+    "source": "Project",
+    "path": "data/skills/compare-map-layers/SKILL.md",
+    "description": "Compare currently visible map layers and summarize overlaps, gaps, conflicts, and relevant follow-up queries."
+  },
+  {
+    "id": "summarize-agent-records",
+    "name": "Summarize Agent Records",
+    "source": "Project",
+    "path": "data/skills/summarize-agent-records/SKILL.md",
+    "description": "Turn selected records into a concise research summary with assumptions, evidence, and open questions."
+  }
+]
