@@ -1,5 +1,5 @@
 import { postJsonWithRetry } from "@/lib/server/http";
-import type { AgentModelProvider } from "../../agent.schema";
+import type { AgentModelProvider } from "@/features/agent/agent.schema";
 
 const CLAUDE_REQUEST_TIMEOUT_MS = Number(process.env.CLAUDE_REQUEST_TIMEOUT_MS || 45_000);
 const CLAUDE_API_VERSION = process.env.CLAUDE_API_VERSION || "2023-06-01";

@@ -12,7 +12,7 @@ import {
   IFCWALL,
   IFCWINDOW,
 } from "web-ifc";
-import type { IfcParseResult } from "../../folder.schema";
+import type { IfcParseResult } from "@/features/folder/folder.schema";
 
 const ELEMENT_TYPES: [string, number][] = [
   ["Wall", IFCWALL],

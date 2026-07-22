@@ -614,26 +614,6 @@
   line-height: 1.35;
 }
 
-.sidebar-card {
-  cursor: pointer;
-  outline: none;
-  transition: border-color 120ms ease, box-shadow 120ms ease, background 120ms ease;
-}
-
-.sidebar-card:hover {
-  border-color: #aeb6c2;
-}
-
-.sidebar-card.is-selected {
-  border-color: #2f6fed;
-  box-shadow: 0 0 0 2px rgba(47, 111, 237, 0.24), 0 0 14px rgba(47, 111, 237, 0.2);
-}
-
-.sidebar-card:focus-visible {
-  border-color: #2f6fed;
-  box-shadow: 0 0 0 2px rgba(47, 111, 237, 0.28);
-}
-
 .address-item {
   display: flex;
   align-items: flex-start;

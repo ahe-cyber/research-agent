@@ -1,11 +1,11 @@
 import type { ReactNode } from "react";
 
-interface PageTableViewProps {
+interface EditorTableViewProps {
   actions?: ReactNode;
   children?: ReactNode;
 }
 
-export function PageTableView({ actions, children }: PageTableViewProps) {
+export function EditorTableView({ actions, children }: EditorTableViewProps) {
   return (
     <div className="page-view page-table-view">
       <div className="page-view-action-bar page-table-view-action-bar">

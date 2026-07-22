@@ -1,4 +1,4 @@
-import { getFileExtension, type FileEntry, type FolderProvider, type MountedFolder } from "../../folder.schema";
+import { getFileExtension, type FileEntry, type FolderProvider, type MountedFolder } from "@/features/folder/folder.schema";
 
 const CONFIG_STORAGE_KEY = "research-agent.folderProviderConfig";
 const DRIVE_READONLY_SCOPE = "https://www.googleapis.com/auth/drive.readonly";

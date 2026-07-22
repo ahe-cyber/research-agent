@@ -4,7 +4,7 @@ import { chatWithAgent, getAgents } from "../agent.api";
 import { claudeProviderOption } from "./providers/claude";
 import { geminiProviderOption } from "./providers/gemini";
 import { openAiProviderOption } from "./providers/openai";
-import { SidebarHeader } from "@/components/workspace/SidebarHeader.jsx";
+import { SidebarHeader } from "@/components/sidebar/SidebarHeader.jsx";
 import "../agent.css";
 
 const AGENT_PROVIDER_OPTIONS = [

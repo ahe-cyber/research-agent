@@ -1,4 +1,4 @@
-import { getMapboxAccessToken, STATEN_ISLAND_BOUNDS } from "../../config";
+import { getMapboxAccessToken, STATEN_ISLAND_BOUNDS } from "@/features/map/config";
 import { BasemapControl, getBasemaps, getSceneLayers, getStyle, getTerrain } from "./basemaps";
 import { SceneLayersControl } from "./sceneLayers";
 import { TerrainControl } from "./terrain";

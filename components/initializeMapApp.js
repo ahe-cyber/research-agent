@@ -1,17 +1,17 @@
-import { createAgentController } from "../features/agent/components/AgentPanel.jsx";
-import { createMap } from "../features/map/components/providers/mapRenderer";
-import { createSearchSourceControl } from "../features/address/components/SearchSourceControl";
-import { createAddressController, createSearchSourceEditorPanel } from "../features/address/components/AddressTab";
-import { createAgentTabController } from "../features/agent/components/AgentTab.jsx";
-import { createCatalogController } from "../features/dataset/components/CatalogPanel.jsx";
-import { createRecordController, createRecordStore } from "../features/record/components/RecordTab.jsx";
+import { createAgentController } from "@/features/agent/components/AgentPanel.jsx";
+import { createMap } from "@/features/map/components/providers/mapRenderer";
+import { createSearchSourceControl } from "@/features/address/components/SearchSourceControl";
+import { createAddressController, createSearchSourceEditorPanel } from "@/features/address/components/AddressTab";
+import { createAgentTabController } from "@/features/agent/components/AgentTab.jsx";
+import { createCatalogController } from "@/features/dataset/components/CatalogPanel.jsx";
+import { createRecordController, createRecordStore } from "@/features/record/components/RecordTab.jsx";
 import { createEditorTabController } from "./editor/EditorTabs.js";
-import { applyBuiltin, hasBuiltin } from "../features/tool/components/providers/builtins.ts";
-import { createDatasetController } from "../features/dataset/components/DatasetTab";
-import { createFolderProviderEditorPanel } from "../features/folder/components/FolderTab.tsx";
-import { createLayerSourcesController } from "../features/map/components/LayerSourcesPage";
-import { initPdfOverlayRenderer, registerMapDropZone } from "../features/map/components/providers/pdfOverlay";
-import { initCustomLayersDraw } from "../features/map/components/providers/drawnGeometries";
+import { applyBuiltin, hasBuiltin } from "@/features/tool/components/providers/builtins.ts";
+import { createDatasetController } from "@/features/dataset/components/DatasetTab";
+import { createFolderProviderEditorPanel } from "@/features/folder/components/FolderTab.tsx";
+import { createLayerSourcesController } from "@/features/map/components/LayerSourcesPage";
+import { initPdfOverlayRenderer, registerMapDropZone } from "@/features/map/components/providers/pdfOverlay";
+import { initCustomLayersDraw } from "@/features/map/components/providers/drawnGeometries";
 
 let initialized = false;
 let sourceController;
@@ -83,7 +83,13 @@ export async function initializeMapApp({ folderRef = null, suggestToolRef = null
   const editorTabController = createEditorTabController({
     onMapActivated: () => refreshMapView({ mask: true })
   });
-  if (openPageRef) openPageRef.current = (id, label) => editorTabController.openEmptyPageTab(id, label);
+  if (openPageRef) {
+    openPageRef.current = (id, label, value) => (
+      value === undefined
+        ? editorTabController.openEmptyPageTab(id, label)
+        : editorTabController.openRawJsonTab(id, label, value)
+    );
+  }
 
   window.addEventListener("focus", refreshMapView);
   document.addEventListener("visibilitychange", () => {

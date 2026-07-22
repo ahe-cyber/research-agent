@@ -2,7 +2,7 @@ import type {
   DatasetCatalogSearchOptions,
   DatasetCatalogSearchResult,
   DatasetCatalogSearchTarget
-} from "../../dataset.schema";
+} from "@/features/dataset/dataset.schema";
 
 export async function searchArcGisCatalog(
   catalog: DatasetCatalogSearchTarget,

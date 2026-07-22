@@ -1,4 +1,4 @@
-import { hideGeoJsonRecord, normalizeGeoJson, showGeoJsonRecord } from "../../map/components/providers/geojson";
+import { hideGeoJsonRecord, normalizeGeoJson, showGeoJsonRecord } from "@/features/map/components/providers/geojson";
 
 export function RecordTab({ active }) {
   return (

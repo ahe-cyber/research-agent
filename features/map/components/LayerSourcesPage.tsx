@@ -1,9 +1,9 @@
 import { Fragment, useRef, useState, type ReactNode } from "react";
 import { createRoot } from "react-dom/client";
 import { getMapSources } from "../map.api";
-import { PageListView } from "../../../components/editor/PageListView";
-import { PageMenu } from "../../../components/editor/PageMenu";
-import { PageTableView } from "../../../components/editor/PageTableView";
+import { EditorListView } from "@/components/editor/EditorListView";
+import { PageMenu } from "@/components/editor/PageMenu";
+import { EditorTableView } from "@/components/editor/EditorTableView";
 
 interface EditorTabController {
   openLayerSourcesTab(panel: HTMLElement): void;
@@ -111,14 +111,14 @@ function ViewButton({
 
 function LayerSourcesListView({ groups }: { groups: LayerSourceGroup[] }) {
   return (
-    <PageListView>
+    <EditorListView>
       {groups.map(({ label, sources }) => sources.length > 0 && (
         <section key={label}>
           <h2>{label}</h2>
           {sources.map((source) => <LayerSourceCard key={`${label}-${source.label}`} source={source} />)}
         </section>
       ))}
-    </PageListView>
+    </EditorListView>
   );
 }
 
@@ -177,7 +177,7 @@ function LayerSourcesTableView({ groups }: { groups: LayerSourceGroup[] }) {
   }
 
   return (
-    <PageTableView actions={(
+    <EditorTableView actions={(
       <button className="layer-sources-copy-button" type="button" onClick={copyTable}>
         {copied ? "Copied" : "Copy as TSV"}
       </button>
@@ -198,7 +198,7 @@ function LayerSourcesTableView({ groups }: { groups: LayerSourceGroup[] }) {
           ))}
         </tbody>
       </table>
-    </PageTableView>
+    </EditorTableView>
   );
 }
 

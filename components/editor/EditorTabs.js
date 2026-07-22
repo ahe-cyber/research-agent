@@ -1,10 +1,11 @@
 import { createElement } from "react";
 import { createRoot } from "react-dom/client";
-import { markdownToHtml } from "../../lib/markdown";
-import { loadWorkspaceState, saveWorkspaceState } from "../../lib/workspaceState.js";
+import { markdownToHtml } from "@/lib/markdown";
+import { loadWorkspaceState, saveWorkspaceState } from "@/lib/workspaceState.js";
 import { createEmptyPagePanel } from "./EmptyPagePanel.jsx";
-import { FileViewer } from "../../features/folder/components/FileViewer.tsx";
-import { RecordGraphView } from "../../features/record/components/RecordGraphView.tsx";
+import { EditorRawView } from "./EditorRawView";
+import { FileViewer } from "@/features/folder/components/FileViewer.tsx";
+import { RecordGraphView } from "@/features/record/components/RecordGraphView.tsx";
 
 export function createEditorTabController({ onMapActivated = () => {} } = {}) {
   const tabBar = document.getElementById("editorTabBar");
@@ -368,6 +369,24 @@ export function createEditorTabController({ onMapActivated = () => {} } = {}) {
     activateTab(tabId);
   }
 
+  function openRawJsonTab(tabId, label, value) {
+    if (tabs.find((t) => t.id === tabId)) {
+      activateTab(tabId);
+      return;
+    }
+
+    tabs.push({ id: tabId, label, closeable: true });
+
+    const panel = document.createElement("div");
+    panel.className = "editor-raw-panel";
+    panel.hidden = true;
+    createRoot(panel).render(createElement(EditorRawView, { value }));
+    viewport.appendChild(panel);
+    panelMap[tabId] = panel;
+
+    activateTab(tabId);
+  }
+
   function openReportTab(address) {
     const tabId = `report-${address.title}`;
 
@@ -682,7 +701,7 @@ export function createEditorTabController({ onMapActivated = () => {} } = {}) {
   }
 
   render();
-  return { openTableTab, openPdfTab, openRecordGraphTab, openDatasetTab, openLayerSourcesTab, openSearchCatalogResultsTab, openSearchCatalogDatasetTab, openReportTab, openAgentTab, openFolderProviderTab, openAgentProviderTab, openAddressSearchTab, openEmptyPageTab, openFileViewerTab, getPageStatus };
+  return { openTableTab, openPdfTab, openRecordGraphTab, openDatasetTab, openLayerSourcesTab, openSearchCatalogResultsTab, openSearchCatalogDatasetTab, openReportTab, openAgentTab, openFolderProviderTab, openAgentProviderTab, openAddressSearchTab, openEmptyPageTab, openRawJsonTab, openFileViewerTab, getPageStatus };
 }
 
 function renderHtmlElement(element) {

@@ -1,6 +1,6 @@
 import DxfParser from "dxf-parser";
 import type { IEntity, IDxf } from "dxf-parser";
-import type { DxfParseResult } from "../../folder.schema";
+import type { DxfParseResult } from "@/features/folder/folder.schema";
 
 // Client
 export async function parseDxf(file: File): Promise<DxfParseResult> {

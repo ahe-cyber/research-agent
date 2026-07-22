@@ -1,5 +1,5 @@
 import { createRoot } from "react-dom/client";
-import { PageListView } from "./PageListView";
+import { EditorListView } from "./EditorListView";
 import { PageMenu } from "./PageMenu";
 
 export function createEmptyPagePanel() {
@@ -10,7 +10,7 @@ export function createEmptyPagePanel() {
   createRoot(panel).render(
     <>
       <PageMenu />
-      <PageListView />
+      <EditorListView />
     </>
   );
 

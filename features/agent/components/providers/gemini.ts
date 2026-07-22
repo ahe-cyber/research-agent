@@ -1,4 +1,4 @@
-import type { AgentProviderOption } from "../../agent.schema";
+import type { AgentProviderOption } from "@/features/agent/agent.schema";
 
 export const geminiProviderOption: AgentProviderOption = {
   id: "gemini",

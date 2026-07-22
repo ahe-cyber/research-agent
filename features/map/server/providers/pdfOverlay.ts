@@ -1,4 +1,4 @@
-import type { PdfOverlay, PdfOverlayPage } from "../../map.schema";
+import type { PdfOverlay, PdfOverlayPage } from "@/features/map/map.schema";
 
 type OverlayPage = PdfOverlayPage;
 type Overlay = PdfOverlay;

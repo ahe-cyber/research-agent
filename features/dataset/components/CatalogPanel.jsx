@@ -1,7 +1,7 @@
 import { createRoot } from "react-dom/client";
 import { getDatasetSearchSources, saveDatasetSearchSources } from "../dataset.api";
 import { DomSlot } from "@/components/editor/DomSlot";
-import { PageListView } from "@/components/editor/PageListView";
+import { EditorListView } from "@/components/editor/EditorListView";
 import { PageMenu } from "@/components/editor/PageMenu";
 import { arcgisCatalogProvider } from "./providers/arcgis";
 import { socrataCatalogProvider } from "./providers/socrata";
@@ -45,9 +45,9 @@ export function createCatalogController(editorTabController, agentController, ge
 
   const pageListView = document.createElement("div");
   createRoot(pageListView).render(
-    <PageListView>
+    <EditorListView>
       <DomSlot nodes={[catalogListEl]} />
-    </PageListView>
+    </EditorListView>
   );
   resultsPanel.append(pageMenu, pageListView);
 

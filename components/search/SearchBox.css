@@ -7,8 +7,8 @@
 }
 
 .search-box-shell:focus-within {
-  outline: 2px solid blue;
-  outline-offset: 2px;
+  border-color: #2f6fed;
+  box-shadow: var(--focus-glow);
 }
 
 .search-widget {

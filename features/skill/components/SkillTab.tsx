@@ -1,23 +1,10 @@
 import { useEffect, useMemo, useState } from "react";
-import { FeatureSourceTab } from "../../../components/workspace/FeatureSourceTab";
-import { SidebarCard } from "../../../components/workspace/SidebarCard";
+import { FeatureSourceTab } from "@/components/workspace/FeatureSourceTab";
+import { SidebarCard } from "@/components/sidebar/SidebarCard";
+import type { SkillItem, SkillSource } from "../skill.schema";
 import { getSkillSearchSources, getSkills } from "../skill.api";
 
-interface SkillItem {
-  id: string;
-  name: string;
-  source: string;
-  path: string;
-  description: string;
-}
-
-interface SkillSource {
-  id: string;
-  label: string;
-  costly?: boolean;
-}
-
-export function SkillTab({ active, onOpenPage }: { active: boolean; onOpenPage?: (id: string, label: string) => void }) {
+export function SkillTab({ active, onOpenPage }: { active: boolean; onOpenPage?: (id: string, label: string, value: SkillItem) => void }) {
   const [skills, setSkills] = useState<SkillItem[]>([]);
   const [sources, setSources] = useState<SkillSource[]>([]);
   const [query, setQuery] = useState("");
@@ -67,7 +54,7 @@ export function SkillTab({ active, onOpenPage }: { active: boolean; onOpenPage?:
             className="skill-item tool-card"
             ariaLabel={skill.name}
             openLabel={`Open ${skill.name}`}
-            onOpen={() => onOpenPage?.(`skill-${skill.id}`, skill.name)}
+            onOpen={() => onOpenPage?.(`skill-${skill.id}`, skill.name, skill)}
           >
             <div className="tool-signature">
               <code className="tool-name">{skill.name}</code>

@@ -1,5 +1,5 @@
 import { postJsonWithRetry } from "@/lib/server/http";
-import type { AgentModelProvider } from "../../agent.schema";
+import type { AgentModelProvider } from "@/features/agent/agent.schema";
 
 const OPENAI_REQUEST_TIMEOUT_MS = Number(process.env.OPENAI_REQUEST_TIMEOUT_MS || 45_000);
 

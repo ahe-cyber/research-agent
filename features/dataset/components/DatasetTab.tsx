@@ -1,4 +1,4 @@
-import { buildUrlWithParams, queryUrl } from "../../map/components/providers/geojson";
+import { buildUrlWithParams, queryUrl } from "@/features/map/components/providers/geojson";
 import { createRoot } from "react-dom/client";
 import { getAddressSearchSources } from "@/features/address/address.api";
 import { getDatasetSearchSources, getDatasetSources, saveDatasetSources } from "../dataset.api";

@@ -1,4 +1,4 @@
-import type { DrawnGeometry, DrawnLayer } from "../../map.schema";
+import type { DrawnGeometry, DrawnLayer } from "@/features/map/map.schema";
 
 export const CUSTOM_START_DRAW = "CUSTOM_START_DRAW";
 export const CUSTOM_START_EDIT = "CUSTOM_START_EDIT";

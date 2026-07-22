@@ -1,25 +1,25 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { AgentPanel } from "../features/agent/components/AgentPanel.jsx";
-import { initializeMapApp } from "./initializeMapApp.js";
-import { AddressTab } from "../features/address/components/AddressTab";
-import { AgentTab } from "../features/agent/components/AgentTab.jsx";
-import { FolderTab } from "../features/folder/components/FolderTab.tsx";
-import { RecordTab } from "../features/record/components/RecordTab.jsx";
-import { ToolTab } from "../features/tool/components/ToolTab.tsx";
-import { DatasetTab } from "../features/dataset/components/DatasetTab";
-import { SkillTab } from "../features/skill/components/SkillTab.tsx";
-import { FeatureTab } from "./workspace/FeatureTab.jsx";
-import { SidebarHeader } from "./workspace/SidebarHeader.jsx";
-import { WorkbenchLayout } from "./workspace/WorkbenchLayout.tsx";
-import { loadWorkspaceState, saveWorkspaceState } from "../lib/workspaceState.js";
-import { APP_VERSION } from "../lib/appVersion";
-import featureRegistry from "../data/feature.json";
-import { MapTab } from "../features/map/components/MapTab";
-import { withBasePath } from "../lib/basePath";
-import addressIcon from "../features/address/address.icon.svg";
-import agentIcon from "../features/agent/agent.icon.svg";
-import folderIcon from "../features/folder/folder.icon.svg";
-import mapIcon from "../features/map/map.icon.svg";
+import { AgentPanel } from "@/features/agent/components/AgentPanel.jsx";
+import { initializeMapApp } from "@/components/initializeMapApp.js";
+import { AddressTab } from "@/features/address/components/AddressTab";
+import { AgentTab } from "@/features/agent/components/AgentTab.jsx";
+import { FolderTab } from "@/features/folder/components/FolderTab.tsx";
+import { RecordTab } from "@/features/record/components/RecordTab.jsx";
+import { ToolTab } from "@/features/tool/components/ToolTab.tsx";
+import { DatasetTab } from "@/features/dataset/components/DatasetTab";
+import { SkillTab } from "@/features/skill/components/SkillTab.tsx";
+import { FeatureTab } from "@/components/workspace/FeatureTab.jsx";
+import { SidebarHeader } from "@/components/sidebar/SidebarHeader.jsx";
+import { WorkbenchLayout } from "@/components/workspace/WorkbenchLayout.tsx";
+import { loadWorkspaceState, saveWorkspaceState } from "@/lib/workspaceState.js";
+import { APP_VERSION } from "@/lib/appVersion";
+import featureRegistry from "@/data/feature.json";
+import { MapTab } from "@/features/map/components/MapTab";
+import { withBasePath } from "@/lib/basePath";
+import addressIcon from "@/features/address/address.icon.svg";
+import agentIcon from "@/features/agent/agent.icon.svg";
+import folderIcon from "@/features/folder/folder.icon.svg";
+import mapIcon from "@/features/map/map.icon.svg";
 
 const HOME_TAB = {
   id: "home",
@@ -75,7 +75,7 @@ export default function App() {
   const openPageRef = useRef(null);
   const onSuggestTool = useCallback((name) => suggestToolRef.current?.(name), []);
   const onOpenFile = useCallback((entry) => openFileRef.current?.(entry), []);
-  const onOpenPage = useCallback((id, label) => openPageRef.current?.(id, label), []);
+  const onOpenPage = useCallback((id, label, value) => openPageRef.current?.(id, label, value), []);
   const activeTabMeta = activeTab === HOME_TAB.id
     ? HOME_TAB
     : tabs.find((tab) => tab.id === activeTab) ?? DEFAULT_TABS.find((tab) => tab.id === activeTab);
@@ -267,7 +267,7 @@ export default function App() {
       <AddressTab active={activeTab === "address"} />
       <RecordTab active={activeTab === "record"} />
       <DatasetTab active={activeTab === "dataset"} />
-      <ToolTab active={activeTab === "tool"} onSuggestTool={onSuggestTool} onOpenPage={onOpenPage} />
+      <ToolTab active={activeTab === "tool"} onOpenPage={onOpenPage} />
       <AgentTab active={activeTab === "agent"} />
 
       <MapTab active={activeTab === "map"} />

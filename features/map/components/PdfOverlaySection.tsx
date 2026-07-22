@@ -12,7 +12,7 @@ import {
   PDF_BOUNDS_UPDATED
 } from "./providers/pdfOverlay";
 import type { PdfBoundsDetail } from "./providers/pdfOverlay";
-import { withBasePath } from "../../../lib/basePath";
+import { withBasePath } from "@/lib/basePath";
 import { getPdfOverlays, savePdfOverlays, uploadPdfOverlay } from "../map.api";
 import type { MapOverlayCategory, PdfOverlay, PdfOverlayPage } from "../map.schema";
 

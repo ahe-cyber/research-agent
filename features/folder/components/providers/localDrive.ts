@@ -1,4 +1,4 @@
-import { getFileExtension, type FileEntry, type FolderProvider, type MountedFolder } from "../../folder.schema";
+import { getFileExtension, type FileEntry, type FolderProvider, type MountedFolder } from "@/features/folder/folder.schema";
 
 interface LocalFileEntrySource {
   handle: FileSystemFileHandle;

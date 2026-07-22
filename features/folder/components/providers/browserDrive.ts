@@ -1,4 +1,4 @@
-import { getFileExtension, type FileEntry, type FolderProvider } from "../../folder.schema";
+import { getFileExtension, type FileEntry, type FolderProvider } from "@/features/folder/folder.schema";
 
 const DB_NAME = "research-agent-browser-drive";
 const DB_VERSION = 1;

@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { FeatureSourceTab } from "../../../components/workspace/FeatureSourceTab";
+import { FeatureSourceTab } from "@/components/workspace/FeatureSourceTab";
 import { CustomLayersSection } from "./CustomLayersSection";
 import { PdfOverlaySection } from "./PdfOverlaySection";
 

@@ -1,4 +1,4 @@
-import type { DatasetCatalogSearchResult, DatasetCatalogSearchTarget } from "../../dataset.schema";
+import type { DatasetCatalogSearchResult, DatasetCatalogSearchTarget } from "@/features/dataset/dataset.schema";
 
 export async function searchSocrataCatalog(
   catalog: DatasetCatalogSearchTarget,

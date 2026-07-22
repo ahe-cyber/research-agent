@@ -1,5 +1,5 @@
 import { withBasePath } from "@/lib/basePath";
-import type { PdfParseResult } from "../../folder.schema";
+import type { PdfParseResult } from "@/features/folder/folder.schema";
 
 let workerConfigured = false;
 

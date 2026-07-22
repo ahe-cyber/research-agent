@@ -1,7 +1,7 @@
-import { withBasePath } from "../../../../lib/basePath";
-import { getMapSources } from "../../map.api";
-import { getMapboxAccessToken } from "../../config";
-import type { MapBasemap, MapSceneLayer, MapTerrain } from "../../map.schema";
+import { withBasePath } from "@/lib/basePath";
+import { getMapSources } from "@/features/map/map.api";
+import { getMapboxAccessToken } from "@/features/map/config";
+import type { MapBasemap, MapSceneLayer, MapTerrain } from "@/features/map/map.schema";
 
 type Style = string | Record<string, any>;
 

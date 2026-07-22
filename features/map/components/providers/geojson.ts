@@ -1,4 +1,4 @@
-import { queryMapSource as queryMapSourceApi } from "../../map.api";
+import { queryMapSource as queryMapSourceApi } from "@/features/map/map.api";
 
 const GEOJSON_LAYER_PREFIX = "record-geojson";
 

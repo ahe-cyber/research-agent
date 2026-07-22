@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { SidebarCard } from "../../../components/workspace/SidebarCard";
+import { SidebarCard } from "@/components/sidebar/SidebarCard";
 import { getToolDeclarations } from "../tool.api";
 
 interface ToolParam {
@@ -26,11 +26,10 @@ interface ToolDeclaration {
 
 interface ToolTabProps {
   active: boolean;
-  onSuggestTool?: (name: string) => void;
-  onOpenPage?: (id: string, label: string) => void;
+  onOpenPage?: (id: string, label: string, value: Tool) => void;
 }
 
-export function ToolTab({ active, onSuggestTool, onOpenPage }: ToolTabProps) {
+export function ToolTab({ active, onOpenPage }: ToolTabProps) {
   const [tools, setTools] = useState<Tool[]>([]);
 
   useEffect(() => {
@@ -55,19 +54,8 @@ export function ToolTab({ active, onSuggestTool, onOpenPage }: ToolTabProps) {
             className="tool-item tool-card"
             ariaLabel={tool.name}
             openLabel={`Open ${tool.name}`}
-            onOpen={() => onOpenPage?.(`tool-${tool.name}`, tool.name)}
+            onOpen={() => onOpenPage?.(`tool-${tool.name}`, tool.name, tool)}
           >
-            <button
-              className="card-attach-button"
-              type="button"
-              aria-label={`Suggest ${tool.name} to agent`}
-              title={`Suggest ${tool.name} to agent`}
-              onClick={(event) => {
-                event.preventDefault();
-                event.stopPropagation();
-                onSuggestTool?.(tool.name);
-              }}
-            />
             <div className="tool-signature">
               <code className="tool-name">{tool.name}</code>
               {tool.params.length > 0 ? (
