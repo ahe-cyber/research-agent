@@ -1,8 +1,8 @@
 import { jsonResponse } from "@/lib/server/files";
 import { addressSearchSourcesSchema } from "../address.schema";
+import { suggestAddressFromGeoSearch } from "./providers/nycGeoSearch";
 import {
   listAddressSearchSources,
-  suggestAddressFromGeoSearch,
   updateAddressSearchSources
 } from "./service";
 

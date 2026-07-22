@@ -6,6 +6,7 @@ interface GeoSearchFeature extends RetrievedFeature {
   properties: Record<string, any>;
 }
 
+// Client
 export async function suggestGeoSearch(
   query: string,
   map: SearchMap | null,

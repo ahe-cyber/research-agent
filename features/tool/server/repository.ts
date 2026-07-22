@@ -1,4 +1,4 @@
-import { TOOL_DECLARATIONS } from "./declarations";
+import { TOOL_DECLARATIONS } from "./providers/declarations";
 
 export function getToolDeclarations() {
   return TOOL_DECLARATIONS;

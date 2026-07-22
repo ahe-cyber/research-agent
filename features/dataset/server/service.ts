@@ -1,5 +1,11 @@
 import { jsonResponse } from "@/lib/server/files";
-import { SearchCatalog, searchCatalog } from "@/lib/server/catalogSearch";
+import type {
+  DatasetCatalogSearchOptions,
+  DatasetCatalogSearchResult,
+  DatasetCatalogSearchTarget
+} from "../dataset.schema";
+import { searchArcGisCatalog } from "./providers/arcgis";
+import { searchSocrataCatalog } from "./providers/socrata";
 import {
   getDatasetSearchSources,
   getDatasetSources,
@@ -26,7 +32,7 @@ export async function updateDatasetSearchSources(sources: unknown[]) {
 }
 
 export async function findDatasetCatalogItems(body: any) {
-  const catalog = body?.catalog as SearchCatalog | null;
+  const catalog = body?.catalog as DatasetCatalogSearchTarget | null;
   const query = typeof body?.query === "string" ? body.query.trim() : "";
   const limit = Math.max(1, Math.min(Number(body?.limit) || 5, 10));
 
@@ -35,9 +41,22 @@ export async function findDatasetCatalogItems(body: any) {
   }
 
   try {
-    return jsonResponse({ results: await searchCatalog(catalog, query, limit) });
+    return jsonResponse({ results: await searchDatasetCatalog(catalog, query, limit) });
   } catch (error) {
     console.error("[Catalog search] Failed", error);
     return jsonResponse({ error: error instanceof Error ? error.message : "Catalog search failed." }, { status: 502 });
   }
+}
+
+export async function searchDatasetCatalog(
+  catalog: DatasetCatalogSearchTarget,
+  query: string,
+  limit: number,
+  options: DatasetCatalogSearchOptions = {}
+): Promise<DatasetCatalogSearchResult[]> {
+  const type = catalog.type === "socrata" ? "socrata" : "arcgis";
+  const results = type === "socrata"
+    ? await searchSocrataCatalog(catalog, query, limit)
+    : await searchArcGisCatalog(catalog, query, limit, options);
+  return results.map((item) => ({ ...item, catalogName: catalog.name || "Catalog" }));
 }

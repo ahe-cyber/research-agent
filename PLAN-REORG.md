@@ -20,6 +20,10 @@ research-agent/
 │   # Mount behavior under the owning feature, e.g. /api/map?resource=geometry or /api/address.
 │   # Frontend code calls feature APIs through features/<feature>/<feature>.api.ts.
 │   # Server handlers parse request params/body, services own operations, and repositories own data access.
+│   # Provider-specific code lives in features/<feature>/providers/<provider>.ts.
+│   # Put client-facing provider metadata and browser functions first, then separate server-only functions with a comment.
+│   # Services import provider server functions when feature behavior depends on a provider-specific implementation.
+│   # Map providers include map behavior/source owners such as PDF overlays, GeoJSON, drawn geometries, terrain, basemaps, and scene layers.
 │   # Feature schemas live at features/<feature>/<feature>.schema.ts, use Zod, and export inferred types.
 │   # Feature endpoint URLs and source configuration belong in data/search.json or feature data files, not constants in server handlers.
 │
@@ -52,6 +56,11 @@ research-agent/
 │   │   │   ├── ThisFeatureMenu.tsx
 │   │   │   ├── ThisFeatureCard.tsx
 │   │   │   ├── ThisFeatureEditor.tsx
+│   │   │   └── ...
+│   │   │
+│   │   ├── providers/
+│   │   │   ├── one-provider.ts             # Client provider exports first, then server provider exports
+│   │   │   ├── another-provider.ts
 │   │   │   └── ...
 │   │   │
 │   │   ├── server/

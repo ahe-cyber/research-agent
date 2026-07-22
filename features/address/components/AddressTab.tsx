@@ -4,7 +4,6 @@ import { getAddressSearchSources, saveAddressSearchSources } from "../address.ap
 import { DomSlot } from "@/components/editor/DomSlot";
 import { PageMenu } from "@/components/editor/PageMenu";
 import { FeatureSourceTab } from "@/components/workspace/FeatureSourceTab";
-import "../address.module.css";
 
 type AddressRecord = {
   title: string;

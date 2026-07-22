@@ -1,6 +1,5 @@
 import { jsonResponse } from "@/lib/server/files";
-import { handleAgentChat } from "./chatService";
-import { listAgents, readAgentInstruction, updateAgentInstruction, updateAgents } from "./service";
+import { handleAgentChat, listAgents, readAgentInstruction, updateAgentInstruction, updateAgents } from "./service";
 
 export function GET(request: Request) {
   return getResource(request) === "instruction" ? readAgentInstruction() : listAgents();

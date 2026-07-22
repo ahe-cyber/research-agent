@@ -1,5 +1,5 @@
 import { errorMessage } from "@/lib/server/http";
-import type { AgentModelProvider } from "./types";
+import type { AgentModelProvider } from "../../agent.schema";
 
 const RETRYABLE_STATUSES = new Set([429, 502, 503, 504]);
 const GEMINI_REQUEST_TIMEOUT_MS = Number(process.env.GEMINI_REQUEST_TIMEOUT_MS || 45_000);

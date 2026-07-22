@@ -1,9 +1,9 @@
 import { jsonResponse } from "@/lib/server/files";
-import { getGeometryLayers, saveGeometryLayers } from "./geometryService";
+import { getGeometryLayers, saveGeometryLayers } from "./providers/drawnGeometries";
 import { getMapSources } from "./repository";
-import { getPdfOverlays, savePdfOverlays, uploadPdfOverlay } from "./overlayService";
-import { queryMapSource } from "./queryService";
-import { getTerrainTile } from "./terrainService";
+import { queryMapSource } from "./providers/geojson";
+import { getPdfOverlays, savePdfOverlays, uploadPdfOverlay } from "./providers/pdfOverlay";
+import { getTerrainTile } from "./providers/terrainTile";
 
 export async function listMapSources() {
   return jsonResponse(await getMapSources());

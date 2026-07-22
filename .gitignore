@@ -47,3 +47,5 @@ next-env.d.ts
 
 # local user/workspace data
 /public/data/
+
+*.service

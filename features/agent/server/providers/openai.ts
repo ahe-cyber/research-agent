@@ -1,5 +1,5 @@
-import type { AgentModelProvider } from "./types";
-import { getMaxOutputTokens, postProviderJson } from "./common";
+import { postJsonWithRetry } from "@/lib/server/http";
+import type { AgentModelProvider } from "../../agent.schema";
 
 const OPENAI_REQUEST_TIMEOUT_MS = Number(process.env.OPENAI_REQUEST_TIMEOUT_MS || 45_000);
 
@@ -28,8 +28,8 @@ async function createOpenAiInteraction(apiKey: string, body: any) {
     ...(body.previous_interaction_id ? { previous_response_id: body.previous_interaction_id } : {})
   };
 
-  const response = await postProviderJson("https://api.openai.com/v1/responses", {
-    providerLabel: "OpenAI",
+  const response = await postJsonWithRetry("https://api.openai.com/v1/responses", {
+    label: "OpenAI",
     timeoutMs: OPENAI_REQUEST_TIMEOUT_MS,
     headers: { Authorization: `Bearer ${apiKey}` },
     body: payload
@@ -55,6 +55,10 @@ async function createOpenAiInteraction(apiKey: string, body: any) {
       return [];
     })
   };
+}
+
+function getMaxOutputTokens(body: any, fallback = 2048) {
+  return Number(body?.generation_config?.max_output_tokens || body?.max_output_tokens || fallback);
 }
 
 function toOpenAiTool(tool: any) {

@@ -11,6 +11,7 @@ interface MapboxFeature extends RetrievedFeature {
   };
 }
 
+// Client
 export async function suggestMapboxSearch(
   query: string,
   map: SearchMap | null,
@@ -48,6 +49,7 @@ export async function suggestMapboxSearch(
     return btn;
   });
 }
+
 
 let marker: { remove(): void } | null = null;
 

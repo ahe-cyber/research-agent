@@ -1,5 +1,5 @@
-import type { AgentModelProvider } from "./types";
-import { getMaxOutputTokens, interactionToolToJsonSchemaTool, postProviderJson } from "./common";
+import { postJsonWithRetry } from "@/lib/server/http";
+import type { AgentModelProvider } from "../../agent.schema";
 
 const CLAUDE_REQUEST_TIMEOUT_MS = Number(process.env.CLAUDE_REQUEST_TIMEOUT_MS || 45_000);
 const CLAUDE_API_VERSION = process.env.CLAUDE_API_VERSION || "2023-06-01";
@@ -32,8 +32,8 @@ async function createClaudeInteraction(apiKey: string, body: any) {
     ]
     : [{ role: "user", content: [{ type: "text", text: String(body.input || "") }] }];
 
-  const response = await postProviderJson("https://api.anthropic.com/v1/messages", {
-    providerLabel: "Claude",
+  const response = await postJsonWithRetry("https://api.anthropic.com/v1/messages", {
+    label: "Claude",
     timeoutMs: CLAUDE_REQUEST_TIMEOUT_MS,
     headers: {
       "x-api-key": apiKey,
@@ -79,6 +79,22 @@ async function createClaudeInteraction(apiKey: string, body: any) {
       return [];
     })
   };
+}
+
+function interactionToolToJsonSchemaTool(tool: any) {
+  return {
+    name: tool.name,
+    description: tool.description,
+    input_schema: tool.parameters || {
+      type: "object",
+      properties: {},
+      additionalProperties: false
+    }
+  };
+}
+
+function getMaxOutputTokens(body: any, fallback = 2048) {
+  return Number(body?.generation_config?.max_output_tokens || body?.max_output_tokens || fallback);
 }
 
 function toClaudeUserContent(input: any) {

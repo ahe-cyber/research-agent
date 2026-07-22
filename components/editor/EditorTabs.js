@@ -3,8 +3,8 @@ import { createRoot } from "react-dom/client";
 import { markdownToHtml } from "../../lib/markdown";
 import { loadWorkspaceState, saveWorkspaceState } from "../../lib/workspaceState.js";
 import { createEmptyPagePanel } from "./EmptyPagePanel.jsx";
-import { FileViewer } from "../../features/folder/FileViewer.tsx";
-import { RecordGraphView } from "../../features/record/RecordGraphView.tsx";
+import { FileViewer } from "../../features/folder/components/FileViewer.tsx";
+import { RecordGraphView } from "../../features/record/components/RecordGraphView.tsx";
 
 export function createEditorTabController({ onMapActivated = () => {} } = {}) {
   const tabBar = document.getElementById("editorTabBar");

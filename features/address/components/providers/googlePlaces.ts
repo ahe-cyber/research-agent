@@ -13,6 +13,7 @@ interface PlacePrediction {
   };
 }
 
+// Client
 export async function suggestGooglePlaces(
   query: string,
   map: SearchMap | null,
@@ -56,6 +57,7 @@ export async function suggestGooglePlaces(
     return btn;
   });
 }
+
 
 let marker: { remove(): void } | null = null;
 

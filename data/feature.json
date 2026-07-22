@@ -8,7 +8,7 @@
   {
     "id": "folder",
     "label": "Folder",
-    "icon": "/assets/features/folder.svg",
+    "icon": null,
     "workspaceLabel": "Folder Workspace"
   },
   {
@@ -38,13 +38,13 @@
   {
     "id": "agent",
     "label": "Agent",
-    "icon": "/assets/features/agent.svg",
+    "icon": null,
     "workspaceLabel": "Agent Workspace"
   },
   {
     "id": "map",
     "label": "Map",
-    "icon": "/assets/features/map.svg",
+    "icon": null,
     "workspaceLabel": "Map Workspace"
   },
   {

@@ -1,22 +1,25 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { AgentPanel } from "../features/agent/AgentPanel.jsx";
+import { AgentPanel } from "../features/agent/components/AgentPanel.jsx";
 import { initializeMapApp } from "./initializeMapApp.js";
 import { AddressTab } from "../features/address/components/AddressTab";
-import { AgentTab } from "../features/agent/AgentTab.jsx";
-import { FolderTab } from "../features/folder/FolderTab.tsx";
-import { RecordTab } from "../features/record/RecordTab.jsx";
-import { ToolTab } from "../features/tool/ToolTab.tsx";
-import { DatasetTab } from "../features/dataset/DatasetTab.jsx";
-import { SkillTab } from "../features/skill/SkillTab.tsx";
+import { AgentTab } from "../features/agent/components/AgentTab.jsx";
+import { FolderTab } from "../features/folder/components/FolderTab.tsx";
+import { RecordTab } from "../features/record/components/RecordTab.jsx";
+import { ToolTab } from "../features/tool/components/ToolTab.tsx";
+import { DatasetTab } from "../features/dataset/components/DatasetTab";
+import { SkillTab } from "../features/skill/components/SkillTab.tsx";
 import { FeatureTab } from "./workspace/FeatureTab.jsx";
 import { SidebarHeader } from "./workspace/SidebarHeader.jsx";
 import { WorkbenchLayout } from "./workspace/WorkbenchLayout.tsx";
 import { loadWorkspaceState, saveWorkspaceState } from "../lib/workspaceState.js";
 import { APP_VERSION } from "../lib/appVersion";
 import featureRegistry from "../data/feature.json";
-import { MapTab } from "../features/map/MapTab";
+import { MapTab } from "../features/map/components/MapTab";
 import { withBasePath } from "../lib/basePath";
 import addressIcon from "../features/address/address.icon.svg";
+import agentIcon from "../features/agent/agent.icon.svg";
+import folderIcon from "../features/folder/folder.icon.svg";
+import mapIcon from "../features/map/map.icon.svg";
 
 const HOME_TAB = {
   id: "home",
@@ -29,13 +32,21 @@ const EMPTY_EDITOR_ACTIVITY_IDS = new Set(["project", "record", "tool"]);
 const DEFAULT_TABS = featureRegistry.map(({ id, label, icon, workspaceLabel }) => ({
   id,
   label,
-  iconSrc: id === "address" ? getStaticAssetSrc(addressIcon) : withBasePath(icon),
+  iconSrc: getFeatureIconSrc(id, icon),
   workspaceLabel,
   emptyEditor: EMPTY_EDITOR_ACTIVITY_IDS.has(id)
 }));
 
 function getStaticAssetSrc(asset) {
   return typeof asset === "string" ? asset : asset?.src || "";
+}
+
+function getFeatureIconSrc(id, icon) {
+  if (id === "address") return getStaticAssetSrc(addressIcon);
+  if (id === "agent") return getStaticAssetSrc(agentIcon);
+  if (id === "folder") return getStaticAssetSrc(folderIcon);
+  if (id === "map") return getStaticAssetSrc(mapIcon);
+  return withBasePath(icon);
 }
 
 function getInitialTabs() {
