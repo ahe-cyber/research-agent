@@ -1,11 +1,9 @@
 import { buildUrlWithParams, queryUrl } from "@/features/map/components/providers/geojson";
 import { createRoot } from "react-dom/client";
+import { SidebarCard } from "@/components/sidebar/SidebarCard";
 import { getAddressSearchSources } from "@/features/address/address.api";
 import { getDatasetSearchSources, getDatasetSources, saveDatasetSources } from "../dataset.api";
 import { EditorActionsMenu } from "@/components/editor/EditorActionsMenu";
-import { createSearchWidget } from "@/components/search/SearchWidget";
-import { searchCatalog } from "../dataset.catalog.api";
-import { buildSearchCatalogDatasetDetailPanel } from "./CatalogPanel.jsx";
 import { SidebarPanel } from "@/components/sidebar/SidebarPanel";
 import { arcgisCatalogProvider } from "./providers/arcgis";
 import { socrataCatalogProvider } from "./providers/socrata";
@@ -21,17 +19,49 @@ const SOURCE_DELETE_GRACE_MS = 10_000;
 const NEW_SOURCE_NAME = "New Source";
 const NEW_SOURCE_DESCRIPTION = "New source description";
 
-export function DatasetTab({ active }) {
+export function DatasetSidebarPanel({ active }) {
   return (
     <SidebarPanel
       active={active}
       featureId="dataset"
       featureLabel="Dataset"
-      headerAccessory={<div id="datasetCatalogSelector" />}
     >
-      <div id="datasetCatalogSearchBox" />
       <div id="sourcesCompact" />
     </SidebarPanel>
+  );
+}
+
+function DatasetSourceCards({ sources, onOpen, onRun }) {
+  return (
+    <div className="source-compact-list">
+      {sources.map((source) => (
+        <SidebarCard
+          key={source.id}
+          className="source-compact-card"
+          ariaLabel={getSourceDisplayName(source)}
+          openLabel={`Open ${getSourceDisplayName(source)}`}
+          onOpen={() => onOpen(source)}
+        >
+          <div className="source-compact-summary-content">
+            <div className="source-compact-text">
+              <strong>{getSourceDisplayName(source)}</strong>
+              <span>{getSourceDisplayDescription(source)}</span>
+            </div>
+            <button
+              className="source-run-button"
+              type="button"
+              aria-label={`Run ${getSourceDisplayName(source)} query`}
+              title={`Run ${getSourceDisplayName(source)} query`}
+              onClick={(event) => {
+                event.preventDefault();
+                event.stopPropagation();
+                onRun(source);
+              }}
+            />
+          </div>
+        </SidebarCard>
+      ))}
+    </div>
   );
 }
 
@@ -39,9 +69,8 @@ export function createDatasetController(recordController, builtinController, edi
   const variables = {};
   const sourceElements = {};
   const compactSourceList = document.getElementById("sourcesCompact");
-  const catalogSelector = document.getElementById("datasetCatalogSelector");
-  const catalogSearchBox = document.getElementById("datasetCatalogSearchBox");
   const editSourcesButton = document.getElementById("editDatasetButton");
+  const compactSourcesRoot = compactSourceList ? createRoot(compactSourceList) : null;
 
   const sourceList = document.createElement("div");
   sourceList.id = "sourceList";
@@ -62,130 +91,16 @@ export function createDatasetController(recordController, builtinController, edi
   let datasetSources = [];
   let sourceIdToOpen = "";
   let supportedInputParamsByType = { ...DEFAULT_SUPPORTED_INPUT_PARAMS_BY_TYPE };
-  let catalogSearchRequestId = 0;
-  let searchCatalogs = [];
   let liveSaveTimer = null;
   let liveSaveInFlight = false;
   let liveSaveQueued = false;
-  let searchSourcesEditorOpener = null;
-  let catalogSearchWidget = null;
   const sourceDeleteTimers = {};
   const sourceDeleteCountdownTimers = {};
 
   loadDatasetSources();
   loadSupportedInputParams();
-  initializeCatalogSearch();
   addDatasetSourceButton.addEventListener("click", addDatasetSource);
   editSourcesButton.addEventListener("click", () => editorTabController.openDatasetTab(editorPanel));
-
-  function initializeCatalogSearch() {
-    if (!catalogSelector || !catalogSearchBox) return;
-
-    const widget = createSearchWidget({
-      placeholder: "Search datasets",
-      onQuery(query, source) {
-        queueCatalogSearch(widget, query, source);
-      },
-      onSubmit(query, source) {
-        queueCatalogSearch(widget, query, source, { immediate: true });
-      },
-      onSourceChange(source) {
-        const activeWidget = catalogSearchWidget;
-        if (activeWidget) queueCatalogSearch(activeWidget, activeWidget.getQuery(), source, { immediate: true });
-      },
-      onEditSources() {
-        searchSourcesEditorOpener?.();
-      },
-      editSourcesLabel: "Edit dataset sources"
-    });
-
-    catalogSearchWidget = widget;
-    catalogSelector.appendChild(widget.sourceElement);
-    catalogSearchBox.appendChild(widget.shellElement);
-    loadCatalogSearchSources(widget);
-  }
-
-  async function loadCatalogSearchSources(widget) {
-    try {
-      const response = await getDatasetSearchSources();
-      if (!response.ok) throw new Error(`Catalog registry failed with status ${response.status}`);
-      setSearchCatalogs(await response.json(), widget);
-    } catch (error) {
-      console.error("[Dataset] Failed to load search catalogs", error);
-      searchCatalogs = [];
-      widget.setSources([]);
-    }
-  }
-
-  function setSearchCatalogs(catalogs, widget = catalogSearchWidget) {
-    searchCatalogs = normalizeSearchCatalogs(catalogs);
-    widget?.setSources(searchCatalogs.map((catalog) => ({
-      id: catalog.id,
-      label: catalog.name,
-      costly: catalog.costly
-    })));
-  }
-
-  function queueCatalogSearch(widget, query, source, { immediate = false } = {}) {
-    const trimmed = query.trim();
-    const requestId = ++catalogSearchRequestId;
-    clearTimeout(widget._searchTimer);
-
-    if (!widget.isFocused() || !trimmed || !source) {
-      widget.clearResults();
-      return;
-    }
-
-    const run = async () => {
-      const catalog = searchCatalogs.find((item) => item.id === source.id);
-      if (!catalog) {
-        widget.clearResults();
-        return;
-      }
-
-      try {
-        const results = await searchCatalog(catalog, trimmed, 5);
-        if (requestId !== catalogSearchRequestId) return;
-        if (results.length > 0) {
-          widget.setResults(results.map((item) => createCatalogSearchResultItem(item)));
-        } else {
-          widget.setWarning("No matching datasets.");
-        }
-      } catch (error) {
-        if (requestId !== catalogSearchRequestId) return;
-        console.error("[Dataset] Catalog search failed", error);
-        widget.setError("Dataset search failed.");
-      }
-    };
-
-    widget._searchTimer = setTimeout(run, immediate ? 0 : 250);
-  }
-
-  function createCatalogSearchResultItem(item) {
-    const row = document.createElement("button");
-    const text = document.createElement("span");
-    const title = document.createElement("strong");
-    const meta = document.createElement("span");
-
-    row.className = "search-widget-result";
-    row.type = "button";
-    title.textContent = item.title || "Untitled dataset";
-    meta.textContent = [item.catalogName, item.type].filter(Boolean).join(" · ");
-    text.append(title, meta);
-    row.append(text);
-    const openResult = () => {
-      editorTabController.openSearchCatalogDatasetTab(
-        item,
-        buildSearchCatalogDatasetDetailPanel(item, addSourceFromCatalog)
-      );
-    };
-    row.addEventListener("mousedown", (event) => {
-      event.preventDefault();
-      openResult();
-    });
-    row.addEventListener("click", openResult);
-    return row;
-  }
 
   function renderSources(sources) {
     sources.forEach((source) => {
@@ -201,57 +116,13 @@ export function createDatasetController(recordController, builtinController, edi
   }
 
   function renderCompactSources(sources) {
-    sources.forEach((source) => {
-      if (source.isDeleted) return;
-      compactSourceList.appendChild(createCompactSourceCard(source));
-    });
-  }
-
-  function createCompactSourceCard(source) {
-    const card = document.createElement("details");
-    const summaryEl = document.createElement("summary");
-    const summaryContent = document.createElement("div");
-    const text = document.createElement("div");
-    const title = document.createElement("strong");
-    const description = document.createElement("span");
-    const varFooter = createSourceVariableFooter(source);
-    const attachButton = createAttachButton(`Attach ${getSourceDisplayName(source)} to chat`, () => {
-      agentController?.attachRecord(createSourceAttachment(source));
-    });
-
-    card.className = "source-compact-card";
-    summaryEl.className = "source-compact-summary";
-    summaryContent.className = "source-compact-summary-content";
-    text.className = "source-compact-text";
-    title.textContent = getSourceDisplayName(source);
-    description.textContent = getSourceDisplayDescription(source);
-    text.append(title, description);
-    summaryContent.appendChild(text);
-
-    const runButton = document.createElement("button");
-    runButton.className = "source-run-button";
-    runButton.type = "button";
-    runButton.setAttribute("aria-label", `Run ${source.name} query`);
-    runButton.title = `Run ${source.name} query`;
-    runButton.addEventListener("click", (event) => {
-      event.preventDefault();
-      event.stopPropagation();
-      runDatasetSource(source);
-    });
-    summaryContent.appendChild(runButton);
-
-    const els = sourceElements[source.id] || (sourceElements[source.id] = {});
-    if (els) {
-      els.compactTitle = title;
-      els.compactDescription = description;
-      els.compactVariableFooter = varFooter;
-      els.compactAttachButton = attachButton;
-      els.runCompactButton = runButton;
-    }
-
-    summaryEl.append(attachButton, summaryContent);
-    card.append(summaryEl, varFooter);
-    return card;
+    compactSourcesRoot?.render(
+      <DatasetSourceCards
+        sources={sources.filter((source) => !source.isDeleted)}
+        onOpen={(source) => openDatasetSourceRaw(source)}
+        onRun={(source) => runDatasetSource(source)}
+      />
+    );
   }
 
   async function loadDatasetSources() {
@@ -322,7 +193,7 @@ export function createDatasetController(recordController, builtinController, edi
 
   async function reloadDatasetSources() {
     sourceList.replaceChildren();
-    compactSourceList.replaceChildren();
+    renderCompactSources([]);
     Object.keys(sourceElements).forEach((key) => {
       delete sourceElements[key];
     });
@@ -453,7 +324,7 @@ export function createDatasetController(recordController, builtinController, edi
       delete sourceDeleteCountdownTimers[sourceId];
     });
     sourceList.replaceChildren();
-    compactSourceList.replaceChildren();
+    renderCompactSources([]);
     Object.keys(sourceElements).forEach((key) => {
       delete sourceElements[key];
     });
@@ -725,11 +596,7 @@ export function createDatasetController(recordController, builtinController, edi
       }
       if (!res.ok) return;
       const searchItems = await res.json();
-      const catalogs = (Array.isArray(searchItems) ? searchItems : []).filter((item) => (item.feature || item.activity) === "dataset");
-      supportedInputParamsByType = Object.fromEntries(
-        (Array.isArray(catalogs) ? catalogs : []).map((catalog) => [normalizeDatasetSourceType(catalog.type), catalog.supportedInputParams || []])
-      ) as typeof supportedInputParamsByType;
-      redrawDatasetSources();
+      setSearchCatalogs(searchItems);
     } catch (error) {
       console.error("[Sources] Failed to load supported input params", error);
     }
@@ -761,23 +628,7 @@ export function createDatasetController(recordController, builtinController, edi
   }
 
   function updateCompactSourceCard(source) {
-    const els = sourceElements[source.id];
-    if (!els) return;
-
-    const displayName = getSourceDisplayName(source);
-    if (els.compactTitle) els.compactTitle.textContent = displayName;
-    if (els.compactDescription) els.compactDescription.textContent = getSourceDisplayDescription(source);
-    if (els.compactAttachButton) {
-      els.compactAttachButton.setAttribute("aria-label", `Attach ${displayName} to chat`);
-      els.compactAttachButton.title = `Attach ${displayName} to chat`;
-    }
-    if (els.runCompactButton) {
-      els.runCompactButton.setAttribute("aria-label", `Run ${displayName} query`);
-      els.runCompactButton.title = `Run ${displayName} query`;
-    }
-    if (els.compactVariableFooter) {
-      updateSourceVariableFooter(els.compactVariableFooter, source, els.paramsGrid, els.outputsGrid);
-    }
+    renderCompactSources(datasetSources);
   }
 
   async function runDatasetSource(source) {
@@ -824,7 +675,7 @@ export function createDatasetController(recordController, builtinController, edi
   }
 
   function updateSourceRunState(elements, state) {
-    [elements.runButton, elements.runCompactButton].forEach((button) => {
+    [elements.runButton].forEach((button) => {
       if (!button) {
         return;
       }
@@ -832,6 +683,14 @@ export function createDatasetController(recordController, builtinController, edi
       button.classList.toggle("is-success", state === "success");
       button.classList.toggle("is-error", state === "error");
     });
+  }
+
+  function openDatasetSourceRaw(source) {
+    editorTabController.openRawJsonTab(
+      `dataset-source-${source.id}`,
+      getSourceDisplayName(source),
+      serializeDatasetSource(source, sourceElements[source.id])
+    );
   }
 
   function hasResponseError(response) {
@@ -967,11 +826,26 @@ export function createDatasetController(recordController, builtinController, edi
   }
 
   function setSearchSourcesEditorOpener(opener) {
-    searchSourcesEditorOpener = opener;
+    void opener;
   }
 
   function reloadSearchCatalogs() {
-    if (catalogSearchWidget) return loadCatalogSearchSources(catalogSearchWidget);
+    return loadSupportedInputParams();
+  }
+
+  function setSearchCatalogs(catalogs) {
+    const datasetCatalogs = (Array.isArray(catalogs) ? catalogs : [])
+      .filter((item) => (item.feature || item.activity) === "dataset");
+    supportedInputParamsByType = {
+      ...DEFAULT_SUPPORTED_INPUT_PARAMS_BY_TYPE,
+      ...Object.fromEntries(
+        datasetCatalogs.map((catalog) => [
+          normalizeDatasetSourceType(catalog.type),
+          catalog.supportedInputParams || []
+        ])
+      )
+    } as typeof supportedInputParamsByType;
+    redrawDatasetSources();
   }
 
   return {
@@ -1792,20 +1666,6 @@ function getValuesAtPath(value, parts) {
   }
 
   return getValuesAtPath(value[part], rest);
-}
-
-function normalizeSearchCatalogs(value) {
-  return Array.isArray(value)
-    ? value
-        .map((catalog, index) => ({
-          ...catalog,
-          id: catalog.id || `catalog-${index}`,
-          name: catalog.name || catalog.label || "Catalog",
-          url: (catalog.url || "").replace(/\/$/, ""),
-          type: catalog.type === "socrata" ? "socrata" : "arcgis"
-        }))
-        .filter((catalog) => catalog.url)
-    : [];
 }
 
 function normalizeVariableValue(value) {

@@ -6,7 +6,7 @@ import { AgentTab } from "@/features/agent/components/AgentTab.jsx";
 import { FolderTab } from "@/features/folder/components/FolderTab.tsx";
 import { RecordTab } from "@/features/record/components/RecordTab.jsx";
 import { ToolSidebarPanel } from "@/features/tool/components/ToolSidebarPanel.tsx";
-import { DatasetTab } from "@/features/dataset/components/DatasetTab";
+import { DatasetSidebarPanel } from "@/features/dataset/components/DatasetSidebarPanel";
 import { SkillSidebarPanel } from "@/features/skill/components/SkillSidebarPanel.tsx";
 import { SidebarNavItem } from "@/components/sidebar/SidebarNavItem.jsx";
 import { SidebarHeader } from "@/components/sidebar/SidebarHeader.jsx";
@@ -291,7 +291,7 @@ export default function App() {
       <FolderTab ref={folderRef} active={activeTab === "folder"} onOpenFile={onOpenFile} />
       <AddressTab active={activeTab === "address"} />
       <RecordTab active={activeTab === "record"} />
-      <DatasetTab active={activeTab === "dataset"} />
+      <DatasetSidebarPanel active={activeTab === "dataset"} />
       <ToolSidebarPanel active={activeTab === "tool"} onOpenPage={onOpenPage} />
       <AgentTab active={activeTab === "agent"} />
 

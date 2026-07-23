@@ -22,9 +22,12 @@
 }
 
 #sourcesCompact {
+  padding: 8px 8px 0 0;
+}
+
+.source-compact-list {
   display: grid;
   gap: 8px;
-  padding: 8px 8px 0 0;
 }
 
 .source-compact-card {

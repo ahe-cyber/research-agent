@@ -7,7 +7,7 @@ import { createCatalogController } from "@/features/dataset/components/CatalogPa
 import { createRecordController, createRecordStore } from "@/features/record/components/RecordTab.jsx";
 import { createEditorTabController } from "./editor/EditorTabs.js";
 import { applyBuiltin, hasBuiltin } from "@/features/tool/components/providers/builtins.ts";
-import { createDatasetController } from "@/features/dataset/components/DatasetTab";
+import { createDatasetController } from "@/features/dataset/components/DatasetSidebarPanel";
 import { createFolderProviderEditorPanel } from "@/features/folder/components/FolderTab.tsx";
 import { createLayerSourcesController } from "@/features/map/components/LayerSourcesPage";
 import { initPdfOverlayRenderer, registerMapDropZone } from "@/features/map/components/providers/pdfOverlay";
