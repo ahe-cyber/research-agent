@@ -34,6 +34,10 @@
   padding: 10px 0;
 }
 
+.feature-bar-settings-button {
+  margin-top: auto;
+}
+
 .workspace-sidebar,
 .agent-panel {
   height: 100%;

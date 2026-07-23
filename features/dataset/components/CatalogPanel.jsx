@@ -37,7 +37,7 @@ export function createCatalogController(editorTabController, agentController, ge
 
   const pageMenu = document.createElement("div");
   createRoot(pageMenu).render(
-    <EditorActionsMenu left={<DomSlot nodes={[addCatalogButton, saveStatusEl]} />} />
+    <EditorActionsMenu leftNodes={[addCatalogButton, saveStatusEl]} />
   );
 
   const catalogListEl = document.createElement("div");

@@ -1,13 +1,16 @@
 import type { ReactNode } from "react";
+import { DomSlot } from "./DomSlot";
 
 interface EditorActionsMenuProps {
   left?: ReactNode;
+  leftNodes?: Node[];
   right?: ReactNode;
+  rightNodes?: Node[];
   viewIconSrc?: string;
   viewLabel?: string;
 }
 
-export function EditorActionsMenu({ left, right, viewIconSrc, viewLabel }: EditorActionsMenuProps) {
+export function EditorActionsMenu({ left, leftNodes = [], right, rightNodes = [], viewIconSrc, viewLabel }: EditorActionsMenuProps) {
   return (
     <div className="editor-actions-menu">
       <div className="editor-actions-menu-actions">
@@ -17,8 +20,12 @@ export function EditorActionsMenu({ left, right, viewIconSrc, viewLabel }: Edito
           </span>
         )}
         {left}
+        {leftNodes.length > 0 && <DomSlot nodes={leftNodes} />}
       </div>
-      <div className="editor-actions-menu-actions editor-actions-menu-actions-right">{right}</div>
+      <div className="editor-actions-menu-actions editor-actions-menu-actions-right">
+        {right}
+        {rightNodes.length > 0 && <DomSlot nodes={rightNodes} />}
+      </div>
     </div>
   );
 }

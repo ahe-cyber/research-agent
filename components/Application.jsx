@@ -5,7 +5,7 @@ import { AddressTab } from "@/features/address/components/AddressTab";
 import { AgentTab } from "@/features/agent/components/AgentTab.jsx";
 import { FolderTab } from "@/features/folder/components/FolderTab.tsx";
 import { RecordTab } from "@/features/record/components/RecordTab.jsx";
-import { ToolTab } from "@/features/tool/components/ToolTab.tsx";
+import { ToolSidebarPanel } from "@/features/tool/components/ToolSidebarPanel.tsx";
 import { DatasetTab } from "@/features/dataset/components/DatasetTab";
 import { SkillSidebarPanel } from "@/features/skill/components/SkillSidebarPanel.tsx";
 import { SidebarNavItem } from "@/components/sidebar/SidebarNavItem.jsx";
@@ -27,6 +27,11 @@ const HOME_TAB = {
   iconSrc: withBasePath("/assets/home.svg"),
   workspaceLabel: "Home Workspace",
   emptyEditor: true
+};
+const SETTINGS_TAB = {
+  id: "settings",
+  label: "Settings",
+  iconSrc: withBasePath("/assets/settings.svg")
 };
 const EMPTY_EDITOR_ACTIVITY_IDS = new Set(["project", "record", "tool"]);
 const DEFAULT_TABS = featureRegistry.map(({ id, label, icon, workspaceLabel }) => ({
@@ -76,6 +81,16 @@ export default function App() {
   const onSuggestTool = useCallback((name) => suggestToolRef.current?.(name), []);
   const onOpenFile = useCallback((entry) => openFileRef.current?.(entry), []);
   const onOpenPage = useCallback((id, label, value) => openPageRef.current?.(id, label, value), []);
+  const onOpenSettings = useCallback(() => {
+    const rawSettings = localStorage.getItem("research-agent.settings");
+    let settingsValue = rawSettings;
+    try {
+      settingsValue = rawSettings === null ? null : JSON.parse(rawSettings);
+    } catch {
+      settingsValue = rawSettings;
+    }
+    openPageRef.current?.("settings", "Settings", settingsValue);
+  }, []);
   const activeTabMeta = activeTab === HOME_TAB.id
     ? HOME_TAB
     : tabs.find((tab) => tab.id === activeTab) ?? DEFAULT_TABS.find((tab) => tab.id === activeTab);
@@ -158,6 +173,16 @@ export default function App() {
           onDragEnd={handleDragEnd}
         />
       ))}
+      <SidebarNavItem
+        tab={SETTINGS_TAB.id}
+        label={SETTINGS_TAB.label}
+        iconSrc={SETTINGS_TAB.iconSrc}
+        className="feature-bar-settings-button"
+        active={false}
+        draggable={false}
+        fixed
+        onClick={onOpenSettings}
+      />
     </nav>
   );
 
@@ -267,7 +292,7 @@ export default function App() {
       <AddressTab active={activeTab === "address"} />
       <RecordTab active={activeTab === "record"} />
       <DatasetTab active={activeTab === "dataset"} />
-      <ToolTab active={activeTab === "tool"} onOpenPage={onOpenPage} />
+      <ToolSidebarPanel active={activeTab === "tool"} onOpenPage={onOpenPage} />
       <AgentTab active={activeTab === "agent"} />
 
       <MapTab active={activeTab === "map"} />

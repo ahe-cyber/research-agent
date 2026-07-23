@@ -1,9 +1,10 @@
-import styles from "./SidebarNavItem.module.css";
+import styles from "./Sidebar.module.css";
 
 export function SidebarNavItem({
   tab,
   label,
   iconSrc,
+  className = "",
   active,
   dragOver,
   draggable = true,
@@ -17,10 +18,11 @@ export function SidebarNavItem({
   return (
     <button
       className={[
-        styles.button,
-        fixed && styles.fixed,
-        active && styles.active,
-        dragOver && styles.dragOver,
+        styles.navButton,
+        fixed && styles.navButtonFixed,
+        active && styles.navButtonActive,
+        dragOver && styles.navButtonDragOver,
+        className,
       ].filter(Boolean).join(" ")}
       style={{ "--feature-icon": `url("${iconSrc}")` }}
       type="button"

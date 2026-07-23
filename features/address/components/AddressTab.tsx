@@ -1,7 +1,6 @@
 import { createRoot } from "react-dom/client";
 import type { AddressSearchSource } from "../address.schema";
 import { getAddressSearchSources, saveAddressSearchSources } from "../address.api";
-import { DomSlot } from "@/components/editor/DomSlot";
 import { EditorActionsMenu } from "@/components/editor/EditorActionsMenu";
 import { SidebarPanel } from "@/components/sidebar/SidebarPanel";
 
@@ -99,7 +98,7 @@ export function createSearchSourceEditorPanel(onSaved?: () => void) {
   statusEl.className = "search-sources-save-status";
 
   const pageMenu = document.createElement("div");
-  createRoot(pageMenu).render(<EditorActionsMenu left={<DomSlot nodes={[addBtn, statusEl]} />} />);
+  createRoot(pageMenu).render(<EditorActionsMenu leftNodes={[addBtn, statusEl]} />);
 
   const list = document.createElement("div");
   list.className = "search-sources-list";

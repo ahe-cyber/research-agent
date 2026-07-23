@@ -2,7 +2,6 @@ import { buildUrlWithParams, queryUrl } from "@/features/map/components/provider
 import { createRoot } from "react-dom/client";
 import { getAddressSearchSources } from "@/features/address/address.api";
 import { getDatasetSearchSources, getDatasetSources, saveDatasetSources } from "../dataset.api";
-import { DomSlot } from "@/components/editor/DomSlot";
 import { EditorActionsMenu } from "@/components/editor/EditorActionsMenu";
 import { createSearchWidget } from "@/components/search/SearchWidget";
 import { searchCatalog } from "../dataset.catalog.api";
@@ -57,7 +56,7 @@ export function createDatasetController(recordController, builtinController, edi
   addDatasetSourceButton.title = "Add source";
 
   const pageMenu = document.createElement("div");
-  createRoot(pageMenu).render(<EditorActionsMenu left={<DomSlot nodes={[addDatasetSourceButton]} />} />);
+  createRoot(pageMenu).render(<EditorActionsMenu leftNodes={[addDatasetSourceButton]} />);
   editorPanel.append(pageMenu, sourceList);
 
   let datasetSources = [];

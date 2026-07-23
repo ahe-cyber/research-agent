@@ -6,7 +6,7 @@
 
 /* Explicit row placement so display:none on the toolbar
    doesn't cause remaining items to shift into wrong tracks */
-.sidebar-header          { grid-row: 1; }
+.agent-panel > header   { grid-row: 1; }
 .agent-instruction-toolbar { grid-row: 2; }
 .agent-thread            { grid-row: 3; }
 .agent-composer          { grid-row: 4; }

@@ -1,7 +1,6 @@
 import { createRoot } from "react-dom/client";
 import { useEffect, useMemo, useState } from "react";
 import { getAgents, saveAgents } from "../agent.api";
-import { DomSlot } from "@/components/editor/DomSlot";
 import { EditorActionsMenu } from "@/components/editor/EditorActionsMenu";
 import { SidebarPanel } from "@/components/sidebar/SidebarPanel";
 import { claudeProviderOption } from "./providers/claude";
@@ -112,7 +111,7 @@ export function createAgentTabController(editorTabController, agentController = 
   exportBtn.textContent = "Export";
 
   const pageMenu = document.createElement("div");
-  createRoot(pageMenu).render(<EditorActionsMenu left={<DomSlot nodes={[addBtn, exportBtn]} />} />);
+  createRoot(pageMenu).render(<EditorActionsMenu leftNodes={[addBtn, exportBtn]} />);
 
   const wrapper = document.createElement("div");
   wrapper.className = "agent-canvas-wrapper";

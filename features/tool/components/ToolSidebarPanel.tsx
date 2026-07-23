@@ -1,35 +1,15 @@
 import { useEffect, useState } from "react";
 import { SidebarCard } from "@/components/sidebar/SidebarCard";
+import { SidebarPanel } from "@/components/sidebar/SidebarPanel";
+import type { Tool, ToolDeclaration } from "../tool.schema";
 import { getToolDeclarations } from "../tool.api";
 
-interface ToolParam {
-  name: string;
-  type: string;
-  required: boolean;
-  description: string;
-}
-
-interface Tool {
-  name: string;
-  description: string;
-  params: ToolParam[];
-}
-
-interface ToolDeclaration {
-  name: string;
-  description: string;
-  parameters?: {
-    properties?: Record<string, { type?: string; description?: string }>;
-    required?: string[];
-  };
-}
-
-interface ToolTabProps {
+interface ToolSidebarPanelProps {
   active: boolean;
   onOpenPage?: (id: string, label: string, value: Tool) => void;
 }
 
-export function ToolTab({ active, onOpenPage }: ToolTabProps) {
+export function ToolSidebarPanel({ active, onOpenPage }: ToolSidebarPanelProps) {
   const [tools, setTools] = useState<Tool[]>([]);
 
   useEffect(() => {
@@ -40,13 +20,11 @@ export function ToolTab({ active, onOpenPage }: ToolTabProps) {
   }, []);
 
   return (
-    <section
-      className={`workspace-tab${active ? " is-active" : ""}`}
-      id="toolTab"
-      data-tab-panel
-      hidden={!active}
+    <SidebarPanel
+      active={active}
+      featureId="tool"
+      featureLabel="Tool"
     >
-      <h2 className="section-title">Tool</h2>
       <div className="tool-list">
         {tools.map((tool) => (
           <SidebarCard
@@ -65,7 +43,7 @@ export function ToolTab({ active, onOpenPage }: ToolTabProps) {
                     <span key={param.name}>
                       <span
                         className="tool-param"
-                        title={`${param.type} — ${param.description}`}
+                        title={`${param.type} - ${param.description}`}
                       >
                         {param.required ? param.name : `${param.name}?`}
                       </span>
@@ -84,7 +62,7 @@ export function ToolTab({ active, onOpenPage }: ToolTabProps) {
           </SidebarCard>
         ))}
       </div>
-    </section>
+    </SidebarPanel>
   );
 }
 
