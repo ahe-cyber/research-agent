@@ -2,7 +2,7 @@ import type { Metadata, Viewport } from "next";
 import "./globals.css";
 
 const assetNames = [
-  "add", "close", "cloud", "delete", "document", "edit", "graph", "link", "list", "menu", "money", "more",
+  "add", "close", "cloud", "code", "delete", "document", "edit", "graph", "link", "list", "menu", "money", "more",
   "mount", "polygon", "revert", "save", "search", "sync", "table", "unmount", "wrap"
 ];
 const basePath = process.env.NEXT_PUBLIC_BASE_PATH || "";

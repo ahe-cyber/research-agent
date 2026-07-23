@@ -1,10 +1,16 @@
 import { useEffect, useMemo, useState } from "react";
 import { SidebarPanel } from "@/components/sidebar/SidebarPanel";
 import { SidebarCard } from "@/components/sidebar/SidebarCard";
+import { skillEditorFields } from "../skill.schema";
 import type { SkillItem, SkillSearchSource } from "../skill.schema";
-import { getSkillSearchSources, getSkills } from "../skill.api";
+import { getSkillSearchSources, getSkills, saveSkill } from "../skill.api";
 
-export function SkillSidebarPanel({ active, onOpenPage }: { active: boolean; onOpenPage?: (id: string, label: string, value: SkillItem) => void }) {
+interface SkillSidebarPanelProps {
+  active: boolean;
+  onOpenRichPage?: (id: string, label: string, value: SkillItem, options: unknown) => void;
+}
+
+export function SkillSidebarPanel({ active, onOpenRichPage }: SkillSidebarPanelProps) {
   const [skills, setSkills] = useState<SkillItem[]>([]);
   const [sources, setSources] = useState<SkillSearchSource[]>([]);
   const [query, setQuery] = useState("");
@@ -32,6 +38,16 @@ export function SkillSidebarPanel({ active, onOpenPage }: { active: boolean; onO
     ].some((value) => value.toLowerCase().includes(needle)));
   }, [query, skills]);
 
+  async function saveSkillRecord(skill: SkillItem) {
+    const response = await saveSkill(skill);
+    if (!response.ok) {
+      throw new Error(`Skill save failed with status ${response.status}`);
+    }
+    const savedSkill = await response.json();
+    setSkills((current) => current.map((item) => (item.id === savedSkill.id ? savedSkill : item)));
+    return savedSkill;
+  }
+
   return (
     <SidebarPanel
       active={active}
@@ -46,6 +62,7 @@ export function SkillSidebarPanel({ active, onOpenPage }: { active: boolean; onO
       searchPlaceholder="Search skills"
       searchInputName="skill-query"
       onSearchQuery={(value) => setQuery(value)}
+      onEditSources={() => window.dispatchEvent(new CustomEvent("research-agent:edit-skill-sources"))}
     >
       <div className="skill-list">
         {filteredSkills.map((skill) => (
@@ -54,7 +71,11 @@ export function SkillSidebarPanel({ active, onOpenPage }: { active: boolean; onO
             className="skill-item tool-card"
             ariaLabel={skill.name}
             openLabel={`Open ${skill.name}`}
-            onOpen={() => onOpenPage?.(`skill-${skill.id}`, skill.name, skill)}
+            onOpen={() => onOpenRichPage?.(`skill-${skill.id}`, skill.name, skill, {
+              rich: true,
+              fields: skillEditorFields,
+              onSave: saveSkillRecord
+            })}
           >
             <div className="tool-signature">
               <code className="tool-name">{skill.name}</code>

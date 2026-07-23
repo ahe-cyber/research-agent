@@ -631,3 +631,105 @@
   line-height: 1.5;
   white-space: pre-wrap;
 }
+
+.editor-rich-view {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
+  background: #ffffff;
+}
+
+.editor-rich-status {
+  min-width: 64px;
+  color: #526070;
+  font-size: 12px;
+}
+
+.editor-rich-form {
+  display: grid;
+  gap: 14px;
+  min-height: 0;
+  overflow: auto;
+  padding: 16px;
+}
+
+.editor-rich-field {
+  display: grid;
+  gap: 6px;
+  color: #1f2933;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.editor-rich-field input,
+.editor-rich-field textarea,
+.editor-rich-raw {
+  box-sizing: border-box;
+  width: 100%;
+  border: 1px solid #d6d9de;
+  border-radius: 6px;
+  background: #ffffff;
+  color: #1f2933;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 400;
+  line-height: 1.45;
+  padding: 9px 10px;
+}
+
+.editor-rich-field input[readonly],
+.editor-rich-field textarea[readonly] {
+  background: #f7f8fa;
+  color: #526070;
+}
+
+.editor-rich-field textarea {
+  min-height: 76px;
+  resize: vertical;
+}
+
+.editor-rich-field-rich textarea {
+  min-height: 260px;
+  font-family: Consolas, "Courier New", monospace;
+}
+
+.editor-rich-mini-menu {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  height: 28px;
+}
+
+.editor-rich-mini-menu img {
+  width: 18px;
+  height: 18px;
+}
+
+.editor-rich-preview {
+  border: 1px solid #e5e8ec;
+  border-radius: 6px;
+  background: #fcfdfe;
+  padding: 12px;
+  color: #1f2933;
+  font-size: 13px;
+  font-weight: 400;
+  line-height: 1.5;
+}
+
+.editor-rich-preview > :first-child {
+  margin-top: 0;
+}
+
+.editor-rich-preview > :last-child {
+  margin-bottom: 0;
+}
+
+.editor-rich-raw {
+  flex: 1 1 auto;
+  min-height: 0;
+  border: 0;
+  border-radius: 0;
+  font-family: Consolas, "Courier New", monospace;
+  resize: none;
+}

@@ -15,3 +15,11 @@ export function saveSkillSearchSources(sources: unknown[]) {
     body: JSON.stringify(sources)
   });
 }
+
+export function saveSkill(skill: unknown) {
+  return fetch(withBasePath("/api/skill"), {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(skill)
+  });
+}

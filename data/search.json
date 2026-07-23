@@ -167,7 +167,7 @@
     "label": "Project Skills",
     "type": "project",
     "costly": false,
-    "description": "Searches skills stored in this project under data/skills.",
+    "description": "Searches skills stored in this project under data/features/skill.json.",
     "feature": "skill"
   }
 ]

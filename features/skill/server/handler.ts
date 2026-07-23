@@ -1,5 +1,5 @@
 import { jsonResponse } from "@/lib/server/files";
-import { listSkillSearchSources, listSkills, updateSkillSearchSources } from "./service";
+import { listSkillSearchSources, listSkills, updateSkillRecord, updateSkillSearchSources } from "./service";
 
 export function GET(request: Request) {
   return isSearchRequest(request) ? listSkillSearchSources() : listSkills();
@@ -7,6 +7,9 @@ export function GET(request: Request) {
 
 export async function PUT(request: Request) {
   const body = await request.json().catch(() => null);
+  if (!isSearchRequest(request)) {
+    return updateSkillRecord(body);
+  }
   if (!Array.isArray(body)) {
     return jsonResponse({ error: "Search sources payload must be an array." }, { status: 400 });
   }

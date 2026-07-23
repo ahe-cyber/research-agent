@@ -81,6 +81,7 @@ export default function App() {
   const onSuggestTool = useCallback((name) => suggestToolRef.current?.(name), []);
   const onOpenFile = useCallback((entry) => openFileRef.current?.(entry), []);
   const onOpenPage = useCallback((id, label, value) => openPageRef.current?.(id, label, value), []);
+  const onOpenRichPage = useCallback((id, label, value, options) => openPageRef.current?.(id, label, value, options), []);
   const onOpenSettings = useCallback(() => {
     const rawSettings = localStorage.getItem("research-agent.settings");
     let settingsValue = rawSettings;
@@ -296,7 +297,7 @@ export default function App() {
       <AgentTab active={activeTab === "agent"} />
 
       <MapTab active={activeTab === "map"} />
-      <SkillSidebarPanel active={activeTab === "skill"} onOpenPage={onOpenPage} />
+      <SkillSidebarPanel active={activeTab === "skill"} onOpenRichPage={onOpenRichPage} />
     </aside>
   );
 

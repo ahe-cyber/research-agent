@@ -6,12 +6,13 @@ import { createAgentTabController } from "@/features/agent/components/AgentTab.j
 import { createCatalogController } from "@/features/dataset/components/CatalogPanel.jsx";
 import { createRecordController, createRecordStore } from "@/features/record/components/RecordTab.jsx";
 import { createEditorTabController } from "./editor/EditorTabs.js";
-import { applyBuiltin, hasBuiltin } from "@/features/tool/components/providers/builtins.ts";
+import { applyBuiltin, hasBuiltin } from "@/features/tool/components/providers/sharedSkills.ts";
 import { createDatasetController } from "@/features/dataset/components/DatasetSidebarPanel";
 import { createFolderProviderEditorPanel } from "@/features/folder/components/FolderTab.tsx";
 import { createLayerSourcesController } from "@/features/map/components/LayerSourcesPage";
 import { initPdfOverlayRenderer, registerMapDropZone } from "@/features/map/components/providers/pdfOverlay";
 import { initCustomLayersDraw } from "@/features/map/components/providers/drawnGeometries";
+import { createSkillSourceEditorPanel } from "@/features/skill/components/SkillSourceEditor";
 
 let initialized = false;
 let sourceController;
@@ -84,11 +85,15 @@ export async function initializeMapApp({ folderRef = null, suggestToolRef = null
     onMapActivated: () => refreshMapView({ mask: true })
   });
   if (openPageRef) {
-    openPageRef.current = (id, label, value) => (
-      value === undefined
-        ? editorTabController.openEmptyPageTab(id, label)
-        : editorTabController.openRawJsonTab(id, label, value)
-    );
+    openPageRef.current = (id, label, value, options = {}) => {
+      if (value === undefined) {
+        return editorTabController.openEmptyPageTab(id, label);
+      }
+      if (options.rich) {
+        return editorTabController.openRichJsonTab(id, label, value, options);
+      }
+      return editorTabController.openRawJsonTab(id, label, value);
+    };
   }
 
   window.addEventListener("focus", refreshMapView);
@@ -129,6 +134,9 @@ export async function initializeMapApp({ folderRef = null, suggestToolRef = null
   agentController.setModulesRefresher(() => agentTabController.reload());
   window.addEventListener("research-agent:edit-folder-providers", () => {
     editorTabController.openFolderProviderTab(createFolderProviderEditorPanel());
+  });
+  window.addEventListener("research-agent:edit-skill-sources", () => {
+    editorTabController.openSkillSearchTab(createSkillSourceEditorPanel());
   });
 
   let reloadSources;
