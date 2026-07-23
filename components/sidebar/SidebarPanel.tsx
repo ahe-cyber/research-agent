@@ -1,10 +1,10 @@
 import { useEffect, useRef } from "react";
 import type { ReactNode } from "react";
 import { createSearchWidget, type SearchWidgetInstance } from "../search/SearchWidget";
-import { SourceDropdownSlot } from "./SourceDropdownSlot";
-import type { SourceDropdownOption } from "./SourceDropdown";
+import { SourceDropdownSlot } from "../workspace/SourceDropdownSlot";
+import type { SourceDropdownOption } from "../workspace/SourceDropdown";
 
-interface FeatureSourceTabProps {
+interface SidebarPanelProps {
   active: boolean;
   featureId: string;
   featureLabel: string;
@@ -26,7 +26,7 @@ interface FeatureSourceTabProps {
   onSearchWidget?: (widget: SearchWidgetInstance) => void;
 }
 
-export function FeatureSourceTab({
+export function SidebarPanel({
   active,
   featureId,
   featureLabel,
@@ -46,7 +46,7 @@ export function FeatureSourceTab({
   onEditSources,
   onSearchQuery,
   onSearchWidget
-}: FeatureSourceTabProps) {
+}: SidebarPanelProps) {
   const searchRef = useRef<HTMLDivElement | null>(null);
   const onSearchQueryRef = useRef(onSearchQuery);
 

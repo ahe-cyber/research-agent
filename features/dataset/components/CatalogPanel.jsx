@@ -2,7 +2,7 @@ import { createRoot } from "react-dom/client";
 import { getDatasetSearchSources, saveDatasetSearchSources } from "../dataset.api";
 import { DomSlot } from "@/components/editor/DomSlot";
 import { EditorListView } from "@/components/editor/EditorListView";
-import { PageMenu } from "@/components/editor/PageMenu";
+import { EditorActionsMenu } from "@/components/editor/EditorActionsMenu";
 import { arcgisCatalogProvider } from "./providers/arcgis";
 import { socrataCatalogProvider } from "./providers/socrata";
 
@@ -37,7 +37,7 @@ export function createCatalogController(editorTabController, agentController, ge
 
   const pageMenu = document.createElement("div");
   createRoot(pageMenu).render(
-    <PageMenu left={<DomSlot nodes={[addCatalogButton, saveStatusEl]} />} />
+    <EditorActionsMenu left={<DomSlot nodes={[addCatalogButton, saveStatusEl]} />} />
   );
 
   const catalogListEl = document.createElement("div");

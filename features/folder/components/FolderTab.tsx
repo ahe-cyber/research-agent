@@ -3,7 +3,7 @@ import { isSupportedParseExtension, type FileEntry, type FolderProvider, type Mo
 import { browserDriveProvider } from "./providers/browserDrive";
 import { googleDriveProvider } from "./providers/googleDrive";
 import { localDriveProvider } from "./providers/localDrive";
-import { FeatureSourceTab } from "@/components/workspace/FeatureSourceTab";
+import { SidebarPanel } from "@/components/sidebar/SidebarPanel";
 import "../folder.css";
 
 const FOLDER_PROVIDER_CONFIG_STORAGE_KEY = "research-agent.folderProviderConfig";
@@ -124,7 +124,7 @@ export const FolderTab = forwardRef<FolderController, FolderTabProps>(
     }
 
     return (
-      <FeatureSourceTab
+      <SidebarPanel
         active={active}
         featureId="folder"
         featureLabel="Folder"
@@ -192,7 +192,7 @@ export const FolderTab = forwardRef<FolderController, FolderTabProps>(
           </>
         )}
 
-      </FeatureSourceTab>
+      </SidebarPanel>
     );
   }
 );

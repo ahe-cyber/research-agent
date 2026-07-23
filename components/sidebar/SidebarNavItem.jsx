@@ -1,4 +1,6 @@
-export function FeatureTab({
+import styles from "./SidebarNavItem.module.css";
+
+export function SidebarNavItem({
   tab,
   label,
   iconSrc,
@@ -15,10 +17,10 @@ export function FeatureTab({
   return (
     <button
       className={[
-        "feature-button",
-        fixed && "is-fixed",
-        active && "is-active",
-        dragOver && "is-drag-over",
+        styles.button,
+        fixed && styles.fixed,
+        active && styles.active,
+        dragOver && styles.dragOver,
       ].filter(Boolean).join(" ")}
       style={{ "--feature-icon": `url("${iconSrc}")` }}
       type="button"

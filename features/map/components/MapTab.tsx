@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { FeatureSourceTab } from "@/components/workspace/FeatureSourceTab";
+import { SidebarPanel } from "@/components/sidebar/SidebarPanel";
 import { CustomLayersSection } from "./CustomLayersSection";
 import { PdfOverlaySection } from "./PdfOverlaySection";
 
@@ -16,7 +16,7 @@ export function MapTab({ active }: { active: boolean }) {
   }, [query]);
 
   return (
-    <FeatureSourceTab
+    <SidebarPanel
       active={active}
       featureId="map"
       featureLabel="Map"
@@ -52,7 +52,7 @@ export function MapTab({ active }: { active: boolean }) {
           <CustomLayersSection />
         </div>
       </div>
-    </FeatureSourceTab>
+    </SidebarPanel>
   );
 }
 

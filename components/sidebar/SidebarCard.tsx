@@ -1,4 +1,5 @@
 import { type KeyboardEvent, type MouseEvent, type ReactNode, useState } from "react";
+import styles from "./SidebarCard.module.css";
 
 interface SidebarCardProps {
   children: ReactNode;
@@ -39,7 +40,7 @@ export function SidebarCard({ children, className = "", ariaLabel, openLabel, on
 
   return (
     <div
-      className={["sidebar-card", selected && "is-selected", className].filter(Boolean).join(" ")}
+      className={[styles.card, selected && styles.selected, className].filter(Boolean).join(" ")}
       role="button"
       tabIndex={0}
       aria-label={ariaLabel}

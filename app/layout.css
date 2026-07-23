@@ -34,55 +34,6 @@
   padding: 10px 0;
 }
 
-.feature-button {
-  position: relative;
-  width: 40px;
-  height: 40px;
-  border: 0;
-  border-left: 2px solid transparent;
-  background: transparent;
-  color: #526070;
-  font-size: 13px;
-  font-weight: 700;
-  cursor: pointer;
-}
-
-.feature-button:hover,
-.feature-button.is-active {
-  color: #1f2933;
-  background: #eef1f5;
-}
-
-.feature-button.is-active {
-  border-left-color: #2f6fed;
-}
-
-.feature-button.is-fixed {
-  flex: 0 0 auto;
-}
-
-.feature-button.is-fixed::after {
-  content: "";
-  position: absolute;
-  left: 8px;
-  right: 8px;
-  bottom: -3px;
-  border-bottom: 1px solid #d6d9de;
-}
-
-.feature-button.is-drag-over {
-  border-top: 2px solid #2f6fed;
-}
-
-.feature-button::before {
-  content: "";
-  position: absolute;
-  inset: 10px;
-  background: currentColor;
-  mask: center / contain no-repeat var(--feature-icon);
-  -webkit-mask: center / contain no-repeat var(--feature-icon);
-}
-
 .workspace-sidebar,
 .agent-panel {
   height: 100%;
@@ -407,7 +358,7 @@
   color: #0b5cad;
 }
 
-.page-menu {
+.editor-actions-menu {
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -418,14 +369,31 @@
   background: #fcfdfe;
 }
 
-.page-menu-actions {
+.editor-actions-menu-actions {
   display: flex;
   align-items: center;
   gap: 8px;
 }
 
-.page-menu-actions-right {
+.editor-actions-menu-actions-right {
   margin-left: auto;
+}
+
+.editor-actions-menu-view {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border: 1px solid #d6d9de;
+  border-radius: 6px;
+  background: #ffffff;
+}
+
+.editor-actions-menu-view img {
+  display: block;
+  width: 18px;
+  height: 18px;
 }
 
 .page-view,
@@ -639,6 +607,8 @@
 }
 
 .editor-raw-view {
+  display: flex;
+  flex-direction: column;
   height: 100%;
   min-height: 0;
   background: #ffffff;
@@ -646,7 +616,8 @@
 
 .editor-raw-view__content {
   box-sizing: border-box;
-  height: 100%;
+  flex: 1 1 auto;
+  min-height: 0;
   margin: 0;
   overflow: auto;
   padding: 18px;

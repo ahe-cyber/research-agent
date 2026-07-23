@@ -3,11 +3,11 @@ import { createRoot } from "react-dom/client";
 import { getAddressSearchSources } from "@/features/address/address.api";
 import { getDatasetSearchSources, getDatasetSources, saveDatasetSources } from "../dataset.api";
 import { DomSlot } from "@/components/editor/DomSlot";
-import { PageMenu } from "@/components/editor/PageMenu";
+import { EditorActionsMenu } from "@/components/editor/EditorActionsMenu";
 import { createSearchWidget } from "@/components/search/SearchWidget";
 import { searchCatalog } from "../dataset.catalog.api";
 import { buildSearchCatalogDatasetDetailPanel } from "./CatalogPanel.jsx";
-import { FeatureSourceTab } from "@/components/workspace/FeatureSourceTab";
+import { SidebarPanel } from "@/components/sidebar/SidebarPanel";
 import { arcgisCatalogProvider } from "./providers/arcgis";
 import { socrataCatalogProvider } from "./providers/socrata";
 import type { DatasetSourceType } from "../dataset.schema";
@@ -24,7 +24,7 @@ const NEW_SOURCE_DESCRIPTION = "New source description";
 
 export function DatasetTab({ active }) {
   return (
-    <FeatureSourceTab
+    <SidebarPanel
       active={active}
       featureId="dataset"
       featureLabel="Dataset"
@@ -32,7 +32,7 @@ export function DatasetTab({ active }) {
     >
       <div id="datasetCatalogSearchBox" />
       <div id="sourcesCompact" />
-    </FeatureSourceTab>
+    </SidebarPanel>
   );
 }
 
@@ -57,7 +57,7 @@ export function createDatasetController(recordController, builtinController, edi
   addDatasetSourceButton.title = "Add source";
 
   const pageMenu = document.createElement("div");
-  createRoot(pageMenu).render(<PageMenu left={<DomSlot nodes={[addDatasetSourceButton]} />} />);
+  createRoot(pageMenu).render(<EditorActionsMenu left={<DomSlot nodes={[addDatasetSourceButton]} />} />);
   editorPanel.append(pageMenu, sourceList);
 
   let datasetSources = [];

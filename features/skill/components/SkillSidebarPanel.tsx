@@ -1,12 +1,12 @@
 import { useEffect, useMemo, useState } from "react";
-import { FeatureSourceTab } from "@/components/workspace/FeatureSourceTab";
+import { SidebarPanel } from "@/components/sidebar/SidebarPanel";
 import { SidebarCard } from "@/components/sidebar/SidebarCard";
-import type { SkillItem, SkillSource } from "../skill.schema";
+import type { SkillItem, SkillSearchSource } from "../skill.schema";
 import { getSkillSearchSources, getSkills } from "../skill.api";
 
-export function SkillTab({ active, onOpenPage }: { active: boolean; onOpenPage?: (id: string, label: string, value: SkillItem) => void }) {
+export function SkillSidebarPanel({ active, onOpenPage }: { active: boolean; onOpenPage?: (id: string, label: string, value: SkillItem) => void }) {
   const [skills, setSkills] = useState<SkillItem[]>([]);
-  const [sources, setSources] = useState<SkillSource[]>([]);
+  const [sources, setSources] = useState<SkillSearchSource[]>([]);
   const [query, setQuery] = useState("");
 
   useEffect(() => {
@@ -33,7 +33,7 @@ export function SkillTab({ active, onOpenPage }: { active: boolean; onOpenPage?:
   }, [query, skills]);
 
   return (
-    <FeatureSourceTab
+    <SidebarPanel
       active={active}
       featureId="skill"
       featureLabel="Skill"
@@ -67,11 +67,11 @@ export function SkillTab({ active, onOpenPage }: { active: boolean; onOpenPage?:
           <p className="map-empty-note">No matching skills.</p>
         )}
       </div>
-    </FeatureSourceTab>
+    </SidebarPanel>
   );
 }
 
-function normalizeSource(source: any): SkillSource {
+function normalizeSource(source: any): SkillSearchSource {
   return {
     id: source.id || "project-skills",
     label: source.label || source.name || "Project Skills",

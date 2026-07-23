@@ -8,11 +8,11 @@ export const skillItemSchema = z.object({
   description: z.string()
 });
 
-export const skillSourceSchema = z.object({
+export const skillSearchSourceSchema = z.object({
   id: z.string(),
   label: z.string(),
   costly: z.boolean().optional()
 });
 
 export type SkillItem = z.infer<typeof skillItemSchema>;
-export type SkillSource = z.infer<typeof skillSourceSchema>;
+export type SkillSearchSource = z.infer<typeof skillSearchSourceSchema>;

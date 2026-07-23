@@ -2,8 +2,8 @@ import { createRoot } from "react-dom/client";
 import { useEffect, useMemo, useState } from "react";
 import { getAgents, saveAgents } from "../agent.api";
 import { DomSlot } from "@/components/editor/DomSlot";
-import { PageMenu } from "@/components/editor/PageMenu";
-import { FeatureSourceTab } from "@/components/workspace/FeatureSourceTab";
+import { EditorActionsMenu } from "@/components/editor/EditorActionsMenu";
+import { SidebarPanel } from "@/components/sidebar/SidebarPanel";
 import { claudeProviderOption } from "./providers/claude";
 import { geminiProviderOption } from "./providers/gemini";
 import { openAiProviderOption } from "./providers/openai";
@@ -49,7 +49,7 @@ export function AgentTab({ active }) {
   }, []);
 
   return (
-    <FeatureSourceTab
+    <SidebarPanel
       active={active}
       featureId="agent"
       featureLabel="Agent"
@@ -112,7 +112,7 @@ export function createAgentTabController(editorTabController, agentController = 
   exportBtn.textContent = "Export";
 
   const pageMenu = document.createElement("div");
-  createRoot(pageMenu).render(<PageMenu left={<DomSlot nodes={[addBtn, exportBtn]} />} />);
+  createRoot(pageMenu).render(<EditorActionsMenu left={<DomSlot nodes={[addBtn, exportBtn]} />} />);
 
   const wrapper = document.createElement("div");
   wrapper.className = "agent-canvas-wrapper";

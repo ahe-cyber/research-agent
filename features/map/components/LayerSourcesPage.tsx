@@ -2,7 +2,7 @@ import { Fragment, useRef, useState, type ReactNode } from "react";
 import { createRoot } from "react-dom/client";
 import { getMapSources } from "../map.api";
 import { EditorListView } from "@/components/editor/EditorListView";
-import { PageMenu } from "@/components/editor/PageMenu";
+import { EditorActionsMenu } from "@/components/editor/EditorActionsMenu";
 import { EditorTableView } from "@/components/editor/EditorTableView";
 
 interface EditorTabController {
@@ -64,7 +64,7 @@ function LayerSourcesPage({ catalog }: { catalog: BasemapCatalog }) {
 
   return (
     <>
-      <PageMenu
+      <EditorActionsMenu
         right={(
           <>
             <ViewButton active={view === "list"} label="List view" view="list" onClick={() => setView("list")} />

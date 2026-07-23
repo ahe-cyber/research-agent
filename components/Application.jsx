@@ -7,8 +7,8 @@ import { FolderTab } from "@/features/folder/components/FolderTab.tsx";
 import { RecordTab } from "@/features/record/components/RecordTab.jsx";
 import { ToolTab } from "@/features/tool/components/ToolTab.tsx";
 import { DatasetTab } from "@/features/dataset/components/DatasetTab";
-import { SkillTab } from "@/features/skill/components/SkillTab.tsx";
-import { FeatureTab } from "@/components/workspace/FeatureTab.jsx";
+import { SkillSidebarPanel } from "@/features/skill/components/SkillSidebarPanel.tsx";
+import { SidebarNavItem } from "@/components/sidebar/SidebarNavItem.jsx";
 import { SidebarHeader } from "@/components/sidebar/SidebarHeader.jsx";
 import { WorkbenchLayout } from "@/components/workspace/WorkbenchLayout.tsx";
 import { loadWorkspaceState, saveWorkspaceState } from "@/lib/workspaceState.js";
@@ -134,7 +134,7 @@ export default function App() {
 
   const featureBar = (
     <nav className="feature-bar" aria-label="Feature Bar">
-      <FeatureTab
+      <SidebarNavItem
         tab={HOME_TAB.id}
         label={HOME_TAB.label}
         iconSrc={HOME_TAB.iconSrc}
@@ -144,7 +144,7 @@ export default function App() {
         onClick={setActiveTab}
       />
       {tabs.map(({ id, label, iconSrc }) => (
-        <FeatureTab
+        <SidebarNavItem
           key={id}
           tab={id}
           label={label}
@@ -271,7 +271,7 @@ export default function App() {
       <AgentTab active={activeTab === "agent"} />
 
       <MapTab active={activeTab === "map"} />
-      <SkillTab active={activeTab === "skill"} onOpenPage={onOpenPage} />
+      <SkillSidebarPanel active={activeTab === "skill"} onOpenPage={onOpenPage} />
     </aside>
   );
 
