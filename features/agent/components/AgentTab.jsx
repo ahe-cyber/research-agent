@@ -91,7 +91,6 @@ export function AgentTab({ active }) {
 
 export function createAgentTabController(editorTabController, agentController = null) {
   const compactList = document.getElementById("agentCompact");
-  const editButton = document.getElementById("editAgentButton");
   const attachmentTargetOwner = Symbol("agent-module-controller");
 
   // ── Build editor panel ────────────────────────────────────────────────────
@@ -187,11 +186,12 @@ export function createAgentTabController(editorTabController, agentController = 
   addBtn.addEventListener("click", addAgent);
   exportBtn.addEventListener("click", exportAgents);
   fitBtn.addEventListener("click", fitToViewport);
-  editButton.addEventListener("click", () => {
+  const openAgentEditor = () => {
     editorTabController.openAgentTab(editorPanel);
     // Re-render after the panel is visible so offsetLeft/offsetTop are correct
     requestAnimationFrame(renderConnections);
-  });
+  };
+  window.addEventListener("research-agent:edit-agent", openAgentEditor);
   window.addEventListener("research-agent:edit-agent-providers", () => {
     editorTabController.openAgentProviderTab(createAgentProviderEditorPanel());
   });

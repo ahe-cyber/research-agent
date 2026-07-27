@@ -24,13 +24,12 @@ function isValidLayout(value: unknown): value is Layout {
 }
 
 interface WorkbenchLayoutProps {
-  featureBar: React.ReactNode;
   sidebar: React.ReactNode;
   editor: React.ReactNode;
   agentPanel: React.ReactNode;
 }
 
-export function WorkbenchLayout({ featureBar, sidebar, editor, agentPanel }: WorkbenchLayoutProps) {
+export function WorkbenchLayout({ sidebar, editor, agentPanel }: WorkbenchLayoutProps) {
   const saved = loadWorkspaceState().panelLayout as unknown;
   const defaultLayout = isValidLayout(saved) ? saved : DEFAULT_LAYOUT;
 
@@ -40,7 +39,6 @@ export function WorkbenchLayout({ featureBar, sidebar, editor, agentPanel }: Wor
 
   return (
     <div className="app-shell">
-      {featureBar}
       <Group
         orientation="horizontal"
         className="workbench-panels"

@@ -864,7 +864,7 @@
           "page": 1,
           "imagePath": "/assets/overlay/a077ed0f-b6fb-4f4e-b452-5bb861dad2a3/page-001.png",
           "status": "reference",
-          "visible": true,
+          "visible": false,
           "width": 1224,
           "height": 1584,
           "bounds": [
@@ -901,7 +901,7 @@
           }
         }
       ],
-      "muted": true
+      "muted": false
     }
   ]
 }

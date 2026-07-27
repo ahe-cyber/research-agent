@@ -55,6 +55,20 @@
   flex: 0 0 auto;
 }
 
+.navbar {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  border-right: 1px solid #d6d9de;
+  background: #f8f9fb;
+  padding: 10px 0;
+}
+
+.navbarSettingsButton {
+  margin-top: auto;
+}
+
 .navButton {
   position: relative;
   width: 40px;

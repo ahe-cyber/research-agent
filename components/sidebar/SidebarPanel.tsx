@@ -20,6 +20,7 @@ interface SidebarPanelProps {
   compactId?: string;
   children?: ReactNode;
   headerAccessory?: ReactNode;
+  onFeatureDoubleClick?: () => void;
   onSourceChange?: (option: SourceDropdownOption | null) => void;
   onEditSources?: () => void;
   onSearchQuery?: (query: string, source: SourceDropdownOption | null) => void;
@@ -42,6 +43,7 @@ export function SidebarPanel({
   compactId,
   children,
   headerAccessory,
+  onFeatureDoubleClick,
   onSourceChange,
   onEditSources,
   onSearchQuery,
@@ -70,6 +72,17 @@ export function SidebarPanel({
     onSearchWidget?.(widget);
   }, [featureId, initialSearchQuery, searchInputName, searchPlaceholder, onSearchWidget]);
 
+  function handleFeatureDoubleClick() {
+    if (onFeatureDoubleClick) {
+      onFeatureDoubleClick();
+      return;
+    }
+
+    window.dispatchEvent(new CustomEvent("research-agent:edit-feature", {
+      detail: { featureId, featureLabel }
+    }));
+  }
+
   return (
     <section
       className={`workspace-tab${active ? " is-active" : ""}`}
@@ -78,7 +91,13 @@ export function SidebarPanel({
       hidden={!active}
     >
       <div className="section-title-row">
-        <h2 className="section-title">{featureLabel}</h2>
+        <h2
+          className="section-title"
+          onDoubleClick={handleFeatureDoubleClick}
+          title={`Edit ${featureLabel}`}
+        >
+          {featureLabel}
+        </h2>
         {dropdownOptions.length > 0 && (
           <SourceDropdownSlot
             className={dropdownClassName}

@@ -30,7 +30,6 @@ interface LayerSourceRow {
 }
 
 export function createLayerSourcesController(editorTabController: EditorTabController) {
-  const button = document.getElementById("layerSourcesButton");
   let panel: HTMLElement | null = null;
 
   const openLayerSources = async () => {
@@ -38,7 +37,6 @@ export function createLayerSourcesController(editorTabController: EditorTabContr
     editorTabController.openLayerSourcesTab(panel);
   };
 
-  button?.addEventListener("click", openLayerSources);
   window.addEventListener("research-agent:edit-map-sources", openLayerSources);
 }
 

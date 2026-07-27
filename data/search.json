@@ -163,11 +163,11 @@
     "apiKey": ""
   },
   {
-    "id": "project-skills",
-    "label": "Project Skills",
-    "type": "project",
+    "id": "shared-skills",
+    "label": "Shared Skills",
+    "type": "shared",
     "costly": false,
-    "description": "Searches skills stored in this project under data/features/skill.json.",
+    "description": "Searches app-owned skills stored in data/features/skill.json.",
     "feature": "skill"
   }
 ]

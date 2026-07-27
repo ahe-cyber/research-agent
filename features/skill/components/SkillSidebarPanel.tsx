@@ -4,6 +4,7 @@ import { SidebarCard } from "@/components/sidebar/SidebarCard";
 import { skillEditorFields } from "../skill.schema";
 import type { SkillItem, SkillSearchSource } from "../skill.schema";
 import { getSkillSearchSources, getSkills, saveSkill } from "../skill.api";
+import { sharedSkillSearchSource } from "../providers/sharedSkills";
 
 interface SkillSidebarPanelProps {
   active: boolean;
@@ -24,7 +25,7 @@ export function SkillSidebarPanel({ active, onOpenRichPage }: SkillSidebarPanelP
     getSkillSearchSources()
       .then((res) => (res.ok ? res.json() : []))
       .then((data) => setSources(Array.isArray(data) ? data.map(normalizeSource) : []))
-      .catch(() => setSources([{ id: "project-skills", label: "Project Skills" }]));
+      .catch(() => setSources([sharedSkillSearchSource]));
   }, []);
 
   const filteredSkills = useMemo(() => {
@@ -94,8 +95,8 @@ export function SkillSidebarPanel({ active, onOpenRichPage }: SkillSidebarPanelP
 
 function normalizeSource(source: any): SkillSearchSource {
   return {
-    id: source.id || "project-skills",
-    label: source.label || source.name || "Project Skills",
+    id: source.id || sharedSkillSearchSource.id,
+    label: source.label || source.name || sharedSkillSearchSource.label,
     costly: Boolean(source.costly)
   };
 }

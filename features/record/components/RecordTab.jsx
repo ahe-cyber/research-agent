@@ -47,21 +47,8 @@ export function createRecordStore() {
 
 export function createRecordController(recordStore, map, editorTabController, getAgentController = () => null) {
   const recordList = document.getElementById("recordList");
-  const wrapJsonTextButton = document.getElementById("wrapJsonTextButton");
   const expandedRecordIds = new Set();
   const expandedJsonPaths = new Set();
-  let isJsonTextWrapped = false;
-
-  function updateWrapJsonText() {
-    recordList.classList.toggle("is-json-text-wrapped", isJsonTextWrapped);
-    wrapJsonTextButton.setAttribute("aria-pressed", String(isJsonTextWrapped));
-    wrapJsonTextButton.classList.toggle("is-active", isJsonTextWrapped);
-  }
-
-  wrapJsonTextButton.addEventListener("click", () => {
-    isJsonTextWrapped = !isJsonTextWrapped;
-    updateWrapJsonText();
-  });
 
   function render() {
     recordList.replaceChildren();
@@ -150,7 +137,6 @@ export function createRecordController(recordStore, map, editorTabController, ge
   }
 
   render();
-  updateWrapJsonText();
 
   return { add, render };
 }

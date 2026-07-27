@@ -8,9 +8,12 @@ import { RecordTab } from "@/features/record/components/RecordTab.jsx";
 import { ToolSidebarPanel } from "@/features/tool/components/ToolSidebarPanel.tsx";
 import { DatasetSidebarPanel } from "@/features/dataset/components/DatasetSidebarPanel";
 import { SkillSidebarPanel } from "@/features/skill/components/SkillSidebarPanel.tsx";
-import { SidebarNavItem } from "@/components/sidebar/SidebarNavItem.jsx";
+import { SidebarNavbar } from "@/components/sidebar/SidebarNavbar";
 import { SidebarHeader } from "@/components/sidebar/SidebarHeader.jsx";
 import { WorkbenchLayout } from "@/components/workspace/WorkbenchLayout.tsx";
+import { EditorNavbar } from "@/components/editor/EditorNavbar";
+import { EditorPanel } from "@/components/editor/EditorPanel";
+import { EditorPanelItem } from "@/components/editor/EditorPanelItem";
 import { loadWorkspaceState, saveWorkspaceState } from "@/lib/workspaceState.js";
 import { APP_VERSION } from "@/lib/appVersion";
 import featureRegistry from "@/data/feature.json";
@@ -32,6 +35,17 @@ const SETTINGS_TAB = {
   id: "settings",
   label: "Settings",
   iconSrc: withBasePath("/assets/settings.svg")
+};
+const SETTINGS_STORAGE_KEY = "research-agent.settings";
+const DEFAULT_APP_SETTINGS = {
+  version: 1,
+  theme: "system",
+  editor: {
+    wrapRawJson: false
+  },
+  agent: {
+    attachRecordsByDefault: true
+  }
 };
 const EMPTY_EDITOR_ACTIVITY_IDS = new Set(["project", "record", "tool"]);
 const DEFAULT_TABS = featureRegistry.map(({ id, label, icon, workspaceLabel }) => ({
@@ -63,13 +77,27 @@ function getInitialTabs() {
   return [...ordered, ...remaining];
 }
 
+function getStoredSettings() {
+  const rawSettings = localStorage.getItem(SETTINGS_STORAGE_KEY);
+
+  if (rawSettings === null) {
+    localStorage.setItem(SETTINGS_STORAGE_KEY, JSON.stringify(DEFAULT_APP_SETTINGS));
+    return DEFAULT_APP_SETTINGS;
+  }
+
+  try {
+    return JSON.parse(rawSettings);
+  } catch {
+    return rawSettings;
+  }
+}
+
 export default function App() {
   const [activeTab, setActiveTab] = useState(() => {
     const state = loadWorkspaceState();
     return state.activeFeatureTab ?? state.activeActivityTab ?? "address";
   });
   const [workspaceId, setWorkspaceId] = useState("map");
-  const [isViewMenuOpen, setIsViewMenuOpen] = useState(true);
   const [tabs, setTabs] = useState(getInitialTabs);
   const [dragOverId, setDragOverId] = useState(null);
   const draggedId = useRef(null);
@@ -83,14 +111,7 @@ export default function App() {
   const onOpenPage = useCallback((id, label, value) => openPageRef.current?.(id, label, value), []);
   const onOpenRichPage = useCallback((id, label, value, options) => openPageRef.current?.(id, label, value, options), []);
   const onOpenSettings = useCallback(() => {
-    const rawSettings = localStorage.getItem("research-agent.settings");
-    let settingsValue = rawSettings;
-    try {
-      settingsValue = rawSettings === null ? null : JSON.parse(rawSettings);
-    } catch {
-      settingsValue = rawSettings;
-    }
-    openPageRef.current?.("settings", "Settings", settingsValue);
+    openPageRef.current?.("settings", "Settings", getStoredSettings());
   }, []);
   const activeTabMeta = activeTab === HOME_TAB.id
     ? HOME_TAB
@@ -149,42 +170,19 @@ export default function App() {
   }));
 
   const featureBar = (
-    <nav className="feature-bar" aria-label="Feature Bar">
-      <SidebarNavItem
-        tab={HOME_TAB.id}
-        label={HOME_TAB.label}
-        iconSrc={HOME_TAB.iconSrc}
-        active={activeTab === HOME_TAB.id}
-        draggable={false}
-        fixed
-        onClick={setActiveTab}
-      />
-      {tabs.map(({ id, label, iconSrc }) => (
-        <SidebarNavItem
-          key={id}
-          tab={id}
-          label={label}
-          iconSrc={iconSrc}
-          active={activeTab === id}
-          dragOver={dragOverId === id}
-          onClick={setActiveTab}
-          onDragStart={() => handleDragStart(id)}
-          onDragOver={(e) => handleDragOver(e, id)}
-          onDrop={(e) => handleDrop(e, id)}
-          onDragEnd={handleDragEnd}
-        />
-      ))}
-      <SidebarNavItem
-        tab={SETTINGS_TAB.id}
-        label={SETTINGS_TAB.label}
-        iconSrc={SETTINGS_TAB.iconSrc}
-        className="feature-bar-settings-button"
-        active={false}
-        draggable={false}
-        fixed
-        onClick={onOpenSettings}
-      />
-    </nav>
+    <SidebarNavbar
+      homeTab={HOME_TAB}
+      settingsTab={SETTINGS_TAB}
+      tabs={tabs}
+      activeTab={activeTab}
+      dragOverId={dragOverId}
+      onSelectTab={setActiveTab}
+      onOpenSettings={onOpenSettings}
+      onDragStart={handleDragStart}
+      onDragOver={handleDragOver}
+      onDrop={handleDrop}
+      onDragEnd={handleDragEnd}
+    />
   );
 
   const sidebar = (
@@ -203,116 +201,37 @@ export default function App() {
             ))}
           </select>
         }
-        action={
-          <button
-            className={`section-tool-button view-menu-button${isViewMenuOpen ? " is-active" : ""}`}
-            type="button"
-            aria-pressed={isViewMenuOpen}
-            aria-label="View menu"
-            title="View menu"
-            onClick={() => setIsViewMenuOpen((open) => !open)}
-          />
-        }
       />
 
-      <div className="view-menu-toolbar" hidden={!isViewMenuOpen}>
-        <button
-            className="section-tool-button edit-feature-button"
-            type="button"
-            id="editFeatureButton"
-          aria-label={`Edit ${activeTabMeta?.label ?? activeTab}`}
-          title={`Edit ${activeTabMeta?.label ?? activeTab}`}
-          data-active-tab={activeTab}
-          data-active-label={activeTabMeta?.label ?? activeTab}
-          hidden={!activeTabMeta?.emptyEditor}
-        />
-        <button
-          className="section-tool-button layer-sources-button"
-          type="button"
-          id="layerSourcesButton"
-          aria-label="Layer sources"
-          title="Layer sources"
-          hidden={activeTab !== "map"}
-        />
-        <button
-          className="section-tool-button wrap-text-button"
-          type="button"
-          id="wrapJsonTextButton"
-          aria-pressed="false"
-          aria-label="Wrap text"
-          title="Wrap text"
-          hidden={activeTab !== "record"}
-        />
-        <button
-          className="section-tool-button mount-folder-button"
-          type="button"
-          id="mountFolderButton"
-          aria-label="Mount local drive"
-          title="Mount local drive"
-          hidden={activeTab !== "folder"}
-          onClick={() => window.dispatchEvent(new CustomEvent("research-agent:mount-folder"))}
-        />
-        <button
-          className="section-tool-button unmount-folder-button"
-          type="button"
-          id="unmountFolderButton"
-          aria-label="Unmount drive"
-          title="Unmount drive"
-          hidden={activeTab !== "folder"}
-          onClick={() => window.dispatchEvent(new CustomEvent("research-agent:unmount-folder"))}
-        />
-        <button
-          className="section-tool-button edit-dataset-button"
-          type="button"
-          id="editDatasetButton"
-          aria-label="Edit dataset"
-          title="Edit dataset"
-          hidden={activeTab !== "dataset"}
-        />
-        <button
-          className="section-tool-button edit-search-sources-button"
-          type="button"
-          id="editSearchSourcesButton"
-          aria-label="Edit search"
-          title="Edit search"
-          hidden={activeTab !== "address"}
-        />
-        <button
-          className="section-tool-button edit-agent-button"
-          type="button"
-          id="editAgentButton"
-          aria-label="Edit agent"
-          title="Edit agent"
-          hidden={activeTab !== "agent"}
-        />
+      <div className="workspace-sidebar-body">
+        {featureBar}
+        <div className="workspace-sidebar-panel-item">
+          <section className="workspace-tab" id="homeTab" aria-label="Home" hidden={activeTab !== "home"} />
+          <section className="workspace-tab" id="projectTab" aria-label="Project" hidden={activeTab !== "project"} />
+          <FolderTab ref={folderRef} active={activeTab === "folder"} onOpenFile={onOpenFile} />
+          <AddressTab active={activeTab === "address"} />
+          <RecordTab active={activeTab === "record"} />
+          <DatasetSidebarPanel active={activeTab === "dataset"} />
+          <ToolSidebarPanel active={activeTab === "tool"} onOpenPage={onOpenPage} />
+          <AgentTab active={activeTab === "agent"} />
+
+          <MapTab active={activeTab === "map"} />
+          <SkillSidebarPanel active={activeTab === "skill"} onOpenRichPage={onOpenRichPage} />
+        </div>
       </div>
-
-      <section className="workspace-tab" id="homeTab" aria-label="Home" hidden={activeTab !== "home"} />
-      <section className="workspace-tab" id="projectTab" aria-label="Project" hidden={activeTab !== "project"} />
-      <FolderTab ref={folderRef} active={activeTab === "folder"} onOpenFile={onOpenFile} />
-      <AddressTab active={activeTab === "address"} />
-      <RecordTab active={activeTab === "record"} />
-      <DatasetSidebarPanel active={activeTab === "dataset"} />
-      <ToolSidebarPanel active={activeTab === "tool"} onOpenPage={onOpenPage} />
-      <AgentTab active={activeTab === "agent"} />
-
-      <MapTab active={activeTab === "map"} />
-      <SkillSidebarPanel active={activeTab === "skill"} onOpenRichPage={onOpenRichPage} />
     </aside>
   );
 
   const editor = (
-    <main className="editor-area" aria-label="Editor">
-      <div className="editor-tab-bar" id="editorTabBar" />
-      <div className="editor-viewport" id="editorViewport">
+    <EditorPanel navbar={<EditorNavbar />}>
+      <EditorPanelItem>
         <div id="map" />
-      </div>
-    </main>
+      </EditorPanelItem>
+    </EditorPanel>
   );
 
   return (
     <WorkbenchLayout
-      featureBar={featureBar}
       sidebar={sidebar}
       editor={editor}
       agentPanel={<AgentPanel />}

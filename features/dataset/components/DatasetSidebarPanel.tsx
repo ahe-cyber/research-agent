@@ -1,4 +1,4 @@
-import { buildUrlWithParams, queryUrl } from "@/features/map/components/providers/geojson";
+import { queryUrl } from "@/features/map/components/providers/geojson";
 import { createRoot } from "react-dom/client";
 import { SidebarCard } from "@/components/sidebar/SidebarCard";
 import { getAddressSearchSources } from "@/features/address/address.api";
@@ -31,7 +31,7 @@ export function DatasetSidebarPanel({ active }) {
   );
 }
 
-function DatasetSourceCards({ sources, onOpen, onRun }) {
+function DatasetSourceCards({ sources, onOpen }) {
   return (
     <div className="source-compact-list">
       {sources.map((source) => (
@@ -47,17 +47,6 @@ function DatasetSourceCards({ sources, onOpen, onRun }) {
               <strong>{getSourceDisplayName(source)}</strong>
               <span>{getSourceDisplayDescription(source)}</span>
             </div>
-            <button
-              className="source-run-button"
-              type="button"
-              aria-label={`Run ${getSourceDisplayName(source)} query`}
-              title={`Run ${getSourceDisplayName(source)} query`}
-              onClick={(event) => {
-                event.preventDefault();
-                event.stopPropagation();
-                onRun(source);
-              }}
-            />
           </div>
         </SidebarCard>
       ))}
@@ -65,11 +54,10 @@ function DatasetSourceCards({ sources, onOpen, onRun }) {
   );
 }
 
-export function createDatasetController(recordController, builtinController, editorTabController, agentController) {
+export function createDatasetController(builtinController, editorTabController, agentController) {
   const variables = {};
   const sourceElements = {};
   const compactSourceList = document.getElementById("sourcesCompact");
-  const editSourcesButton = document.getElementById("editDatasetButton");
   const compactSourcesRoot = compactSourceList ? createRoot(compactSourceList) : null;
 
   const sourceList = document.createElement("div");
@@ -100,7 +88,8 @@ export function createDatasetController(recordController, builtinController, edi
   loadDatasetSources();
   loadSupportedInputParams();
   addDatasetSourceButton.addEventListener("click", addDatasetSource);
-  editSourcesButton.addEventListener("click", () => editorTabController.openDatasetTab(editorPanel));
+  const openDatasetEditor = () => editorTabController.openDatasetTab(editorPanel);
+  window.addEventListener("research-agent:edit-dataset-sources", openDatasetEditor);
 
   function renderSources(sources) {
     sources.forEach((source) => {
@@ -120,7 +109,6 @@ export function createDatasetController(recordController, builtinController, edi
       <DatasetSourceCards
         sources={sources.filter((source) => !source.isDeleted)}
         onOpen={(source) => openDatasetSourceRaw(source)}
-        onRun={(source) => runDatasetSource(source)}
       />
     );
   }
@@ -631,70 +619,12 @@ export function createDatasetController(recordController, builtinController, edi
     renderCompactSources(datasetSources);
   }
 
-  async function runDatasetSource(source) {
-    const elements = sourceElements[source.id];
-
-    const params = collectSourceRows(elements.paramsGrid, resolveVariableValue);
-    const overviewUrl = elements.overviewUrlInput?.value?.trim() || source.overviewUrl || "";
-    const url = buildUrlWithParams(buildPersistedQueryUrl(source, overviewUrl, []), params);
-
-    try {
-      updateSourceRunState(elements, "");
-      const result = await queryUrl(url);
-      const outputVariables = collectOutputVariables(elements.outputsGrid, result.response, builtinController);
-
-      Object.entries(outputVariables).forEach(([name, value]) => {
-        setVariable(name, value);
-      });
-
-      const { responseText, ...resultForPayload } = result;
-
-      const storedRecord = recordController.add({
-        kind: source.name,
-        title: `${source.name} manual query`,
-        request: result.request,
-        response: result.response,
-        durationMs: result.durationMs,
-        timestamp: result.timestamp,
-        payload: {
-          ...resultForPayload,
-          source: {
-            id: source.id,
-            type: source.type,
-            mapDisplay: source.mapDisplay
-          },
-          outputVariables
-        }
-      });
-      agentController?.attachRecord(storedRecord);
-      updateSourceRunState(elements, hasResponseError(result.response) ? "error" : "success");
-    } catch (error) {
-      updateSourceRunState(elements, "error");
-      console.error("[Sources] Query failed", error.details || error);
-    }
-  }
-
-  function updateSourceRunState(elements, state) {
-    [elements.runButton].forEach((button) => {
-      if (!button) {
-        return;
-      }
-
-      button.classList.toggle("is-success", state === "success");
-      button.classList.toggle("is-error", state === "error");
-    });
-  }
-
   function openDatasetSourceRaw(source) {
     editorTabController.openRawJsonTab(
       `dataset-source-${source.id}`,
       getSourceDisplayName(source),
       serializeDatasetSource(source, sourceElements[source.id])
     );
-  }
-
-  function hasResponseError(response) {
-    return Boolean(response && typeof response === "object" && response.error);
   }
 
   function setVariable(name, value) {
@@ -727,26 +657,6 @@ export function createDatasetController(recordController, builtinController, edi
       console.error("[Sources] Failed to load search source outputs", error);
       return null;
     }
-  }
-
-  function resolveVariableValue(value) {
-    // Replace all {{varName}} tokens with their resolved values.
-    // Plain text (no braces) is returned as-is.
-    return value.replace(/\{\{([^}]+)\}\}/g, (match, varName) => {
-      const trimmed = varName.trim();
-
-      if (Object.prototype.hasOwnProperty.call(variables, trimmed)) {
-        return normalizeVariableValue(variables[trimmed]);
-      }
-
-      const resolvedPathValue = getValueAtPath(variables, trimmed);
-
-      if (resolvedPathValue !== undefined) {
-        return normalizeVariableValue(resolvedPathValue);
-      }
-
-      return match; // unresolved — keep token text so the URL shows something meaningful
-    });
   }
 
   // ── Variable color helpers ────────────────────────────────────────────────
@@ -825,10 +735,6 @@ export function createDatasetController(recordController, builtinController, edi
     return { ...variables };
   }
 
-  function setSearchSourcesEditorOpener(opener) {
-    void opener;
-  }
-
   function reloadSearchCatalogs() {
     return loadSupportedInputParams();
   }
@@ -853,7 +759,6 @@ export function createDatasetController(recordController, builtinController, edi
     assignSearchSourceOutputs,
     addSourceFromCatalog,
     getVariables,
-    setSearchSourcesEditorOpener,
     reloadSearchCatalogs,
     setSearchCatalogs
   };
@@ -1504,22 +1409,6 @@ function appendSourceRow(grid, key = "", value = "", onChange = () => {}) {
   grid.append(keyInput, valueInput, deleteBtn);
 }
 
-function collectSourceRows(grid, resolveValue) {
-  const inputs = Array.from(grid.querySelectorAll("input")) as HTMLInputElement[];
-  const rows = {};
-
-  for (let index = 0; index < inputs.length; index += 2) {
-    const key = inputs[index].value.trim();
-    const value = inputs[index + 1].value.trim();
-
-    if (key) {
-      rows[key] = resolveValue(value);
-    }
-  }
-
-  return rows;
-}
-
 function collectSourceRowPairs(grid, firstKey, secondKey) {
   const inputs = Array.from(grid.querySelectorAll("input")) as HTMLInputElement[];
   const rows = [];
@@ -1537,20 +1426,6 @@ function collectSourceRowPairs(grid, firstKey, secondKey) {
   }
 
   return rows;
-}
-
-function collectOutputVariables(grid, response, builtinController) {
-  const inputs = Array.from(grid.querySelectorAll("input")) as HTMLInputElement[];
-  const rows = [];
-
-  for (let index = 0; index < inputs.length; index += 2) {
-    rows.push({
-      variable: inputs[index].value.trim(),
-      path: inputs[index + 1].value.trim()
-    });
-  }
-
-  return collectOutputVariablesFromRows(rows, response, builtinController);
 }
 
 function collectOutputVariablesFromRows(rows, response, builtinController) {

@@ -79,51 +79,6 @@
   padding: 8px 10px;
 }
 
-.source-editor[open] .source-run-button {
-  display: none;
-}
-
-.source-run-button {
-  position: relative;
-  flex: 0 0 auto;
-  width: 28px;
-  height: 28px;
-  border: 1px solid #d6d9de;
-  border-radius: 4px;
-  background: #ffffff;
-  color: #1f2933;
-  font-weight: 700;
-  cursor: pointer;
-}
-
-.source-run-button::before {
-  content: "";
-  position: absolute;
-  inset: 5px;
-  background: #000000;
-  mask: center / contain no-repeat var(--asset-search);
-  -webkit-mask: center / contain no-repeat var(--asset-search);
-}
-
-.source-run-button:hover {
-  background: #f7f8fa;
-}
-
-.source-run-button.is-success {
-  border-color: #89b896;
-  background: #89b896;
-}
-
-.source-run-button.is-error {
-  border-color: #8a3d3d;
-  background: #8a3d3d;
-}
-
-.source-run-button.is-success::before,
-.source-run-button.is-error::before {
-  background: #ffffff;
-}
-
 /* ── Search catalog chat panel ────────────────────────────────────────────── */
 
 .search-catalog-panel {

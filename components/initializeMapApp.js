@@ -6,7 +6,7 @@ import { createAgentTabController } from "@/features/agent/components/AgentTab.j
 import { createCatalogController } from "@/features/dataset/components/CatalogPanel.jsx";
 import { createRecordController, createRecordStore } from "@/features/record/components/RecordTab.jsx";
 import { createEditorTabController } from "./editor/EditorTabs.js";
-import { applyBuiltin, hasBuiltin } from "@/features/tool/components/providers/sharedSkills.ts";
+import { applyBuiltin, hasBuiltin } from "@/features/tool/components/providers/sharedTools.ts";
 import { createDatasetController } from "@/features/dataset/components/DatasetSidebarPanel";
 import { createFolderProviderEditorPanel } from "@/features/folder/components/FolderTab.tsx";
 import { createLayerSourcesController } from "@/features/map/components/LayerSourcesPage";
@@ -120,7 +120,7 @@ export async function initializeMapApp({ folderRef = null, suggestToolRef = null
   });
   if (suggestToolRef) suggestToolRef.current = (name) => agentController.suggestTool(name);
   if (openFileRef) openFileRef.current = (entry) => editorTabController.openFileViewerTab(entry);
-  sourceController = createDatasetController(recordController, builtinController, editorTabController, agentController);
+  sourceController = createDatasetController(builtinController, editorTabController, agentController);
   catalogController = createCatalogController(
     editorTabController,
     agentController,
@@ -128,7 +128,6 @@ export async function initializeMapApp({ folderRef = null, suggestToolRef = null
     (item) => sourceController.addSourceFromCatalog(item),
     (catalogs) => sourceController.setSearchCatalogs(catalogs)
   );
-  sourceController.setSearchSourcesEditorOpener(() => catalogController.open({ focusAgent: false }));
   const agentTabController = createAgentTabController(editorTabController, agentController);
   agentController.setAttachmentTargetProvider(() => agentTabController.getAttachmentTarget());
   agentController.setModulesRefresher(() => agentTabController.reload());
@@ -149,11 +148,35 @@ export async function initializeMapApp({ folderRef = null, suggestToolRef = null
   );
   reloadSources = reload;
   document.getElementById("searchSourceSelector").appendChild(selectorElement);
-  document.getElementById("editSearchSourcesButton")?.addEventListener("click", () => editorTabController.openAddressSearchTab(searchSourcesPanel));
-  document.getElementById("editFeatureButton")?.addEventListener("click", (event) => {
-    const button = event.currentTarget;
-    const tabId = button.dataset.activeTab || "project";
-    const label = button.dataset.activeLabel || tabId;
+  window.addEventListener("research-agent:edit-feature", (event) => {
+    const tabId = event.detail?.featureId || "project";
+    const label = event.detail?.featureLabel || tabId;
+
+    if (tabId === "address") {
+      editorTabController.openAddressSearchTab(searchSourcesPanel);
+      return;
+    }
+    if (tabId === "map") {
+      window.dispatchEvent(new CustomEvent("research-agent:edit-map-sources"));
+      return;
+    }
+    if (tabId === "dataset") {
+      window.dispatchEvent(new CustomEvent("research-agent:edit-dataset-sources"));
+      return;
+    }
+    if (tabId === "agent") {
+      window.dispatchEvent(new CustomEvent("research-agent:edit-agent"));
+      return;
+    }
+    if (tabId === "folder") {
+      window.dispatchEvent(new CustomEvent("research-agent:edit-folder-providers"));
+      return;
+    }
+    if (tabId === "skill") {
+      window.dispatchEvent(new CustomEvent("research-agent:edit-skill-sources"));
+      return;
+    }
+
     editorTabController.openEmptyPageTab(`feature-${tabId}-editor`, label);
   });
 }
