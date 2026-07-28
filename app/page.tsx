@@ -1,5 +1,5 @@
-import { WorkspaceClient } from "../components/workspace/WorkspaceClient";
+import { Application } from "@/components/Application";
 
 export default function Page() {
-  return <WorkspaceClient />;
+  return <Application />;
 }

@@ -6,7 +6,7 @@ import { useEffect, useState } from "react";
 
 const MAPLIBRE_SCRIPT = "https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js";
 const MAPBOX_SEARCH_SCRIPT = "https://api.mapbox.com/search-js/v1.5.0/web.js";
-const App = dynamic(() => import("../Application.jsx"), { ssr: false });
+const App = dynamic(() => import("../ApplicationOLD.jsx"), { ssr: false });
 
 function scriptsReady() {
   return (
@@ -15,7 +15,7 @@ function scriptsReady() {
   );
 }
 
-export function WorkspaceClient() {
+export function WorkspaceClientOLD() {
   const [ready, setReady] = useState(false);
 
   useEffect(() => {

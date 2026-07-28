@@ -1,7 +1,7 @@
 import { useCallback } from "react";
 import { Group, Panel, Separator } from "react-resizable-panels";
 import type { Layout } from "react-resizable-panels";
-import { loadWorkspaceState, saveWorkspaceState } from "@/lib/workspaceState";
+import { loadWorkspaceState, saveWorkspaceState } from "@/lib/workspaceStateOLD";
 
 const SIDEBAR_ID = "sidebar";
 const EDITOR_ID = "editor";

@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { AgentPanel } from "@/features/agent/components/AgentPanel.jsx";
-import { initializeMapApp } from "@/components/initializeMapApp.js";
+import { initializeMapApp } from "@/components/initializeMapAppOLD.js";
 import { AddressTab } from "@/features/address/components/AddressTab";
 import { AgentTab } from "@/features/agent/components/AgentTab.jsx";
 import { FolderTab } from "@/features/folder/components/FolderTab.tsx";
@@ -8,15 +8,15 @@ import { RecordTab } from "@/features/record/components/RecordTab.jsx";
 import { ToolSidebarPanel } from "@/features/tool/components/ToolSidebarPanel.tsx";
 import { DatasetSidebarPanel } from "@/features/dataset/components/DatasetSidebarPanel";
 import { SkillSidebarPanel } from "@/features/skill/components/SkillSidebarPanel.tsx";
-import { SidebarNavbar } from "@/components/sidebar/SidebarNavbar";
+import { SidebarNavbar } from "@/components/sidebar/SidebarNavbarOLD";
 import { SidebarHeader } from "@/components/sidebar/SidebarHeader.jsx";
-import { WorkbenchLayout } from "@/components/workspace/WorkbenchLayout.tsx";
+import { WorkbenchLayout } from "@/components/workspace/WorkbenchLayoutOLD";
 import { EditorNavbar } from "@/components/editor/EditorNavbar";
 import { EditorPanel } from "@/components/editor/EditorPanel";
 import { EditorPanelItem } from "@/components/editor/EditorPanelItem";
-import { loadWorkspaceState, saveWorkspaceState } from "@/lib/workspaceState.js";
-import { APP_VERSION } from "@/lib/appVersion";
-import featureRegistry from "@/data/feature.json";
+import { loadWorkspaceState, saveWorkspaceState } from "@/lib/workspaceStateOLD";
+import { APP_VERSION } from "@/lib/appVersionOLD";
+import featureRegistry from "@/data/featureOLD.json";
 import { MapTab } from "@/features/map/components/MapTab";
 import { withBasePath } from "@/lib/basePath";
 import addressIcon from "@/features/address/address.icon.svg";
@@ -91,6 +91,74 @@ function getStoredSettings() {
     return rawSettings;
   }
 }
+
+/*
+  New File: SidebarArea
+  
+const SidebarHeader = () => {
+  return <div>
+    <div>RESEARCH AGENT</div>
+    <div>v0.0.7</div>
+  </div>
+}
+
+const SidebarNavItem = (feature, active, setActiveFeature) => {
+  return <Image
+    src={getSidebarNavIcon(feature)}
+    alt={feature + " Nav Icon"}
+    className={active ? "active sidebar-nav-item" : "sidebar-nav-item"}
+    onClick={setActiveFeature(feature)}
+  />
+}
+
+const SidebarNavbar = (activeFeature, featureOrder, setActiveFeature, setFeatureOrder) => {
+  return <div>
+    <SidebarNavItem feature="Workspace" active={activeFeature == "Workspace"} />
+    <hr />
+    {featureOrder.map((feature) => <SidebarNavItem feature={feature} active={activeFeature == feature} /> )}
+    <hr />
+  </div>
+}
+
+const SidebarPanel = (feature) => {
+  const [featureData, setFeatureData] = useState<Record<string, Object[]>>(getFeatureData);
+
+  useEffect(() => {
+    postFeatureData(featureData);
+  }, [featureData]);
+
+  return <div>
+    <div>{feature.upper()}</div>
+    <SearchSourceWidget feature={feature} />
+    <SearchBoxWidget feature={feature} />
+    {featureData[feature].map(featureRecord => <SidebarCard name={featureRecord.name} description={featureRecord.description} />)}
+  </div>
+}
+
+const SidebarArea = () => {
+  const [activeFeature, setActiveFeature] = useState<string>(getWorkspaceState().activeFeature);
+  const [featureOrder, setFeatureOrder] = useState<string[]>(getWorkspaceState().featureOrder);
+
+  useEffect(() => {
+    postWorkspaceState(activeFeature, featureOrder);
+  }, [activeFeature, featureOrder]);
+
+  return <div>
+    <SidebarHeader />
+    <SidebarNavbar 
+      activeFeature={activeFeature}
+      featureOrder={featureOrder}
+      setActiveFeature={setActiveFeature}
+      setFeatureOrder={setFeatureOrder}
+    />
+    <SidebarPanel
+      feature={activeFeature}
+    />
+  </div>
+}
+
+  EOF: SidebarArea
+*/
 
 export default function App() {
   const [activeTab, setActiveTab] = useState(() => {

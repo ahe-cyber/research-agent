@@ -1,7 +1,7 @@
 import { createElement } from "react";
 import { createRoot } from "react-dom/client";
 import { markdownToHtml } from "@/lib/markdown";
-import { loadWorkspaceState, saveWorkspaceState } from "@/lib/workspaceState.js";
+import { saveWorkspaceEditorState } from "@/lib/workspaceEditors";
 import { createEmptyPagePanel } from "./EmptyPagePanel.jsx";
 import { EditorRichView } from "./EditorRichView";
 import { EditorRawView } from "./EditorRawView";
@@ -18,7 +18,7 @@ export function createEditorTabController({ onMapActivated = () => {} } = {}) {
   const panelMap = {};
 
   function persistEditorState() {
-    saveWorkspaceState({
+    saveWorkspaceEditorState({
       openEditorTabs: tabs.map(({ id, label }) => ({ id, label })),
       activeEditorTab: activeTabId,
     });

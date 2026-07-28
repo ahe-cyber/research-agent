@@ -1,5 +1,5 @@
 import type { DragEvent } from "react";
-import { SidebarNavItem } from "./SidebarNavItem.jsx";
+import { SidebarNavItem } from "./SidebarNavItemOLD.jsx";
 import styles from "./Sidebar.module.css";
 
 const noopDragHandler = () => {};

@@ -2,7 +2,7 @@
   {
     "id": "project",
     "label": "Project",
-    "icon": "/assets/features/project.svg",
+    "icon": "/assets/features/projectOLD.svg",
     "workspaceLabel": "Project Workspace"
   },
   {
@@ -20,19 +20,19 @@
   {
     "id": "record",
     "label": "Record",
-    "icon": "/assets/features/record.svg",
+    "icon": "/assets/features/recordOLD.svg",
     "workspaceLabel": "Record Workspace"
   },
   {
     "id": "dataset",
     "label": "Dataset",
-    "icon": "/assets/features/dataset.svg",
+    "icon": "/assets/features/datasetOLD.svg",
     "workspaceLabel": "Dataset Workspace"
   },
   {
     "id": "tool",
     "label": "Tool",
-    "icon": "/assets/features/tool.svg",
+    "icon": "/assets/features/toolOLD.svg",
     "workspaceLabel": "Tool Workspace"
   },
   {
@@ -50,7 +50,7 @@
   {
     "id": "skill",
     "label": "Skill",
-    "icon": "/assets/features/skill.svg",
+    "icon": "/assets/features/skillOLD.svg",
     "workspaceLabel": "Skill Workspace"
   }
 ]
