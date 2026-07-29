@@ -1,6 +1,6 @@
 [
   {
-    "id": "query-selected-datasets",
+    "id": "e866cd5a-6bd5-4fcc-9521-9da6ea18bad6",
     "name": "Query Selected Datasets",
     "source": "Project",
     "path": "data/features/skill.json",
@@ -8,7 +8,7 @@
     "content": "---\nname: query-selected-datasets\ndescription: Query the selected datasets in an order where each query can use parameters or identifiers returned by earlier queries.\n---\n\n# Query Selected Datasets\n\nUse this skill when the user asks the agent to query selected datasets, especially when one dataset provides parameters for another query.\n\n## Workflow\n\n1. List the selected datasets and identify each dataset's available query parameters.\n2. Build a dependency order. Query datasets with explicit user-provided parameters first.\n3. For each query, extract reusable outputs such as identifiers, coordinates, BBL, BIN, names, dates, or geometry.\n4. Use previous outputs to fill later query parameters when the later dataset requires them.\n5. Return a compact result table with dataset name, query parameters, record count, key fields, and source assumptions.\n\n## Rules\n\n- Do not invent missing query parameters.\n- If multiple previous outputs could fill a parameter, explain the choice.\n- If a dataset cannot be queried because a required parameter is unavailable, skip it and report the blocker.\n"
   },
   {
-    "id": "compare-map-layers",
+    "id": "7bc027d5-ab27-43d6-b0a7-ec339c1248af",
     "name": "Compare Map Layers",
     "source": "Project",
     "path": "data/features/skill.json",
@@ -16,7 +16,7 @@
     "content": "---\nname: compare-map-layers\ndescription: Compare visible map layers and identify overlaps, gaps, conflicts, and useful follow-up dataset queries.\n---\n\n# Compare Map Layers\n\nUse this skill when the user asks how visible map layers relate to each other.\n\n## Workflow\n\n1. List the visible layers and their source datasets.\n2. Identify the spatial relationship the user cares about: overlap, containment, nearest feature, missing coverage, or conflict.\n3. Compare layer geometry and attributes at the current map context.\n4. Summarize findings with layer names, relevant feature identifiers, and uncertainty.\n5. Recommend follow-up dataset queries only when they are needed to resolve a concrete gap.\n\n## Rules\n\n- Keep geometry claims tied to the current map state or queried data.\n- Distinguish visual overlap from confirmed data relationships.\n"
   },
   {
-    "id": "summarize-agent-records",
+    "id": "f97d6b88-3051-4e26-9a86-228c59e3fe95",
     "name": "Summarize Agent Records",
     "source": "Project",
     "path": "data/features/skill.json",

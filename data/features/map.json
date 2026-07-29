@@ -1,7 +1,6 @@
 [
   {
-    "id": "vector",
-    "label": "NYC Vector",
+    "id": "93ac9dee-2101-4b38-98ac-b9e90b9d147c",
     "maxZoom": 22,
     "metadata": {
       "provider": "NYC Office of Technology & Innovation",
@@ -24,11 +23,12 @@
         }
       ]
     },
-    "kind": "basemap"
+    "kind": "basemap",
+    "name": "NYC Vector",
+    "description": "Authoritative NYC street centerline and planimetric datasets maintained by NYC OTI. Released 2025-06-23 as v3 Q1 2025."
   },
   {
-    "id": "raster",
-    "label": "NYC Raster",
+    "id": "b6fa2f88-0eca-485b-a3d4-524397e18b37",
     "maxZoom": 19,
     "metadata": {
       "provider": "City of New York",
@@ -73,23 +73,24 @@
         },
         "layers": [
           {
-            "id": "nyc-basemap",
+            "id": "5f57bcdd-5e26-4f35-a157-4941b44e38de",
             "type": "raster",
             "source": "nyc-basemap"
           },
           {
-            "id": "nyc-labels",
+            "id": "e0bbedf7-57f9-4c32-998e-7b8d59613647",
             "type": "raster",
             "source": "nyc-labels"
           }
         ]
       }
     },
-    "kind": "basemap"
+    "kind": "basemap",
+    "name": "NYC Raster",
+    "description": "placeholder"
   },
   {
-    "id": "orthos-2024",
-    "label": "NYC Orthos 2024",
+    "id": "4209c0c7-ab5b-43ae-8709-4e7ece9edbf0",
     "maxZoom": 23,
     "metadata": {
       "provider": "NYC Office of Technology & Innovation",
@@ -122,18 +123,19 @@
         },
         "layers": [
           {
-            "id": "nyc-orthos-2024",
+            "id": "7c9fb95f-c34c-452c-9547-4109f6df9ba7",
             "type": "raster",
             "source": "nyc-orthos-2024"
           }
         ]
       }
     },
-    "kind": "basemap"
+    "kind": "basemap",
+    "name": "NYC Orthos 2024",
+    "description": "Final citywide orthoimagery for all of NYC, collected in 2024."
   },
   {
-    "id": "mapbox",
-    "label": "Mapbox Streets",
+    "id": "077f1ea1-8cd0-4a60-9963-c7af81e7e0a3",
     "maxZoom": 22,
     "costly": true,
     "requiresMapboxAccessToken": true,
@@ -151,11 +153,12 @@
       "type": "direct",
       "url": "https://api.mapbox.com/styles/v1/mapbox/streets-v12?access_token={{mapboxAccessToken}}"
     },
-    "kind": "basemap"
+    "kind": "basemap",
+    "name": "Mapbox Streets",
+    "description": "placeholder"
   },
   {
-    "id": "nyc-topobathymetric-2017",
-    "label": "NYC Topobathymetric 2017 DEM",
+    "id": "9c285ec6-602b-4e9c-8cfa-db84e3667749",
     "tiles": [
       "/api/map?resource=terrain&z={z}&x={x}&y={y}.png"
     ],
@@ -178,11 +181,12 @@
       "serviceUrl": "https://elevation.its.ny.gov/arcgis/rest/services/NYC_TopoBathymetric_2017_1_meter/ImageServer",
       "attribution": "NYS ITS Geospatial Services"
     },
-    "kind": "terrain"
+    "kind": "terrain",
+    "name": "NYC Topobathymetric 2017 DEM",
+    "description": "Bare-earth topobathymetric digital elevation model derived from green and near-infrared LiDAR. Vegetation and anthropogenic features are removed. Water bodies are flattened where appropriate."
   },
   {
-    "id": "buildings-new-york-3d",
-    "label": "3D Buildings",
+    "id": "15fc5207-879b-4698-832d-e6fb56ec5117",
     "url": "https://tiles.arcgis.com/tiles/P3ePLMYs2RVChkJx/arcgis/rest/services/Buildings_New_York_3D/SceneServer/layers/0",
     "itemUrl": "https://www.arcgis.com/home/item.html?id=3653d502714248f8b81a34faba956bdb",
     "attribution": "NYC DoITT, City of New York",
@@ -198,6 +202,8 @@
       "itemUrl": "https://www.arcgis.com/home/item.html?id=3653d502714248f8b81a34faba956bdb",
       "attribution": "NYC DoITT, City of New York"
     },
-    "kind": "sceneLayer"
+    "kind": "sceneLayer",
+    "name": "3D Buildings",
+    "description": "3D models for every NYC building present in the 2014 aerial survey of the city."
   }
 ]

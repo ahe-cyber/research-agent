@@ -61,13 +61,13 @@ function LayerSourcesPage({ catalog }: { catalog: BasemapCatalog }) {
   ];
 
   return (
-    <>
+    <Fragment>
       <EditorActionsMenu
         right={(
-          <>
+          <Fragment>
             <ViewButton active={view === "list"} label="List view" view="list" onClick={() => setView("list")} />
             <ViewButton active={view === "table"} label="Table view" view="table" onClick={() => setView("table")} />
-          </>
+          </Fragment>
         )}
       />
       <div className="layer-sources-page">
@@ -79,7 +79,7 @@ function LayerSourcesPage({ catalog }: { catalog: BasemapCatalog }) {
           {view === "table" ? <LayerSourcesTableView groups={groups} /> : <LayerSourcesListView groups={groups} />}
         </div>
       </div>
-    </>
+    </Fragment>
   );
 }
 

@@ -1,5 +1,20 @@
 # Changelog
 
+## v0.0.9 - 2026-07-29
+
+- Continued the feature-folder refactor across sidebar, editor, agent, API routes, and data schemas.
+- Replaced legacy sidebar panels with data-driven sidebar items and source/search widgets.
+- Added editable JSON views with raw, edit, list, table, and graph modes.
+- Moved agent chat into React state with persisted session data and source records.
+- Added in-memory feature invalidation timestamps for `info` and `detail` refresh flows.
+
+## v0.0.8 - 2026-07-28
+
+- Moved the app shell from legacy JSX toward React TSX area components.
+- Reorganized feature code around sidebar, editor, server, schema, API, and provider boundaries.
+- Added shared feature API route handling and feature-root icon loading.
+- Removed deprecated OLD files and empty API folders from the active app path.
+
 ## v0.0.7 - 2026-07-27
 
 - Added changelog maintenance and recovered prior version notes.

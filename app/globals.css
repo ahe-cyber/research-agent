@@ -1,6 +1,5 @@
 @import url("@xyflow/react/dist/style.css");
 @import url("./layout.css");
-@import url("../components/search/SearchBox.css");
 @import url("../features/address/address.css");
 @import url("../features/dataset/dataset.css");
 @import url("../features/map/map.css");

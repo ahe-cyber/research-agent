@@ -1,120 +1,54 @@
-import { useEffect, useRef } from "react";
-import type { ReactNode } from "react";
-import { createSearchWidget, type SearchWidgetInstance } from "../search/SearchWidget";
-import { SourceDropdownSlot } from "../workspace/SourceDropdownSlot";
-import type { SourceDropdownOption } from "../workspace/SourceDropdown";
+import { useEffect } from "react";
+import type { FeatureName } from "@/lib/features";
+import { getFeatureLabel } from "@/lib/features";
+import type { WorkspaceInvalidationScope, WorkspaceInvalidationState } from "@/lib/workspaceInvalidation";
+import styles from "./Sidebar.module.css";
+import { SidebarPanelItem } from "./SidebarPanelItem";
 
-interface SidebarPanelProps {
-  active: boolean;
-  featureId: string;
-  featureLabel: string;
-  dropdownClassName?: string;
-  dropdownOptions?: SourceDropdownOption[];
-  selectedSourceId?: string;
-  editSourcesLabel?: string;
-  searchClassName?: string;
-  searchId?: string;
-  searchPlaceholder?: string;
-  searchInputName?: string;
-  initialSearchQuery?: string;
-  compactId?: string;
-  children?: ReactNode;
-  headerAccessory?: ReactNode;
-  onFeatureDoubleClick?: () => void;
-  onSourceChange?: (option: SourceDropdownOption | null) => void;
-  onEditSources?: () => void;
-  onSearchQuery?: (query: string, source: SourceDropdownOption | null) => void;
-  onSearchWidget?: (widget: SearchWidgetInstance) => void;
-}
+type SidebarPanelProps = {
+  activeFeature: FeatureName;
+  featureOrder: FeatureName[];
+  onOpenPage?: (id: string, label: string, value: unknown, options?: unknown) => void;
+  onOpenSettings?: () => void;
+  onInvalidateWorkspaceData?: (featureId: FeatureName, scopes: WorkspaceInvalidationScope | WorkspaceInvalidationScope[]) => void;
+  onSelectAgentSession?: (session: { id: string }) => void;
+  workspaceInvalidation?: WorkspaceInvalidationState;
+};
 
-export function SidebarPanel({
-  active,
-  featureId,
-  featureLabel,
-  dropdownClassName = "",
-  dropdownOptions = [],
-  selectedSourceId,
-  editSourcesLabel,
-  searchClassName = "",
-  searchId,
-  searchPlaceholder,
-  searchInputName,
-  initialSearchQuery = "",
-  compactId,
-  children,
-  headerAccessory,
-  onFeatureDoubleClick,
-  onSourceChange,
-  onEditSources,
-  onSearchQuery,
-  onSearchWidget
-}: SidebarPanelProps) {
-  const searchRef = useRef<HTMLDivElement | null>(null);
-  const onSearchQueryRef = useRef(onSearchQuery);
-
-  onSearchQueryRef.current = onSearchQuery;
-
+export const SidebarPanel = ({ activeFeature, featureOrder, onOpenPage, onOpenSettings, onInvalidateWorkspaceData, onSelectAgentSession, workspaceInvalidation = {} }: SidebarPanelProps) => {
   useEffect(() => {
-    if (!searchRef.current || !searchPlaceholder) return;
-
-    const widget = createSearchWidget({
-      placeholder: searchPlaceholder,
-      inputName: searchInputName || `${featureId}-query`,
-      onQuery(query, source) {
-        onSearchQueryRef.current?.(query, source);
-      },
-      onSubmit(query, source) {
-        onSearchQueryRef.current?.(query, source);
-      }
-    });
-    widget.setQuery(initialSearchQuery);
-    searchRef.current.replaceChildren(widget.shellElement);
-    onSearchWidget?.(widget);
-  }, [featureId, initialSearchQuery, searchInputName, searchPlaceholder, onSearchWidget]);
-
-  function handleFeatureDoubleClick() {
-    if (onFeatureDoubleClick) {
-      onFeatureDoubleClick();
-      return;
-    }
-
-    window.dispatchEvent(new CustomEvent("research-agent:edit-feature", {
-      detail: { featureId, featureLabel }
-    }));
-  }
+    if (activeFeature === "settings") onOpenSettings?.();
+  }, [activeFeature, onOpenSettings]);
 
   return (
-    <section
-      className={`workspace-tab${active ? " is-active" : ""}`}
-      id={`${featureId}Tab`}
-      data-tab-panel
-      hidden={!active}
-    >
-      <div className="section-title-row">
-        <h2
-          className="section-title"
-          onDoubleClick={handleFeatureDoubleClick}
-          title={`Edit ${featureLabel}`}
-        >
-          {featureLabel}
-        </h2>
-        {dropdownOptions.length > 0 && (
-          <SourceDropdownSlot
-            className={dropdownClassName}
-            options={dropdownOptions}
-            selectedId={selectedSourceId}
-            onChange={onSourceChange}
-            onEdit={onEditSources}
-            editLabel={editSourcesLabel || `Edit ${featureId} sources`}
-          />
-        )}
-        {headerAccessory}
-      </div>
-      {searchPlaceholder && (
-        <div className={searchClassName} id={searchId} ref={searchRef} />
-      )}
-      {children}
-      {compactId && <div id={compactId} />}
-    </section>
+    <div className={styles.panelShell}>
+      <section
+        className={`workspace-tab${activeFeature === "workspace" ? " is-active" : ""}`}
+        id="workspaceTab"
+        data-tab-panel
+        hidden={activeFeature !== "workspace"}
+      >
+        <div className="section-title-row">
+          <label className={styles.workspaceSelector}>
+            <select defaultValue={featureOrder[0]} aria-label="Workspace">
+              {featureOrder.map((featureId) => (
+                <option key={featureId} value={featureId}>{getFeatureLabel(featureId)}</option>
+              ))}
+            </select>
+          </label>
+        </div>
+      </section>
+      {featureOrder.map((featureId) => (
+        <SidebarPanelItem
+          key={featureId}
+          active={activeFeature === featureId}
+          featureId={featureId}
+          onOpenPage={onOpenPage}
+          onInvalidateWorkspaceData={onInvalidateWorkspaceData}
+          onSelectAgentSession={onSelectAgentSession}
+          workspaceInvalidation={workspaceInvalidation}
+        />
+      ))}
+    </div>
   );
-}
+};

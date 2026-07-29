@@ -6,17 +6,21 @@ import type { SkillItem } from "../skill.schema";
 const FEATURE_ID = "skill";
 const skillPath = dataPath("features", "skill.json");
 
-export function getSkills() {
+export function getSkillData() {
   return readJsonFile(skillPath, []);
 }
 
-export async function saveSkill(skill: SkillItem) {
-  const skills = await getSkills();
-  const index = skills.findIndex((item: SkillItem) => item.id === skill.id);
-  const nextSkills = index >= 0
-    ? skills.map((item: SkillItem) => (item.id === skill.id ? skill : item))
-    : [...skills, skill];
-  await writeJsonFile(skillPath, nextSkills);
+export function saveSkillData(skillItems: unknown[]) {
+  return writeJsonFile(skillPath, skillItems);
+}
+
+export async function saveSkillItem(skill: SkillItem) {
+  const skillItems = await getSkillData();
+  const index = skillItems.findIndex((item: SkillItem) => item.id === skill.id);
+  const nextSkillItems = index >= 0
+    ? skillItems.map((item: SkillItem) => (item.id === skill.id ? skill : item))
+    : [...skillItems, skill];
+  await writeJsonFile(skillPath, nextSkillItems);
   return skill;
 }
 

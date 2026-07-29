@@ -1,0 +1,117 @@
+.panel {
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr) auto;
+  height: 100%;
+  min-width: 0;
+  min-height: 0;
+  border-left: 1px solid #d6d9de;
+  background: #ffffff;
+}
+
+.toolbar {
+  display: flex;
+  justify-content: flex-end;
+  border-bottom: 1px solid #d6d9de;
+  padding: 8px 10px;
+}
+
+.newSessionButton {
+  min-height: 28px;
+  border: 1px solid #d6d9de;
+  border-radius: 4px;
+  background: #ffffff;
+  color: #1f2933;
+  cursor: pointer;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 700;
+  padding: 4px 8px;
+}
+
+.newSessionButton:hover {
+  background: #f7f8fa;
+}
+
+.thread {
+  display: grid;
+  align-content: start;
+  gap: 10px;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 14px;
+}
+
+.message {
+  border: 1px solid #d6d9de;
+  border-radius: 6px;
+  background: #ffffff;
+  padding: 10px;
+  color: #1f2933;
+  font-size: 13px;
+  line-height: 1.4;
+}
+
+.userMessage {
+  border-color: #c6d8ff;
+  background: #f7faff;
+}
+
+.systemMessage {
+  color: #526070;
+}
+
+.assistantMessage {
+  border-left: 3px solid #c8e6c9;
+}
+
+.errorMessage {
+  border-color: #f5c6cb;
+  background: #fff5f5;
+  color: #721c24;
+}
+
+.messageText {
+  margin: 0;
+}
+
+.composer {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: end;
+  gap: 8px;
+  border-top: 1px solid #d6d9de;
+  padding: 12px;
+}
+
+.input {
+  width: 100%;
+  min-height: 96px;
+  box-sizing: border-box;
+  resize: vertical;
+  border: 1px solid #c9ced6;
+  border-radius: 6px;
+  padding: 10px;
+  color: #1f2933;
+  font: inherit;
+}
+
+.send {
+  min-width: 78px;
+  min-height: 34px;
+  border: 1px solid #1f2933;
+  border-radius: 4px;
+  background: #1f2933;
+  color: #ffffff;
+  cursor: pointer;
+  font: inherit;
+  font-weight: 700;
+}
+
+.send:hover {
+  background: #344052;
+}
+
+.send:disabled {
+  cursor: not-allowed;
+  opacity: 0.65;
+}

@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { Fragment, useEffect, useState } from "react";
 import { createRoot } from "react-dom/client";
 import { EditorActionsMenu } from "@/components/editor/EditorActionsMenu";
 import { getSkillSearchSources, saveSkillSearchSources } from "../skill.api";
@@ -53,12 +53,12 @@ function SkillSourceEditor({ onSaved }: { onSaved?: () => void }) {
     <div className="page-view editor-rich-view">
       <EditorActionsMenu
         right={(
-          <>
+          <Fragment>
             <button className="record-action" type="button" onClick={save}>
               Save
             </button>
             <span className="editor-rich-status">{status}</span>
-          </>
+          </Fragment>
         )}
       />
       <textarea

@@ -1,1 +1,86 @@
-[]
+[
+  {
+    "id": "461e7b6d-80ca-4927-b4a6-b752058d6c5b",
+    "name": "list_catalogs",
+    "description": "List all configured GIS data catalogs. Call this before search_catalog to see which catalogs and URLs are available.",
+    "params": []
+  },
+  {
+    "id": "51bbf1a0-7c68-4fe8-a366-652f157ee720",
+    "name": "list_sources",
+    "description": "List all configured data sources (pre-built queries with known endpoints). Returns id, name, type, description, query URL, and default params for each.",
+    "params": []
+  },
+  {
+    "id": "aca5cbc5-c75c-4966-b98a-78030ab43481",
+    "name": "query_source",
+    "description": "Execute one configured data source by id or name. Use list_sources first when you need available source ids. Provide params to override or add query parameters such as geometry, where, outFields, or limit.",
+    "params": [
+      {
+        "name": "sourceId",
+        "type": "string",
+        "required": true
+      },
+      {
+        "name": "params",
+        "type": "object",
+        "required": false
+      }
+    ]
+  },
+  {
+    "id": "f7284a24-6576-4f34-a6ad-65f6d0b54dc3",
+    "name": "search_catalog",
+    "description": "Search a GIS data catalog for datasets matching a query. Call list_catalogs first to get available catalog URLs.",
+    "params": [
+      {
+        "name": "query",
+        "type": "string",
+        "required": true
+      },
+      {
+        "name": "catalogUrl",
+        "type": "string",
+        "required": true
+      },
+      {
+        "name": "bbox",
+        "type": "string",
+        "required": false
+      }
+    ]
+  },
+  {
+    "id": "2c8cd869-00eb-4473-98c5-6c1fc1f900ce",
+    "name": "get_report",
+    "description": "Get the current content of the research report for the active property.",
+    "params": []
+  },
+  {
+    "id": "140bea3a-b3e0-4471-93d2-ba49158e8dbd",
+    "name": "update_report",
+    "description": "Create, append to, or replace a section of the research report. Use this for property data, zoning info, ownership details, and key findings. Prefer replacing or appending to an existing section when report_status shows a matching heading. Use append only when adding genuinely new material. You must call this tool before telling the user that you added, saved, wrote, or updated report content. Keep chat conversational — save structure for the report.",
+    "params": [
+      {
+        "name": "content",
+        "type": "string",
+        "required": false
+      },
+      {
+        "name": "heading",
+        "type": "string",
+        "required": false
+      },
+      {
+        "name": "mode",
+        "type": "string",
+        "required": false
+      },
+      {
+        "name": "sectionIndex",
+        "type": "number",
+        "required": false
+      }
+    ]
+  }
+]

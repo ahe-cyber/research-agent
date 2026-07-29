@@ -1,6 +1,6 @@
 [
   {
-    "id": "mappluto",
+    "id": "794622df-3a1e-4e42-ba50-1028467d5d8b",
     "name": "MAPPLUTO",
     "description": "This dataset represents a compilation of data from various government agencies throughout the City of New York. The underlying geography is derived from the Tax Lot Polygon feature class which is part of the Department of Finance's Digital Tax Map (DTM). The tax lots have been clipped to the shoreline, as defined by NYCMap planimetric features. The attribute information is from the Department of City Planning's PLUTO data. The attribute data pertains to tax lot and building characteristics and geographic, political and administrative information for each tax lot in New York City. The Tax Lot Polygon feature class and PLUTO are derived from different sources. As a result, some PLUTO records did not have a corresponding tax lot in the Tax Lot polygon feature class at the time of release. These records are included in a separate non-geographic PLUTO Only DBase (*.dbf) table. There are a number of reasons why there can be a tax lot in PLUTO that does not match the DTM; the most common reason is that the various source files are maintained by different departments and divisions with varying update cycles and criteria for adding and removing records. The attribute definitions for the PLUTO Only table are the same as those for MapPLUTO. DCP Mapping Lots includes some features that are not on the tax maps. They have been added by DCP for cartographic purposes. They include street center 'malls', traffic islands and some built streets through parks. These features have very few associated attributes.",
     "type": "arcgis-feature-layer",
@@ -1129,10 +1129,17 @@
         "domain": null,
         "defaultValue": null
       }
+    ],
+    "params": [
+      {
+        "name": "geometry",
+        "type": "string",
+        "required": true
+      }
     ]
   },
   {
-    "id": "curb-cut-2022",
+    "id": "a1a7293d-e0a3-4f69-a817-f2e12414ecdd",
     "name": "CURB_CUT",
     "description": "A curb cut is a dip in a sidewalk and curb that enables a vehicle to drive to a driveway, garage, parking lot, loading dock or drive-through. There are two types of curb cuts captured in the dataset: MIDBLOCK_CURBCUT - Break CURB features at extents of curbcuts located along block edges CORNER_CURBCUT - Break CURB features at extents of curbcuts located along block corners or street intersections Digital planimetrics are derived using the imagery products delivered with the 2022 New York Statewide Flyover (see Summary for specific flight dates), which includes raw imagery collected to support the generation of 0.5 Ft Ground Sample Distance (GSD) natural color imagery. The images were captured with 80% forward lap and side lap to support 1”=100’ mapping and meet the distortion free requirements within New York City. Planimetrics are developed to meet American Society for Photogrammetry and Remote Sensing (ASPRS) Class 1 (one) horizontal mapping standards and ASPRS vertical Class 2 (two) accuracy specifications. Planimetrics are delivered via an ESRI file geodatabase in New York State Plane Coordinate System, Long Island East Zone, NAD83, US foot (EPSG: 2263).",
     "type": "arcgis-feature-layer",
@@ -1266,10 +1273,17 @@
         "domain": null,
         "defaultValue": null
       }
+    ],
+    "params": [
+      {
+        "name": "geometry",
+        "type": "string",
+        "required": true
+      }
     ]
   },
   {
-    "id": "source-mpojg54m",
+    "id": "c446370f-79ae-4531-9b33-078afb66328f",
     "name": "BUILDING",
     "description": "Footprint outlines of buildings in New York City. Please see the following link for additional documentation: https://github.com/CityOfNewYork/nyc-geo-metadata/blob/master/Metadata/Metadata_BuildingFootprints.md For additional resources, please refer to: https://nycmaps-nyc.hub.arcgis.com/search?tags=building&type=feature%2520service%2Cfeature%2520layer",
     "type": "socrata-dataset",
@@ -1389,10 +1403,17 @@
         "description": ""
       }
     ],
-    "queryUrl": "https://data.cityofnewyork.us/resource/5zhs-2jue.json"
+    "queryUrl": "https://data.cityofnewyork.us/resource/5zhs-2jue.json",
+    "params": [
+      {
+        "name": "base_bbl",
+        "type": "string",
+        "required": true
+      }
+    ]
   },
   {
-    "id": "source-mpokj6su",
+    "id": "531ed66a-6e53-41f4-afa1-40c1c2cfe887",
     "name": "Zoning GIS Data: Geodatabase",
     "description": "This data set consists of 6 classes of zoning features: zoning districts, special purpose districts, special purpose district subdistricts, limited height districts, commercial overlay districts, and zoning map amendments. All previously released versions of this data are available on the DCP Website: BYTES of the BIG APPLE . Current version: 202604",
     "type": "socrata-dataset",
@@ -1401,10 +1422,11 @@
     "defaultParams": [],
     "defaultOutputs": [],
     "layerFields": [],
-    "queryUrl": "https://data.cityofnewyork.us/resource/mm69-vrje.json"
+    "queryUrl": "https://data.cityofnewyork.us/resource/mm69-vrje.json",
+    "params": []
   },
   {
-    "id": "source-mpokms3m",
+    "id": "320c0d16-e3d9-454d-b523-48ed92b2b05a",
     "name": "nyzd",
     "description": "Polygon features representing the zoning districts. These features are continuous over the entire city. They extend to the city limits on land and out to the US Army Corps of Engineers Pierhead lines over water. Zoning district designations are indicated in the ZONEDIST attribute.",
     "type": "arcgis-feature-layer",
@@ -1455,10 +1477,11 @@
         "defaultValue": null
       }
     ],
-    "queryUrl": "https://services5.arcgis.com/GfwWNkhOj9bNBqoJ/arcgis/rest/services/nyzd/FeatureServer/0/query"
+    "queryUrl": "https://services5.arcgis.com/GfwWNkhOj9bNBqoJ/arcgis/rest/services/nyzd/FeatureServer/0/query",
+    "params": []
   },
   {
-    "id": "source-mpr3pl3k",
+    "id": "bbde01b9-bbc4-4b01-8952-afaf219c1d04",
     "name": "DOB Violations",
     "description": "This data set includes older civil penalties (commonly referred to as ‘DOB Violations’) that were issued by the Department of Buildings (DOB) in the Buildings Information System (BIS). For newer civil penalties, see the DOB Safety Violations data set (note: some violations are duplicated in both data sets). Separately, summonses that are issued by DOB but adjudicated by OATH/ECB are in the DOB ECB Violations data set.",
     "type": "socrata-dataset",
@@ -1585,10 +1608,22 @@
         "description": ""
       }
     ],
-    "queryUrl": "https://data.cityofnewyork.us/resource/3h2n-5cm9.json?boro=5"
+    "queryUrl": "https://data.cityofnewyork.us/resource/3h2n-5cm9.json?boro=5",
+    "params": [
+      {
+        "name": "block",
+        "type": "string",
+        "required": true
+      },
+      {
+        "name": "lot",
+        "type": "string",
+        "required": true
+      }
+    ]
   },
   {
-    "id": "source-mpr3pqjc",
+    "id": "dd64c3ab-acb9-4d58-ac01-72f767280a6e",
     "name": "DOB ECB Violations",
     "description": "This data set includes summonses issued by the Department of Buildings that are adjudicated by OATH/ECB. Separately, civil penalties (commonly referred to as ‘DOB Violations’) are found in the DOB Safety Violations (for newer issuances) and DOB Violations (for older issuances) data sets.",
     "type": "socrata-dataset",
@@ -1883,10 +1918,22 @@
         "description": ""
       }
     ],
-    "queryUrl": "https://data.cityofnewyork.us/resource/6bgk-3dad.json?boro=5"
+    "queryUrl": "https://data.cityofnewyork.us/resource/6bgk-3dad.json?boro=5",
+    "params": [
+      {
+        "name": "block",
+        "type": "string",
+        "required": true
+      },
+      {
+        "name": "lot",
+        "type": "string",
+        "required": true
+      }
+    ]
   },
   {
-    "id": "source-mpzj1811",
+    "id": "e3217147-881b-42af-b671-1f2e3549ebb2",
     "name": "Satellite (VIIRS) Thermal Hotspots and Fire Activity",
     "description": "Global Thermal activity detected by the VIIRS sensors on the NOAA/NASA Suomi NPP, NOAA-20, and NOAA-21 satellites during the last 7 days.",
     "type": "arcgis-feature-layer",
@@ -1895,10 +1942,11 @@
     "defaultParams": [],
     "defaultOutputs": [],
     "queryUrl": "https://services9.arcgis.com/RHVPKKiFTONKtxq3/arcgis/rest/services/Satellite_VIIRS_Thermal_Hotspots_and_Fire_Activity/FeatureServer/0/query",
-    "layerFields": []
+    "layerFields": [],
+    "params": []
   },
   {
-    "id": "source-mpzsp4v8",
+    "id": "91c5d0c8-cf27-414e-b5c4-f34ebcfe818d",
     "name": "Informational Freshwater Wetland Mapping",
     "description": "The Informational Freshwater Wetland Mapping layer is only intended to be used for informational purposes in identifying the general location and extent of freshwater wetland areas of any size throughout the state. Informational Freshwater Wetland Mapping is not regulatory.",
     "type": "arcgis-feature-layer",
@@ -1912,10 +1960,17 @@
     ],
     "defaultOutputs": [],
     "queryUrl": "https://gisservices.dec.ny.gov/arcgis/rest/services/Wetlands/MapServer/0/query?geometryType=esriGeometryPoint&inSR=4326&spatialRel=esriSpatialRelIntersects&returnGeometry=true&outSR=4326&f=geojson",
-    "layerFields": []
+    "layerFields": [],
+    "params": [
+      {
+        "name": "geometry",
+        "type": "string",
+        "required": true
+      }
+    ]
   },
   {
-    "id": "source-mq8day26",
+    "id": "14ef4487-3a78-40be-8cd0-e4ba36ecdd28",
     "name": "USA Soils Map Units",
     "description": "This feature layer displays soil map units of the 50 US States and its territories. It is derived from the US Department of Agriculture, Natural Resources Conservation Service SSURGO dataset.",
     "type": "arcgis-feature-layer",
@@ -1924,10 +1979,11 @@
     "defaultParams": [],
     "defaultOutputs": [],
     "queryUrl": "https://landscape11.arcgis.com/arcgis/rest/services/USA_Soils_Map_Units/featureserver/query",
-    "layerFields": []
+    "layerFields": [],
+    "params": []
   },
   {
-    "id": "source-mqjqlcn7",
+    "id": "a22f080d-c1a4-4458-ba03-caaf87634a8f",
     "name": "Building Elevation and Subgrade (BES)",
     "description": "The Building Elevation and Subgrade data contains New York City building centroids derived from the Department of Building's (DOB) February 26th, 2022 building footprint dataset. Each record contains a grade and first floor measurement for each building (recorded as feet above sea-level in the NADV88 vertical datum) and indicates if subgrade space exists. DCP contracted with an external data vendor to generate a single point, or centroid, that represented the location of the center of every building recorded in the DOB dataset. The dataset excluded the footprints of small accessory buildings such as sheds. Each row within the dataset represents one building centroid, and records the X and Y coordinates of that centroid in the NAD 1983 coordinate system.",
     "type": "arcgis-feature-layer",
@@ -1936,10 +1992,11 @@
     "defaultParams": [],
     "defaultOutputs": [],
     "queryUrl": "https://data.cityofnewyork.us/resource/bsin-59hv.json",
-    "layerFields": []
+    "layerFields": [],
+    "params": []
   },
   {
-    "id": "source-mrntz1tf",
+    "id": "ee29fa2a-e210-4a4a-99be-6e3f6a6d06b1",
     "name": "Hydrants",
     "description": "NYCDEP Citywide Hydrants",
     "type": "arcgis-feature-layer",
@@ -1948,6 +2005,7 @@
     "defaultParams": [],
     "defaultOutputs": [],
     "queryUrl": "https://data.cityofnewyork.us/resource/5bgh-vtsn.json?latitude=-74.106009&longitude=40.593909",
-    "layerFields": []
+    "layerFields": [],
+    "params": []
   }
 ]

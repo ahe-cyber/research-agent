@@ -1,4 +1,5 @@
 import { z } from "zod";
+import type { EditorField } from "@/lib/editorSchema";
 
 export const mapSourceKindSchema = z.enum(["basemap", "sceneLayer", "terrain"]);
 export const mapOverlayCategorySchema = z.enum(["global", "local", "manual"]);
@@ -104,6 +105,23 @@ export const pdfOverlaySchema = z.object({
   collapsed: z.boolean().optional(),
   muted: z.boolean().optional()
 });
+
+export const mapItemEditorFields = [
+  { key: "id", label: "ID", readonly: true },
+  { key: "name", label: "Name" },
+  { key: "description", label: "Description", multiline: true },
+  { key: "kind", label: "Kind" },
+  { key: "style", label: "Style", multiline: true },
+  { key: "url", label: "URL" },
+  { key: "tiles", label: "Tiles", multiline: true }
+] satisfies readonly EditorField[];
+
+export const mapSearchSourceEditorFields = [
+  { key: "id", label: "ID", readonly: true },
+  { key: "name", label: "Name" },
+  { key: "description", label: "Description", multiline: true },
+  { key: "costly", label: "Costly" }
+] satisfies readonly EditorField[];
 
 export type MapSourceKind = z.infer<typeof mapSourceKindSchema>;
 export type MapOverlayCategory = z.infer<typeof mapOverlayCategorySchema>;

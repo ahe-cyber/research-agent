@@ -5,9 +5,9 @@ export type WorkspaceFeatureState = {
 
 const KEY = "research-agent.workspace-features";
 
-const DEFAULT_ACTIVE_FEATURE = "workspace";
+export const DEFAULT_ACTIVE_FEATURE = "workspace";
 
-const DEFAULT_FEATURE_ORDER = [
+export const DEFAULT_FEATURE_ORDER = [
   "address",
   "agent",
   "dataset",
@@ -15,33 +15,33 @@ const DEFAULT_FEATURE_ORDER = [
   "map",
   "project",
   "record",
-  "settings",
   "skill",
-  "tool",
-  "workspace"
+  "tool"
 ];
+
+export const DEFAULT_WORKSPACE_FEATURE_STATE = {
+  activeFeature: DEFAULT_ACTIVE_FEATURE,
+  featureOrder: [...DEFAULT_FEATURE_ORDER]
+};
+
+const normalizeFeatureOrder = (featureOrder: unknown) => {
+  if (!Array.isArray(featureOrder)) return [...DEFAULT_FEATURE_ORDER];
+  return featureOrder.filter((feature): feature is string => typeof feature === "string" && feature !== "workspace" && feature !== "settings");
+};
 
 export const loadWorkspaceFeatureState = (): WorkspaceFeatureState => {
   if (typeof localStorage === "undefined") {
-    return {
-      activeFeature: DEFAULT_ACTIVE_FEATURE,
-      featureOrder: [...DEFAULT_FEATURE_ORDER]
-    };
+    return { ...DEFAULT_WORKSPACE_FEATURE_STATE, featureOrder: [...DEFAULT_FEATURE_ORDER] };
   }
 
   try {
     const workspaceFeatureState = JSON.parse(localStorage.getItem(KEY) || "{}");
     return {
       activeFeature: workspaceFeatureState.activeFeature ?? DEFAULT_ACTIVE_FEATURE,
-      featureOrder: Array.isArray(workspaceFeatureState.featureOrder)
-        ? workspaceFeatureState.featureOrder
-        : [...DEFAULT_FEATURE_ORDER]
+      featureOrder: normalizeFeatureOrder(workspaceFeatureState.featureOrder)
     };
   } catch {
-    return {
-      activeFeature: DEFAULT_ACTIVE_FEATURE,
-      featureOrder: [...DEFAULT_FEATURE_ORDER]
-    };
+    return { ...DEFAULT_WORKSPACE_FEATURE_STATE, featureOrder: [...DEFAULT_FEATURE_ORDER] };
   }
 };
 

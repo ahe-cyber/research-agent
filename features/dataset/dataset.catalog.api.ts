@@ -1,7 +1,7 @@
 import { findDatasetCatalogItems } from "./dataset.api";
-import type { DatasetCatalogSearchResult, DatasetSearchCatalog } from "./dataset.schema";
+import type { DatasetCatalogSearchResult, DatasetSearchSource } from "./dataset.schema";
 
-export type SearchCatalog = DatasetSearchCatalog;
+export type SearchCatalog = DatasetSearchSource;
 export type CatalogSearchResult = DatasetCatalogSearchResult;
 
 export async function searchCatalog(catalog: SearchCatalog, query: string, limit = 5): Promise<CatalogSearchResult[]> {

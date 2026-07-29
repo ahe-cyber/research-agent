@@ -1,4 +1,5 @@
 import { z } from "zod";
+import type { EditorField } from "@/lib/editorSchema";
 
 export const folderProviderIdSchema = z.enum(["browser-drive", "local-drive", "google-drive"]);
 export const supportedFolderExtensionSchema = z.enum(["pdf", "dxf", "ifc"]);
@@ -11,6 +12,21 @@ const SUPPORTED_FOLDER_EXTENSIONS: Record<string, SupportedExtension> = {
 export type FolderProviderId = z.infer<typeof folderProviderIdSchema>;
 export type SupportedExtension = z.infer<typeof supportedFolderExtensionSchema>;
 export type FolderFileExtension = SupportedExtension | string;
+
+export const folderItemEditorFields = [
+  { key: "id", label: "ID", readonly: true },
+  { key: "name", label: "Name" },
+  { key: "providerId", label: "Provider" },
+  { key: "path", label: "Path" },
+  { key: "description", label: "Description", multiline: true }
+] satisfies readonly EditorField[];
+
+export const folderSearchSourceEditorFields = [
+  { key: "id", label: "ID", readonly: true },
+  { key: "name", label: "Name" },
+  { key: "description", label: "Description", multiline: true },
+  { key: "costly", label: "Costly" }
+] satisfies readonly EditorField[];
 
 export interface FileEntry {
   key: string;

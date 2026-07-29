@@ -23,8 +23,7 @@
   background: #2f6fed;
 }
 
-.workspace-sidebar,
-.agent-panel {
+.workspace-sidebar {
   height: 100%;
   min-width: 0;
   border-right: 1px solid #d6d9de;
@@ -48,11 +47,6 @@
   min-width: 0;
   min-height: 0;
   overflow: hidden;
-}
-
-.agent-panel {
-  border-right: 0;
-  border-left: 1px solid #d6d9de;
 }
 
 .editor-area {
@@ -679,6 +673,7 @@
 
 .editor-rich-field input,
 .editor-rich-field textarea,
+.editor-rich-field select,
 .editor-rich-raw {
   box-sizing: border-box;
   width: 100%;
@@ -694,9 +689,15 @@
 }
 
 .editor-rich-field input[readonly],
-.editor-rich-field textarea[readonly] {
+.editor-rich-field textarea[readonly],
+.editor-rich-field select:disabled {
   background: #f7f8fa;
   color: #526070;
+}
+
+.editor-rich-field input[type="checkbox"] {
+  width: auto;
+  justify-self: start;
 }
 
 .editor-rich-field textarea {

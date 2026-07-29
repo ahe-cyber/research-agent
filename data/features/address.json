@@ -1,1 +1,47 @@
-[]
+[
+  {
+    "id": "bb2e424b-1a69-46c8-a4e2-19d9701934a9",
+    "name": "City Hall",
+    "description": "Sample civic address record for testing address feature cards.",
+    "address": "City Hall Park, New York, NY 10007",
+    "borough": "Manhattan",
+    "bbl": "1001220001",
+    "bin": ""
+  },
+  {
+    "id": "ae0c8ac8-8bdf-4270-9a19-fcb87f6cece4",
+    "name": "Brooklyn Borough Hall",
+    "description": "Sample Brooklyn address record for sidebar and editor workflows.",
+    "address": "209 Joralemon Street, Brooklyn, NY 11201",
+    "borough": "Brooklyn",
+    "bbl": "3002660001",
+    "bin": ""
+  },
+  {
+    "id": "cb9d66fc-ebf9-4f12-85aa-7f5dc6080af0",
+    "name": "Queens Borough Hall",
+    "description": "Sample Queens address record for empty-data replacement testing.",
+    "address": "120-55 Queens Boulevard, Kew Gardens, NY 11424",
+    "borough": "Queens",
+    "bbl": "4033520001",
+    "bin": ""
+  },
+  {
+    "id": "22e3b50e-80d2-4481-879e-0cda1c951f0d",
+    "name": "Bronx Borough Hall",
+    "description": "Sample Bronx address record for generic feature rendering.",
+    "address": "851 Grand Concourse, Bronx, NY 10451",
+    "borough": "Bronx",
+    "bbl": "2024680001",
+    "bin": ""
+  },
+  {
+    "id": "d9c49196-1fb0-41d6-9061-16816076a62a",
+    "name": "Staten Island Borough Hall",
+    "description": "Sample Staten Island address record for editable list behavior.",
+    "address": "10 Richmond Terrace, Staten Island, NY 10301",
+    "borough": "Staten Island",
+    "bbl": "5000020001",
+    "bin": ""
+  }
+]

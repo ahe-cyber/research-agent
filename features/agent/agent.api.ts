@@ -1,14 +1,30 @@
 import { withBasePath } from "@/lib/basePath";
 
-export function getAgents() {
+export function getAgentData() {
+  return fetch(withBasePath("/api/agent?resource=sessions"));
+}
+
+export function getAgentSessions() {
   return fetch(withBasePath("/api/agent"));
 }
 
-export function saveAgents(agents: unknown[]) {
+export function saveAgentRegistry(registry: unknown) {
   return fetch(withBasePath("/api/agent"), {
     method: "PUT",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(agents)
+    body: JSON.stringify(registry)
+  });
+}
+
+export function getAgentSearchSources() {
+  return fetch(withBasePath("/api/agent?resource=sources"));
+}
+
+export function saveAgentSessions(sessions: unknown[]) {
+  return fetch(withBasePath("/api/agent"), {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ sessions })
   });
 }
 

@@ -1,25 +1,24 @@
 "use client";
 
-import { type RefObject, useEffect, useRef, useState } from "react";
+import { Fragment, type RefObject, useEffect, useRef, useState } from "react";
 import Script from "next/script";
 import { EditorNavbar } from "@/components/editor/EditorNavbar";
 import { EditorPanel } from "@/components/editor/EditorPanel";
 import { EditorPanelItem } from "@/components/editor/EditorPanelItem";
-import { createAgentController } from "@/features/agent/components/AgentPanel.jsx";
-import { createAgentTabController } from "@/features/agent/components/AgentTab.jsx";
-import { createAddressController, createSearchSourceEditorPanel } from "@/features/address/components/AddressTab";
-import { createSearchSourceControl } from "@/features/address/components/SearchSourceControl";
-import { createCatalogController } from "@/features/dataset/components/CatalogPanel.jsx";
-import { createDatasetController } from "@/features/dataset/components/DatasetSidebarPanel";
-import { createFolderProviderEditorPanel } from "@/features/folder/components/FolderTab";
+import { createAgentController } from "@/components/agent/AgentArea";
+import { createAddressController, createSearchSourceEditorPanel } from "@/features/address/components/AddressEditorRuntime";
+import { createCatalogController } from "@/features/dataset/components/CatalogPanel";
+import { createDatasetController } from "@/features/dataset/components/DatasetEditorRuntime";
+import { createFolderProviderEditorPanel } from "@/features/folder/components/FolderEditorRuntime";
 import { createLayerSourcesController } from "@/features/map/components/LayerSourcesPage";
 import { initCustomLayersDraw } from "@/features/map/components/providers/drawnGeometries";
 import { createMap } from "@/features/map/components/providers/mapRenderer";
 import { initPdfOverlayRenderer, registerMapDropZone } from "@/features/map/components/providers/pdfOverlay";
-import { createRecordController, createRecordStore } from "@/features/record/components/RecordTab.jsx";
+import { createRecordController, createRecordStore } from "@/features/record/components/RecordEditorRuntime";
 import { createSkillSourceEditorPanel } from "@/features/skill/components/SkillSourceEditor";
 import { applyBuiltin, hasBuiltin } from "@/features/tool/components/providers/sharedTools";
 import { createEditorTabController } from "./EditorTabs.js";
+import type { WorkspaceInvalidationState } from "@/lib/workspaceInvalidation";
 
 /*
   - Where the current EditorTabs.js imperative controller should move.
@@ -34,28 +33,11 @@ let sourceRuntime: any;
 let recordRuntime: any;
 let addressRuntime: any;
 let agentRuntime: any;
+let editorRuntimeInstance: any;
+let currentWorkspaceInvalidation: WorkspaceInvalidationState = {};
 
 function maplibreReady() {
   return typeof window !== "undefined" && typeof (window as any).maplibregl !== "undefined";
-}
-
-async function handlePlaceRetrieved(searchResult: unknown, sourceId: string, sourceLabel: string) {
-  addressRuntime.add(searchResult);
-  const outputVariables = await sourceRuntime.assignSearchSourceOutputs(searchResult, sourceId);
-
-  const title = sourceLabel ? `${sourceLabel} result` : "Search result";
-  const record = recordRuntime.add({
-    kind: "Search",
-    title,
-    response: searchResult,
-    timestamp: new Date().toISOString(),
-    payload: {
-      response: searchResult,
-      outputVariables
-    }
-  });
-
-  agentRuntime.attachRecord(record);
 }
 
 function createMapViewRefresher(map: any, mapElement: HTMLElement | null) {
@@ -104,13 +86,14 @@ function connectPageOpeners(editorRuntime: any, openPageRef: EditorAreaProps["op
   if (!openPageRef) return;
 
   openPageRef.current = (id, label, value, options = {}) => {
+    const pageOptions = { ...(options as Record<string, unknown>), workspaceInvalidation: currentWorkspaceInvalidation };
     if (value === undefined) {
       return editorRuntime.openEmptyPageTab(id, label);
     }
-    if ((options as { rich?: boolean }).rich) {
-      return editorRuntime.openRichJsonTab(id, label, value, options);
+    if ((pageOptions as { rich?: boolean }).rich) {
+      return editorRuntime.openRichJsonTab(id, label, value, pageOptions);
     }
-    return editorRuntime.openRawJsonTab(id, label, value);
+    return editorRuntime.openRawJsonTab(id, label, value, pageOptions);
   };
 }
 
@@ -154,10 +137,6 @@ function connectDatasetAndCatalog(editorRuntime: any) {
 }
 
 function connectAgentEditorRuntime(editorRuntime: any, suggestToolRef: EditorAreaProps["suggestToolRef"]) {
-  const agentTabRuntime = createAgentTabController(editorRuntime, agentRuntime);
-  agentRuntime.setAttachmentTargetProvider(() => agentTabRuntime.getAttachmentTarget());
-  agentRuntime.setModulesRefresher(() => agentTabRuntime.reload());
-
   if (suggestToolRef) {
     suggestToolRef.current = (name) => agentRuntime.suggestTool(name);
   }
@@ -193,10 +172,6 @@ function connectFeatureEditorEvents(editorRuntime: any, searchSourcesPanel: unkn
       window.dispatchEvent(new CustomEvent("research-agent:edit-dataset-sources"));
       return;
     }
-    if (featureId === "agent") {
-      window.dispatchEvent(new CustomEvent("research-agent:edit-agent"));
-      return;
-    }
     if (featureId === "folder") {
       window.dispatchEvent(new CustomEvent("research-agent:edit-folder-providers"));
       return;
@@ -210,30 +185,14 @@ function connectFeatureEditorEvents(editorRuntime: any, searchSourcesPanel: unkn
   });
 }
 
-function connectAddressSearch(map: any, editorRuntime: any) {
-  const searchBoxContainer = document.getElementById("placeSearchBox");
-  let reloadSources: (() => void) | undefined;
-  const { panel: searchSourcesPanel } = createSearchSourceEditorPanel(() => reloadSources?.());
-  const { element: selectorElement, reload } = createSearchSourceControl(
-    map,
-    handlePlaceRetrieved,
-    searchBoxContainer,
-    () => editorRuntime.openAddressSearchTab(searchSourcesPanel)
-  );
-  const searchSourceSelector = document.getElementById("searchSourceSelector");
-
-  reloadSources = reload;
-  searchSourceSelector?.appendChild(selectorElement);
-
+function createAddressSearchSourcesPanel() {
+  const { panel: searchSourcesPanel } = createSearchSourceEditorPanel();
   return searchSourcesPanel;
 }
 
-async function initializeEditorRuntime({
-  openFileRef,
-  openPageRef,
-  suggestToolRef
-}: Pick<EditorAreaProps, "openFileRef" | "openPageRef" | "suggestToolRef">) {
-  if (initialized) return;
+async function initializeEditorRuntime({ openFileRef, openPageRef, suggestToolRef, workspaceInvalidation }: Pick<EditorAreaProps, "openFileRef" | "openPageRef" | "suggestToolRef" | "workspaceInvalidation">) {
+  currentWorkspaceInvalidation = workspaceInvalidation || {};
+  if (initialized) return editorRuntimeInstance;
   initialized = true;
 
   const mapElement = document.getElementById("map");
@@ -242,9 +201,11 @@ async function initializeEditorRuntime({
   const editorRuntime = createEditorTabController({
     onMapActivated: () => refreshMapView({ mask: true })
   });
+  editorRuntimeInstance = editorRuntime;
+  editorRuntime.refreshJsonInvalidation?.(workspaceInvalidation || {});
 
   connectPageOpeners(editorRuntime, openPageRef);
-  window.addEventListener("focus", refreshMapView);
+  window.addEventListener("focus", () => refreshMapView());
   document.addEventListener("visibilitychange", () => {
     if (!document.hidden) refreshMapView();
   });
@@ -255,28 +216,21 @@ async function initializeEditorRuntime({
   connectDatasetAndCatalog(editorRuntime);
   connectAgentEditorRuntime(editorRuntime, suggestToolRef);
 
-  const searchSourcesPanel = connectAddressSearch(map, editorRuntime);
+  const searchSourcesPanel = createAddressSearchSourcesPanel();
   connectFeatureEditorEvents(editorRuntime, searchSourcesPanel);
+  return editorRuntime;
 }
 
 type EditorAreaProps = {
   openFileRef?: RefObject<((entry: unknown) => void) | null>;
   openPageRef?: RefObject<((id: string, label: string, value: unknown, options?: unknown) => void) | null>;
   suggestToolRef?: RefObject<((name: string) => void) | null>;
+  workspaceInvalidation?: WorkspaceInvalidationState;
 };
 
-export function EditorArea({
-  openFileRef: providedOpenFileRef,
-  openPageRef: providedOpenPageRef,
-  suggestToolRef: providedSuggestToolRef
-}: EditorAreaProps = {}) {
+const EditorRuntime = ({ openFileRef, openPageRef, suggestToolRef, workspaceInvalidation }: Required<EditorAreaProps>) => {
+  const editorRuntimeRef = useRef<any>(null);
   const [mapReady, setMapReady] = useState(false);
-  const localSuggestToolRef = useRef<((name: string) => void) | null>(null);
-  const localOpenFileRef = useRef<((entry: unknown) => void) | null>(null);
-  const localOpenPageRef = useRef<((id: string, label: string, value: unknown, options?: unknown) => void) | null>(null);
-  const suggestToolRef = providedSuggestToolRef ?? localSuggestToolRef;
-  const openFileRef = providedOpenFileRef ?? localOpenFileRef;
-  const openPageRef = providedOpenPageRef ?? localOpenPageRef;
 
   useEffect(() => {
     if (maplibreReady()) {
@@ -296,19 +250,48 @@ export function EditorArea({
 
   useEffect(() => {
     if (!mapReady) return;
-    initializeEditorRuntime({ suggestToolRef, openFileRef, openPageRef });
-  }, [mapReady]);
+    void initializeEditorRuntime({ suggestToolRef, openFileRef, openPageRef, workspaceInvalidation }).then((editorRuntime) => {
+      editorRuntimeRef.current = editorRuntime;
+    });
+  }, [mapReady, suggestToolRef, openFileRef, openPageRef, workspaceInvalidation]);
+
+  useEffect(() => {
+    currentWorkspaceInvalidation = workspaceInvalidation;
+    editorRuntimeRef.current?.refreshJsonInvalidation?.(workspaceInvalidation);
+  }, [workspaceInvalidation]);
+
+  return <Script src={MAPLIBRE_SCRIPT} strategy="afterInteractive" />;
+};
+
+const EditorSurface = () => {
+  return (
+    <EditorPanel navbar={<EditorNavbar />}>
+      <EditorPanelItem>
+        <div id="map" />
+      </EditorPanelItem>
+    </EditorPanel>
+  );
+};
+
+const useEditorRuntimeRefs = ({ openFileRef, openPageRef, suggestToolRef }: EditorAreaProps) => {
+  const localSuggestToolRef = useRef<((name: string) => void) | null>(null);
+  const localOpenFileRef = useRef<((entry: unknown) => void) | null>(null);
+  const localOpenPageRef = useRef<((id: string, label: string, value: unknown, options?: unknown) => void) | null>(null);
+
+  return {
+    suggestToolRef: suggestToolRef ?? localSuggestToolRef,
+    openFileRef: openFileRef ?? localOpenFileRef,
+    openPageRef: openPageRef ?? localOpenPageRef
+  };
+};
+
+export const EditorArea = (props: EditorAreaProps = {}) => {
+  const { openFileRef, openPageRef, suggestToolRef } = useEditorRuntimeRefs(props);
 
   return (
-    <>
-      <Script src={MAPLIBRE_SCRIPT} strategy="afterInteractive" />
-      <main aria-label="Editor">
-        <EditorPanel navbar={<EditorNavbar />}>
-          <EditorPanelItem>
-            <div id="map" />
-          </EditorPanelItem>
-        </EditorPanel>
-      </main>
-    </>
+    <Fragment>
+      <EditorRuntime openFileRef={openFileRef} openPageRef={openPageRef} suggestToolRef={suggestToolRef} workspaceInvalidation={props.workspaceInvalidation ?? {}} />
+      <EditorSurface />
+    </Fragment>
   );
-}
+};

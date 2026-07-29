@@ -1,6 +1,8 @@
 .workspace-tab {
   flex: 1 1 auto;
+  min-width: 0;
   min-height: 0;
+  width: 100%;
   box-sizing: border-box;
   overflow-y: auto;
   padding: 14px;
@@ -8,6 +10,191 @@
 
 .workspace-tab[hidden] {
   display: none;
+}
+
+.app-shell,
+.workbench-panels,
+.workbench-panels > [data-panel] {
+  min-width: 0;
+  min-height: 0;
+}
+
+.workbench-panels > [data-panel] {
+  overflow: hidden;
+}
+
+.editor-area {
+  display: grid;
+  grid-template-rows: 35px minmax(0, 1fr);
+  flex: 1 1 auto;
+  width: 100%;
+  height: 100%;
+  min-width: 0;
+  min-height: 0;
+  overflow: hidden;
+  background: #ffffff;
+}
+
+.editor-tab-bar {
+  display: flex;
+  align-items: stretch;
+  min-width: 0;
+  min-height: 0;
+  height: 35px;
+  border-bottom: 1px solid #c8cdd5;
+  background: #eef0f4;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scrollbar-width: none;
+}
+
+.editor-tab-bar::-webkit-scrollbar {
+  display: none;
+}
+
+.editor-viewport {
+  position: relative;
+  min-width: 0;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.editor-viewport > #map,
+.editor-viewport > .editor-table-panel,
+.editor-viewport > .editor-pdf-panel,
+.editor-viewport > .editor-sources-panel,
+.editor-viewport > .editor-layer-sources-panel,
+.editor-viewport > .editor-record-graph-panel,
+.editor-viewport > .editor-file-panel,
+.editor-viewport > .editor-empty-page-panel,
+.editor-viewport > .editor-raw-panel,
+.editor-viewport > .editor-report-panel {
+  position: absolute;
+  inset: 0;
+  width: auto;
+  height: auto;
+  min-width: 0;
+  min-height: 0;
+  overflow: hidden;
+  box-sizing: border-box;
+}
+
+.editor-viewport > [hidden] {
+  display: none;
+}
+
+.page-view {
+  display: grid;
+  grid-template-rows: 43px minmax(0, 1fr);
+  width: 100%;
+  height: 100%;
+  min-width: 0;
+  min-height: 0;
+  overflow: hidden;
+  background: #ffffff;
+}
+
+.page-view-content,
+.editor-raw-view__content,
+.editor-rich-form,
+.editor-rich-raw {
+  min-width: 0;
+  min-height: 0;
+  overflow: auto;
+  box-sizing: border-box;
+}
+
+.editor-actions-menu {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  min-width: 0;
+  min-height: 0;
+  height: 43px;
+  box-sizing: border-box;
+  border-bottom: 1px solid #e5e8ec;
+  padding: 7px 10px;
+  background: #fcfdfe;
+}
+
+.editor-actions-menu-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+}
+
+.editor-actions-menu-actions-right {
+  margin-left: auto;
+}
+
+.editor-rich-raw {
+  display: block;
+  width: 100%;
+  height: 100%;
+  border: 0;
+  border-radius: 0;
+  padding: 14px;
+  resize: none;
+  color: #1f2933;
+  font: inherit;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+  font-size: 12px;
+  line-height: 1.5;
+  outline: none;
+}
+
+.editor-raw-view__content {
+  padding: 14px;
+  color: #1f2933;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.editor-rich-form {
+  display: grid;
+  align-content: start;
+  gap: 12px;
+  padding: 14px;
+}
+
+.editor-rich-field {
+  display: grid;
+  gap: 6px;
+  min-width: 0;
+}
+
+.editor-rich-field > span {
+  color: #526070;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.editor-rich-field input,
+.editor-rich-field textarea,
+.editor-rich-field select {
+  width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+  border: 1px solid #d6d9de;
+  border-radius: 4px;
+  padding: 7px 8px;
+  color: #1f2933;
+  font: inherit;
+  font-size: 12px;
+}
+
+.editor-rich-field textarea {
+  min-height: 84px;
+  resize: vertical;
+}
+
+.editor-rich-field input[type="checkbox"] {
+  width: auto;
+  justify-self: start;
 }
 
 .section-title {
@@ -544,75 +731,10 @@
 }
 
 .address-item span,
-.tool-item span,
 .source-editor span {
   display: block;
   margin-top: 3px;
   color: #526070;
-}
-
-.tool-item code {
-  display: block;
-  margin-top: 4px;
-  color: #0b5cad;
-  font-family: Consolas, "Courier New", monospace;
-  font-size: 12px;
-}
-
-.tool-card {
-  display: flex;
-  flex-direction: column;
-  gap: 5px;
-  padding: 10px;
-}
-
-.tool-signature {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: baseline;
-  gap: 0;
-  font-family: Consolas, "Courier New", monospace;
-  font-size: 13px;
-}
-
-.tool-signature code,
-.tool-signature span {
-  display: inline;
-  margin-top: 0;
-}
-
-.tool-name {
-  font-weight: 700;
-  color: #0b5cad;
-}
-
-.tool-paren {
-  color: #526070;
-}
-
-.tool-param {
-  color: #6f42c1;
-  cursor: default;
-  border-bottom: 1px dotted #b8a0e0;
-}
-
-.tool-param:hover {
-  color: #4a2a90;
-  background: #f3eeff;
-  border-radius: 2px;
-}
-
-.tool-card-description {
-  margin: 0;
-  color: #526070;
-  font-size: 12px;
-  line-height: 1.45;
-}
-
-.skill-card-meta {
-  margin: 0;
-  color: #526070;
-  font-size: 12px;
 }
 
 .source-editor-summary {
@@ -1184,4 +1306,116 @@ button.layer-fields-tag {
 .icon-link-button:hover,
 .record-action:hover {
   background: #f7f8fa;
+}
+
+.record-action[aria-pressed="true"] {
+  border-color: #2f6fed;
+  color: #2f6fed;
+  background: #eef4ff;
+}
+
+.record-action:disabled {
+  color: #9aa5b1;
+  cursor: not-allowed;
+  background: #f4f6f8;
+}
+
+.editor-view-action {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+}
+
+.editor-view-action img {
+  display: block;
+  width: 18px;
+  height: 18px;
+}
+
+.editor-view-action:disabled img {
+  opacity: 0.45;
+}
+
+.editor-array-record {
+  display: grid;
+  gap: 10px;
+  border-bottom: 1px solid #e5e8ec;
+  padding: 12px;
+}
+
+.editor-array-record h3 {
+  margin: 0;
+  color: #1f2933;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.editor-array-actions {
+  display: flex;
+  justify-content: flex-start;
+  padding: 12px;
+}
+
+.editor-json-list-item {
+  display: grid;
+  gap: 6px;
+  border-bottom: 1px solid #e5e8ec;
+  padding: 10px 12px;
+}
+
+.editor-json-list-item strong {
+  color: #1f2933;
+  font-size: 13px;
+}
+
+.editor-json-list-item pre {
+  margin: 0;
+  overflow: auto;
+  color: #526070;
+  font-size: 12px;
+  white-space: pre-wrap;
+}
+
+.editor-json-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12px;
+}
+
+.editor-json-table th,
+.editor-json-table td {
+  max-width: 320px;
+  border-bottom: 1px solid #e5e8ec;
+  padding: 7px 8px;
+  text-align: left;
+  vertical-align: top;
+  overflow-wrap: anywhere;
+}
+
+.editor-json-table th {
+  color: #526070;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.editor-json-graph-node {
+  display: grid;
+  gap: 6px;
+  border-left: 1px solid #d6d9de;
+  margin-left: 8px;
+  padding: 4px 0 4px 10px;
+  color: #526070;
+  font-size: 12px;
+}
+
+.editor-json-graph-node strong {
+  color: #1f2933;
+}
+
+.editor-json-graph-children {
+  display: grid;
+  gap: 4px;
 }

@@ -3,6 +3,8 @@ import * as agentHandlers from "@/features/agent/server/handler";
 import * as datasetHandlers from "@/features/dataset/server/handler";
 import * as folderHandlers from "@/features/folder/server/handler";
 import * as mapHandlers from "@/features/map/server/handler";
+import * as projectHandlers from "@/features/project/server/handler";
+import * as recordHandlers from "@/features/record/server/handler";
 import * as skillHandlers from "@/features/skill/server/handler";
 import * as toolHandlers from "@/features/tool/server/handler";
 
@@ -19,6 +21,8 @@ const FEATURE_HANDLERS: Record<string, FeatureHandlers> = {
   dataset: datasetHandlers,
   folder: folderHandlers,
   map: mapHandlers,
+  project: projectHandlers,
+  record: recordHandlers,
   skill: skillHandlers,
   tool: toolHandlers
 };

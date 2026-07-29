@@ -1,7 +1,15 @@
 import { withBasePath } from "@/lib/basePath";
 
+export function getMapData() {
+  return fetch(withBasePath("/api/map"));
+}
+
 export function getMapSources() {
   return fetch(withBasePath("/api/map"));
+}
+
+export function getMapSearchSources() {
+  return fetch(withBasePath("/api/map?resource=sources"));
 }
 
 export function getGeometryLayers() {

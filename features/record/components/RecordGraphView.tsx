@@ -18,7 +18,7 @@ import {
   type Node,
   type NodeProps,
 } from "@xyflow/react";
-import { renderJsonTree } from "./RecordTab.jsx";
+import { renderJsonTree } from "./RecordEditorRuntime";
 
 interface RecordGraphViewProps {
   record: Record<string, any>;

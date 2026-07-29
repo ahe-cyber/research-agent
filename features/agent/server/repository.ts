@@ -1,19 +1,34 @@
 import { dataPath } from "@/lib/server/files";
 import { readJsonFile, writeJsonFile } from "@/lib/server/jsonRepository";
+import { getSearchItems, putSearchItems } from "@/lib/server/searchRepository";
 
-const agentPath = dataPath("features", "agent.json");
+const FEATURE_ID = "agent";
+const agentSessionPath = dataPath("features", "agent.json");
 const instructionPath = dataPath("instruction.json");
 
 interface AgentRegistry {
   globalInstruction?: string;
 }
 
-export function getAgents() {
-  return readJsonFile(agentPath, []);
+export function getAgentSessions() {
+  return readJsonFile(agentSessionPath, { activeSessionId: "", sessions: [] });
 }
 
-export function saveAgents(agents: unknown[]) {
-  return writeJsonFile(agentPath, agents);
+export function getAgentSearchSources() {
+  return getSearchItems(FEATURE_ID);
+}
+
+export function saveAgentData(data: unknown) {
+  return writeJsonFile(agentSessionPath, data);
+}
+
+export function saveAgentSessions(sessions: unknown[]) {
+  const firstSession = sessions?.[0] as { id?: string } | undefined;
+  return writeJsonFile(agentSessionPath, { activeSessionId: firstSession?.id || "", sessions });
+}
+
+export function saveAgentSearchSources(sources: unknown[]) {
+  return putSearchItems(FEATURE_ID, sources);
 }
 
 export async function getGlobalInstruction() {

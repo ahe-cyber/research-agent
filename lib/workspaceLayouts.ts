@@ -2,7 +2,7 @@ export type WorkspacePanelLayout = Record<string, number>;
 
 const KEY = "research-agent.workspace-layouts";
 
-const DEFAULT_PANEL_LAYOUT = {
+export const DEFAULT_PANEL_LAYOUT = {
   ["sidebar"]: 22,
   ["editor"]: 56,
   ["agent"]: 22

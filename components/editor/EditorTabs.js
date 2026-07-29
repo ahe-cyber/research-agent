@@ -2,9 +2,8 @@ import { createElement } from "react";
 import { createRoot } from "react-dom/client";
 import { markdownToHtml } from "@/lib/markdown";
 import { saveWorkspaceEditorState } from "@/lib/workspaceEditors";
-import { createEmptyPagePanel } from "./EmptyPagePanel.jsx";
-import { EditorRichView } from "./EditorRichView";
-import { EditorRawView } from "./EditorRawView";
+import { createEmptyPagePanel } from "./EmptyPagePanel";
+import { EditorJsonView } from "./EditorJsonView";
 import { FileViewer } from "@/features/folder/components/FileViewer.tsx";
 import { RecordGraphView } from "@/features/record/components/RecordGraphView.tsx";
 
@@ -16,6 +15,7 @@ export function createEditorTabController({ onMapActivated = () => {} } = {}) {
   let activeTabId = "map";
   const tabs = [{ id: "map", label: "Map", closeable: false }];
   const panelMap = {};
+  const jsonPanelState = {};
 
   function persistEditorState() {
     saveWorkspaceEditorState({
@@ -96,14 +96,13 @@ export function createEditorTabController({ onMapActivated = () => {} } = {}) {
       if (
         id === "dataset-editor" ||
         id === "search-catalog-results" ||
-        id === "agent-editor" ||
-        id === "folder-provider-editor" ||
-        id === "agent-provider-editor"
+        id === "folder-provider-editor"
       ) {
         panelMap[id].hidden = true;
       } else {
         panelMap[id].remove();
         delete panelMap[id];
+        delete jsonPanelState[id];
       }
     }
 
@@ -223,25 +222,6 @@ export function createEditorTabController({ onMapActivated = () => {} } = {}) {
     });
   }
 
-  function openAgentTab(agentsPanel) {
-    const tabId = "agent-editor";
-
-    if (tabs.find((t) => t.id === tabId)) {
-      activateTab(tabId);
-      return;
-    }
-
-    tabs.push({ id: tabId, label: "Agent", closeable: true });
-
-    if (!panelMap[tabId]) {
-      agentsPanel.hidden = true;
-      viewport.appendChild(agentsPanel);
-      panelMap[tabId] = agentsPanel;
-    }
-
-    activateTab(tabId);
-  }
-
   function openFolderProviderTab(providerPanel) {
     const tabId = "folder-provider-editor";
 
@@ -251,25 +231,6 @@ export function createEditorTabController({ onMapActivated = () => {} } = {}) {
     }
 
     tabs.push({ id: tabId, label: "Folder Sources", closeable: true });
-
-    if (!panelMap[tabId]) {
-      providerPanel.hidden = true;
-      viewport.appendChild(providerPanel);
-      panelMap[tabId] = providerPanel;
-    }
-
-    activateTab(tabId);
-  }
-
-  function openAgentProviderTab(providerPanel) {
-    const tabId = "agent-provider-editor";
-
-    if (tabs.find((t) => t.id === tabId)) {
-      activateTab(tabId);
-      return;
-    }
-
-    tabs.push({ id: tabId, label: "Agent Sources", closeable: true });
 
     if (!panelMap[tabId]) {
       providerPanel.hidden = true;
@@ -389,8 +350,9 @@ export function createEditorTabController({ onMapActivated = () => {} } = {}) {
     activateTab(tabId);
   }
 
-  function openRawJsonTab(tabId, label, value) {
+  function openRawJsonTab(tabId, label, value, options = {}) {
     if (tabs.find((t) => t.id === tabId)) {
+      renderJsonPanel(tabId, value, { ...options, initialMode: "raw" });
       activateTab(tabId);
       return;
     }
@@ -400,15 +362,21 @@ export function createEditorTabController({ onMapActivated = () => {} } = {}) {
     const panel = document.createElement("div");
     panel.className = "editor-raw-panel";
     panel.hidden = true;
-    createRoot(panel).render(createElement(EditorRawView, { value }));
     viewport.appendChild(panel);
     panelMap[tabId] = panel;
+    renderJsonPanel(tabId, value, { ...options, initialMode: "raw" });
 
     activateTab(tabId);
   }
 
   function openRichJsonTab(tabId, label, value, options = {}) {
     if (tabs.find((t) => t.id === tabId)) {
+      renderJsonPanel(tabId, value, {
+        ...options,
+        initialMode: "rich",
+        fields: options.fields || [],
+        onSave: options.onSave
+      });
       activateTab(tabId);
       return;
     }
@@ -418,15 +386,40 @@ export function createEditorTabController({ onMapActivated = () => {} } = {}) {
     const panel = document.createElement("div");
     panel.className = "editor-raw-panel";
     panel.hidden = true;
-    createRoot(panel).render(createElement(EditorRichView, {
-      value,
-      fields: options.fields || [],
-      onSave: options.onSave
-    }));
     viewport.appendChild(panel);
     panelMap[tabId] = panel;
+    renderJsonPanel(tabId, value, {
+      ...options,
+      initialMode: "rich",
+      fields: options.fields || [],
+      onSave: options.onSave
+    });
 
     activateTab(tabId);
+  }
+
+  function renderJsonPanel(tabId, value, options = {}) {
+    const panel = panelMap[tabId];
+    if (!panel) return;
+
+    jsonPanelState[tabId] = { value, options };
+    panel._reactRoot ??= createRoot(panel);
+    panel._reactRoot.render(createElement(EditorJsonView, {
+      value,
+      initialMode: options.initialMode || "raw",
+      featureId: options.featureId,
+      fields: options.fields || [],
+      invalidation: options.featureId ? options.workspaceInvalidation?.[options.featureId] : undefined,
+      onSave: options.onSave,
+      reload: options.reload,
+      target: options.target
+    }));
+  }
+
+  function refreshJsonInvalidation(workspaceInvalidation = {}) {
+    Object.entries(jsonPanelState).forEach(([tabId, state]) => {
+      renderJsonPanel(tabId, state.value, { ...state.options, workspaceInvalidation });
+    });
   }
 
   function openReportTab(address) {
@@ -743,7 +736,7 @@ export function createEditorTabController({ onMapActivated = () => {} } = {}) {
   }
 
   render();
-  return { openTableTab, openPdfTab, openRecordGraphTab, openDatasetTab, openLayerSourcesTab, openSearchCatalogResultsTab, openSearchCatalogDatasetTab, openReportTab, openAgentTab, openFolderProviderTab, openAgentProviderTab, openAddressSearchTab, openSkillSearchTab, openEmptyPageTab, openRawJsonTab, openRichJsonTab, openFileViewerTab, getPageStatus };
+  return { openTableTab, openPdfTab, openRecordGraphTab, openDatasetTab, openLayerSourcesTab, openSearchCatalogResultsTab, openSearchCatalogDatasetTab, openReportTab, openFolderProviderTab, openAddressSearchTab, openSkillSearchTab, openEmptyPageTab, openRawJsonTab, openRichJsonTab, openFileViewerTab, getPageStatus, refreshJsonInvalidation };
 }
 
 function renderHtmlElement(element) {

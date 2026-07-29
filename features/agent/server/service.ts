@@ -1,34 +1,63 @@
-import { readFile, writeFile } from "node:fs/promises";
+import { readFile } from "node:fs/promises";
 import { dataPath, jsonResponse } from "@/lib/server/files";
+import { editorSchemaResponse } from "@/lib/server/editorSchema";
 import { errorMessage, isHttpUrl, isJsonContentType } from "@/lib/server/http";
-import { TOOL_DECLARATIONS } from "@/features/tool/server/providers/declarations";
 import { searchDatasetCatalog } from "@/features/dataset/server/service";
+import { getToolData } from "@/features/tool/server/repository";
+import { agentItemEditorFields, agentSearchSourceEditorFields } from "../agent.schema";
 import type { AgentModelProvider } from "../agent.schema";
 import { claudeProvider } from "./providers/claude";
 import { geminiProvider } from "./providers/gemini";
 import { openAiProvider } from "./providers/openai";
-import { getAgents, getGlobalInstruction, saveAgents, saveGlobalInstruction } from "./repository";
+import { getAgentSearchSources, getAgentSessions, getGlobalInstruction, saveAgentData, saveAgentSearchSources, saveAgentSessions, saveGlobalInstruction } from "./repository";
 
 const DEFAULT_AGENT_SYSTEM_INSTRUCTION = "You are a GIS research assistant.";
-const AGENT_ATTACHMENT_CONTEXT_MAX_CHARS = 8_000;
 
 const datasetPath = dataPath("features", "dataset.json");
 const searchRegistryPath = dataPath("search.json");
-const agentPath = dataPath("features", "agent.json");
-
-const agentInteractionIds = new Map<string, string>();
 const AGENT_MODEL_PROVIDERS = [
   geminiProvider,
   openAiProvider,
   claudeProvider
 ];
 
-export async function listAgents() {
-  return jsonResponse(await getAgents());
+export async function listAgentSessions() {
+  return jsonResponse(await getAgentSessions());
 }
 
-export async function updateAgents(agents: unknown[]) {
-  await saveAgents(agents);
+export async function listAgentSessionItems() {
+  const registry: any = await getAgentSessions();
+  const sessions = Array.isArray(registry?.sessions) ? registry.sessions : [];
+  return jsonResponse(sessions.map((session: any) => ({
+    ...session,
+    name: session.name || session.title || "Untitled Chat",
+    description: session.description || "Chat session"
+  })));
+}
+
+export function getAgentEditorSchema(target: string) {
+  return editorSchemaResponse(target, {
+    item: agentItemEditorFields,
+    searchSource: agentSearchSourceEditorFields
+  });
+}
+
+export async function listAgentSearchSources() {
+  return jsonResponse(await getAgentSearchSources());
+}
+
+export async function updateAgentSessions(sessions: unknown[]) {
+  await saveAgentSessions(sessions);
+  return jsonResponse({ ok: true });
+}
+
+export async function updateAgentData(data: unknown) {
+  await saveAgentData(data);
+  return jsonResponse({ ok: true });
+}
+
+export async function updateAgentSearchSources(sources: unknown[]) {
+  await saveAgentSearchSources(sources);
   return jsonResponse({ ok: true });
 }
 
@@ -108,7 +137,7 @@ function getAgentModelProvider(providerId: string | null | undefined): AgentMode
 async function runAgentChat({ apiKey, provider, model, appMessages, legacyContents, systemInstruction, reportContent, send }: any) {
   let flatCatalogs: any[] = [];
   let datasetSources: any[] = [];
-  let agentRegistry: any = { agents: [], connections: [] };
+  const toolItems = await getToolData();
 
   try {
     const registry = JSON.parse(await readFile(searchRegistryPath, "utf8"));
@@ -121,24 +150,14 @@ async function runAgentChat({ apiKey, provider, model, appMessages, legacyConten
     datasetSources = JSON.parse(await readFile(datasetPath, "utf8"));
   } catch {}
 
-  try {
-    const loadedAgents = JSON.parse(await readFile(agentPath, "utf8"));
-    if (Array.isArray(loadedAgents)) {
-      agentRegistry = { agents: loadedAgents, connections: [] };
-    }
-  } catch {}
-
-  const activeAgent = findAgentModule(agentRegistry, getAddressedAgentId(appMessages));
   const globalInstruction = (typeof systemInstruction === "string" && systemInstruction.trim())
     ? systemInstruction.trim()
     : DEFAULT_AGENT_SYSTEM_INSTRUCTION;
-  const baseInstruction = activeAgent
-    ? buildEntryAgentInstruction(activeAgent, globalInstruction)
-    : globalInstruction;
+  const baseInstruction = globalInstruction;
   const currentReportContent = getReportContentFromMessages(appMessages) || reportContent || "";
   const currentReportStatus = getReportStatusFromMessages(appMessages);
 
-  const interactionTools = toInteractionTools(TOOL_DECLARATIONS);
+  const interactionTools = toInteractionTools(toolItems);
   const seenIds = new Set();
   let maxTurns = 10;
 
@@ -168,55 +187,6 @@ async function runAgentChat({ apiKey, provider, model, appMessages, legacyConten
         return result;
       } catch (error) {
         console.error("[Agent source query] Failed:", errorMessage(error));
-        return { error: errorMessage(error) };
-      }
-    }
-
-    if (name === "list_agents") {
-      return { agents: summarizeAgentModules(agentRegistry) };
-    }
-
-    if (name === "call_agent") {
-      try {
-        return await callAgentModule(provider, model, apiKey, agentRegistry, args.agentId, args.message || "", args.callerId || activeAgent?.id || "", Boolean(args.blind));
-      } catch (error) {
-        console.error("[Agent module call] Failed:", errorMessage(error));
-        return { error: errorMessage(error) };
-      }
-    }
-
-    if (name === "create_agent") {
-      try {
-        const result = await createAgentModule(agentRegistry, args);
-        agentRegistry = result.registry;
-        send({ type: "agents_updated" });
-        return { created: { id: result.agent.id, name: result.agent.name } };
-      } catch (error) {
-        console.error("[Agent module create] Failed:", errorMessage(error));
-        return { error: errorMessage(error) };
-      }
-    }
-
-    if (name === "edit_agent") {
-      try {
-        const result = await editAgentInstructions(agentRegistry, args);
-        agentRegistry = result.registry;
-        send({ type: "agents_updated" });
-        return { edited: result.edited, ok: true };
-      } catch (error) {
-        console.error("[Agent module edit] Failed:", errorMessage(error));
-        return { error: errorMessage(error) };
-      }
-    }
-
-    if (name === "edit_communication") {
-      try {
-        const result = await editCommunication(agentRegistry, args);
-        agentRegistry = { agents: JSON.parse(await readFile(agentPath, "utf8")), connections: [] };
-        send({ type: "agents_updated" });
-        return result;
-      } catch (error) {
-        console.error("[Edit communication] Failed:", errorMessage(error));
         return { error: errorMessage(error) };
       }
     }
@@ -439,17 +409,6 @@ function getReportStatusFromMessages(messages: any[]) {
   return null;
 }
 
-function getAddressedAgentId(messages: any[]) {
-  for (let i = messages.length - 1; i >= 0; i -= 1) {
-    const message = messages[i];
-    if (message?.sender === "user" && message.replyTo) return message.replyTo;
-  }
-  for (let i = messages.length - 1; i >= 0; i -= 1) {
-    if (messages[i]?.replyTo) return messages[i].replyTo;
-  }
-  return "";
-}
-
 function getInteractionOutputText(interaction: any) {
   if (typeof interaction.output_text === "string") return interaction.output_text;
   if (Array.isArray(interaction.outputs)) {
@@ -491,12 +450,25 @@ function toInteractionTools(functionDeclarations: any[]) {
     type: "function",
     name: declaration.name,
     description: declaration.description,
-    parameters: normalizeJsonSchema(declaration.parameters || {
-      type: "OBJECT",
-      properties: {},
-      additionalProperties: false
-    })
+    parameters: normalizeJsonSchema(getToolParametersSchema(declaration))
   }));
+}
+
+function getToolParametersSchema(declaration: any) {
+  if (declaration.parameters) {
+    return declaration.parameters;
+  }
+
+  const params = Array.isArray(declaration.params) ? declaration.params : [];
+  return {
+    type: "OBJECT",
+    properties: Object.fromEntries(params.map((param: any) => [
+      param.name,
+      { type: param.type || "string" }
+    ])),
+    required: params.filter((param: any) => param.required !== false).map((param: any) => param.name),
+    additionalProperties: false
+  };
 }
 
 function normalizeJsonSchema(schema: any): any {
@@ -510,205 +482,6 @@ function normalizeJsonSchema(schema: any): any {
       : normalizeJsonSchema(value);
   });
   return normalized;
-}
-
-async function callAgentModule(
-  provider: AgentModelProvider,
-  model: string,
-  apiKey: string,
-  registry: any,
-  agentId: string,
-  message: string,
-  callerId = "",
-  blind = false
-) {
-  const agent = findAgentModule(registry, agentId);
-  if (!agent) {
-    throw new Error(`Agent module not found: ${agentId}`);
-  }
-
-  const prompt = String(message || "").trim();
-  if (!prompt) {
-    throw new Error("call_agent requires a message.");
-  }
-
-  const caller = findAgentModule(registry, callerId);
-
-  const fromTo = caller
-    ? `From: ${caller.name || caller.id} -> To: ${agent.name || agent.id}\n\n`
-    : `To: ${agent.name || agent.id}\n\n`;
-
-  const pairKey = `${callerId || "__root__"}:${agent.id}`;
-  const previousInteractionId = blind ? null : agentInteractionIds.get(pairKey) ?? null;
-
-  const interaction = await provider.createInteraction(apiKey, {
-    model,
-    input: fromTo + prompt,
-    ...(previousInteractionId ? { previous_interaction_id: previousInteractionId } : {}),
-    system_instruction: buildEntryAgentInstruction(agent, "", caller),
-    generation_config: { temperature: 0.7, max_output_tokens: 2048 },
-    store: !blind
-  });
-
-  if (blind) return { blind: true, agent: { id: agent.id, name: agent.name || "Agent module" } };
-
-  agentInteractionIds.set(pairKey, interaction.id);
-
-  const text = getInteractionOutputText(interaction);
-  return {
-    agent: { id: agent.id, name: agent.name || "Agent module" },
-    caller: caller ? { id: caller.id, name: caller.name || "Agent module" } : null,
-    text
-  };
-}
-
-async function createAgentModule(registry: any, args: any) {
-  const name = String(args.name || "").trim();
-  if (!name) throw new Error("create_agent requires a name.");
-
-  const id = `agent-${Date.now().toString(36)}`;
-  const description = String(args.description || "").trim();
-
-  const agent = { id, name, description, x: 100, y: 100, attachments: [], toolHints: [] };
-  registry.agents.push(agent);
-  await writeFile(agentPath, `${JSON.stringify(registry.agents || [], null, 2)}\n`, "utf8");
-  return { registry, agent };
-}
-
-async function editAgentInstructions(registry: any, args: any) {
-  const instruction = String(args.instruction || "").trim();
-  if (!instruction) throw new Error("edit_agent requires instruction text.");
-
-  const target = String(args.agentId || "").trim();
-  if (!target) throw new Error("edit_agent requires agentId.");
-
-  const agent = findAgentModule(registry, target);
-  if (!agent) throw new Error(`Agent module not found: ${target}`);
-
-  const mode = String(args.mode || "replace").toLowerCase();
-  if (mode === "append") {
-    agent.description = [agent.description, instruction].filter(Boolean).join("\n\n");
-  } else {
-    agent.description = instruction;
-  }
-
-  await writeFile(agentPath, `${JSON.stringify(registry.agents || [], null, 2)}\n`, "utf8");
-  return { registry, edited: { id: agent.id, name: agent.name || "Agent module", instruction: agent.description } };
-}
-
-async function editCommunication(registry: any, args: any) {
-  const instruction = String(args.instruction || "").trim();
-  if (!instruction) throw new Error("edit_communication requires instruction text.");
-
-  const sender = findAgentModule(registry, String(args.senderId || "").trim());
-  if (!sender) throw new Error(`Sender agent not found: ${args.senderId}`);
-
-  const receiver = findAgentModule(registry, String(args.receiverId || "").trim());
-  if (!receiver) throw new Error(`Receiver agent not found: ${args.receiverId}`);
-
-  if (!Array.isArray(sender.agentPeers)) sender.agentPeers = [];
-  if (!Array.isArray(receiver.agentPeers)) receiver.agentPeers = [];
-
-  let senderPeer = sender.agentPeers.find((p: any) => p.id === receiver.id);
-  if (!senderPeer) {
-    senderPeer = { id: receiver.id, "communication-instruction": "" };
-    sender.agentPeers.push(senderPeer);
-    if (!receiver.agentPeers.find((p: any) => p.id === sender.id)) {
-      receiver.agentPeers.push({ id: sender.id, "communication-instruction": "" });
-    }
-  }
-  senderPeer["communication-instruction"] = instruction;
-
-  await writeFile(agentPath, `${JSON.stringify(registry.agents || [], null, 2)}\n`, "utf8");
-  return { ok: true, senderId: sender.id, receiverId: receiver.id };
-}
-
-function summarizeAgentModules(registry: any) {
-  return (registry.agents || []).map((agent: any) => ({
-    id: agent.id,
-    name: agent.name || "Agent module",
-    instruction: String(agent.description || "").slice(0, 500),
-    tools: Array.isArray(agent.toolHints) ? agent.toolHints : [],
-    encouragedAgents: getAttachedAgentSummaries(agent),
-    peers: (agent.agentPeers || []).map((peer: any) => {
-      const peerAgent = (registry.agents || []).find((a: any) => a.id === peer.id);
-      return {
-        id: peer.id,
-        name: peerAgent?.name || peer.id,
-        communicationInstruction: peer["communication-instruction"] || ""
-      };
-    })
-  }));
-}
-
-function buildEntryAgentInstruction(agent: any, globalInstruction = "", caller: any = null) {
-  const parts = [
-    `<global_instruction>\n${globalInstruction || DEFAULT_AGENT_SYSTEM_INSTRUCTION}\n</global_instruction>`,
-    `<your_info>\n${stringifyAgentSelfContext(agent)}\n</your_info>`
-  ];
-
-  const attachedItems = summarizeAgentAttachments(agent);
-  if (attachedItems.length > 0) {
-    parts.push(`<attached_items>\n${attachedItems.join("\n\n---\n\n")}\n</attached_items>`);
-  }
-
-  const relatedAgents = getAttachedAgentSummaries(agent);
-  if (relatedAgents.length > 0) {
-    parts.push(`<encouraged_direct_collaborators>\n${relatedAgents.map((item: any) => `- ${item.name} (${item.id || "no id"})`).join("\n")}\n</encouraged_direct_collaborators>`);
-  }
-
-  if (caller) {
-    parts.push(`<caller_agent>\nname: ${caller.name || "Agent module"}\nid: ${caller.id}\ndescription: ${caller.description || ""}\nReturn your reply to this caller.\n</caller_agent>`);
-  }
-
-  return parts.join("\n\n");
-}
-
-function stringifyAgentSelfContext(agent: any) {
-  const selfContext = {
-    id: agent.id,
-    name: agent.name || "Agent module",
-    instruction: agent.description || "",
-    attachments: Array.isArray(agent.attachments) ? agent.attachments : [],
-    suggestedTools: Array.isArray(agent.toolHints) ? agent.toolHints : []
-  };
-  const raw = JSON.stringify(selfContext, null, 2);
-  return raw.length > AGENT_ATTACHMENT_CONTEXT_MAX_CHARS
-    ? `${raw.slice(0, AGENT_ATTACHMENT_CONTEXT_MAX_CHARS)}\n... [truncated]`
-    : raw;
-}
-
-function summarizeAgentAttachments(agent: any) {
-  return (agent.attachments || []).map((attachment: any) => {
-    const summary = {
-      kind: attachment.kind || "Attachment",
-      title: attachment.title || attachment.kind || "Context",
-      payload: attachment.payload || null
-    };
-    const raw = JSON.stringify(summary, null, 2);
-    return raw.length > AGENT_ATTACHMENT_CONTEXT_MAX_CHARS
-      ? `${raw.slice(0, AGENT_ATTACHMENT_CONTEXT_MAX_CHARS)}\n... [truncated]`
-      : raw;
-  });
-}
-
-function findAgentModule(registry: any, agentId: string) {
-  const target = String(agentId || "").trim().toLowerCase();
-  if (!target) return null;
-
-  return (registry.agents || []).find((agent: any) =>
-    String(agent.id || "").toLowerCase() === target
-    || String(agent.name || "").toLowerCase() === target
-  ) || null;
-}
-
-function getAttachedAgentSummaries(agent: any) {
-  return (agent.attachments || [])
-    .filter((attachment: any) => attachment.kind === "Agent Module")
-    .map((attachment: any) => ({
-      id: attachment.payload?.agent?.id,
-      name: attachment.title || attachment.payload?.agent?.name || "Agent module"
-    }));
 }
 
 async function queryConfiguredSource(sources: any[], sourceId: string, params = {}) {

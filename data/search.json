@@ -1,6 +1,6 @@
 [
   {
-    "id": "arcgis-online",
+    "id": "60b81a84-4e1a-4a45-b9ad-c857365d2364",
     "name": "ArcGIS Online",
     "url": "https://www.arcgis.com",
     "type": "arcgis",
@@ -21,10 +21,11 @@
       "returnDistinctValues",
       "returnCountOnly"
     ],
-    "feature": "dataset"
+    "feature": "dataset",
+    "description": ""
   },
   {
-    "id": "nyc-maps-hub",
+    "id": "99060af3-806e-406d-8fff-a8a1501f6f4c",
     "name": "NYC Maps Hub",
     "url": "https://nycmaps-nyc.hub.arcgis.com",
     "type": "arcgis",
@@ -45,10 +46,11 @@
       "returnDistinctValues",
       "returnCountOnly"
     ],
-    "feature": "dataset"
+    "feature": "dataset",
+    "description": ""
   },
   {
-    "id": "ny-gis",
+    "id": "3fabe250-01d6-47ff-9f62-f7d12681a340",
     "name": "NY GIS",
     "url": "https://data.gis.ny.gov",
     "type": "arcgis",
@@ -69,10 +71,11 @@
       "returnDistinctValues",
       "returnCountOnly"
     ],
-    "feature": "dataset"
+    "feature": "dataset",
+    "description": ""
   },
   {
-    "id": "nyc-open-data",
+    "id": "3684527b-85e9-4122-bb1a-2935360b1bd1",
     "name": "NYC Open Data",
     "url": "https://data.cityofnewyork.us",
     "type": "socrata",
@@ -86,19 +89,20 @@
       "$q",
       "$query"
     ],
-    "feature": "dataset"
+    "feature": "dataset",
+    "description": ""
   },
   {
-    "id": "catalog-1781114929410",
+    "id": "428750ba-e4bd-4217-8571-7d980e406f9c",
     "name": "NY Geo",
     "url": "https://new-york-opd-geographic-information-gateway-nysdos.hub.arcgis.com",
     "type": "arcgis",
     "supportedInputParams": [],
-    "feature": "dataset"
+    "feature": "dataset",
+    "description": ""
   },
   {
-    "id": "src-geosearch",
-    "label": "NYC GeoSearch",
+    "id": "4a5cd92b-2d81-44d7-bcf4-5df7de5ebf92",
     "type": "geosearch",
     "url": "https://geosearch.planninglabs.nyc/v2/autocomplete",
     "costly": false,
@@ -122,11 +126,11 @@
       }
     ],
     "feature": "address",
-    "apiKey": ""
+    "apiKey": "",
+    "name": "NYC GeoSearch"
   },
   {
-    "id": "src-mapbox",
-    "label": "Mapbox Search",
+    "id": "79351448-110c-46df-84d6-9ba18a6bf75d",
     "type": "mapbox",
     "costly": true,
     "description": "Selected address or place from the Mapbox Search Box component.",
@@ -141,11 +145,11 @@
       }
     ],
     "feature": "address",
-    "apiKey": ""
+    "apiKey": "",
+    "name": "Mapbox Search"
   },
   {
-    "id": "src-google",
-    "label": "Google Places",
+    "id": "f42a9e26-e1f2-421b-b3ea-58a2bc12a605",
     "type": "google",
     "costly": true,
     "description": "Selected address or place from the Google Places Autocomplete API.",
@@ -160,14 +164,42 @@
       }
     ],
     "feature": "address",
-    "apiKey": ""
+    "apiKey": "",
+    "name": "Google Places"
   },
   {
-    "id": "shared-skills",
-    "label": "Shared Skills",
+    "id": "d962dcb2-9031-4432-804f-28ca019908b4",
     "type": "shared",
     "costly": false,
     "description": "Searches app-owned skills stored in data/features/skill.json.",
-    "feature": "skill"
+    "feature": "skill",
+    "name": "Shared Skills"
+  },
+  {
+    "id": "8d26c9d8-7510-42a8-b347-c6b4b805639c",
+    "type": "gemini",
+    "costly": true,
+    "apiKey": "GEMINI_API_KEY",
+    "description": "Google Gemini model provider for agent chat sessions.",
+    "feature": "agent",
+    "name": "Gemini"
+  },
+  {
+    "id": "4ff0df6a-a924-4fbf-9e01-4834e840a5e3",
+    "type": "openai",
+    "costly": true,
+    "apiKey": "OPENAI_API_KEY",
+    "description": "OpenAI model provider for agent chat sessions.",
+    "feature": "agent",
+    "name": "OpenAI"
+  },
+  {
+    "id": "fbec92e5-4ad1-424f-ae96-e97f5a4b41a0",
+    "type": "claude",
+    "costly": true,
+    "apiKey": "ANTHROPIC_API_KEY",
+    "description": "Anthropic Claude model provider for agent chat sessions.",
+    "feature": "agent",
+    "name": "Claude"
   }
 ]
